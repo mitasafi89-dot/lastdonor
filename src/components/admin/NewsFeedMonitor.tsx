@@ -21,7 +21,6 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   NewspaperIcon,
-  FunnelIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 
@@ -162,7 +161,7 @@ export function NewsFeedMonitor({ items, sources, categories, counts }: NewsFeed
   function toggleExpand(id: string) {
     setExpanded((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
       return next;
     });
   }

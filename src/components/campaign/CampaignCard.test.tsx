@@ -6,6 +6,7 @@ import { CampaignCard } from '@/components/campaign/CampaignCard';
 vi.mock('next/image', () => ({
   default: (props: Record<string, unknown>) => {
     const { fill, ...rest } = props;
+    // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
     return <img {...rest} data-fill={fill ? 'true' : undefined} />;
   },
 }));
@@ -54,10 +55,10 @@ describe('CampaignCard', () => {
     expect(screen.queryByText(/United Kingdom/)).not.toBeInTheDocument();
   });
 
-  it('does not display goal amount or percentage', () => {
+  it('does not display goal amount but shows percentage', () => {
     render(<CampaignCard {...defaultProps} />);
     expect(screen.queryByText(/\$5,000/)).not.toBeInTheDocument();
-    expect(screen.queryByText('25%')).not.toBeInTheDocument();
+    expect(screen.getByText('25%')).toBeInTheDocument();
   });
 
   it('does not display donor count', () => {

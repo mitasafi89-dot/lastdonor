@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { fundPoolAllocations, campaigns, donations } from '@/db/schema';
+import { fundPoolAllocations, campaigns } from '@/db/schema';
 import { eq, desc, sql } from 'drizzle-orm';
 import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import { randomUUID } from 'crypto';
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   const requestId = randomUUID();
 
   try {
-    const session = await requireRole(['admin']);
+    await requireRole(['admin']);
     const { searchParams } = request.nextUrl;
 
     const statusFilter = searchParams.get('status') ?? '';

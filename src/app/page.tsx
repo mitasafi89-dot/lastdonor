@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { db } from '@/db';
 import { campaigns, donations, blogPosts } from '@/db/schema';
-import { eq, and, or, desc, sql, ne } from 'drizzle-orm';
+import { eq, or, desc, sql } from 'drizzle-orm';
 import Link from 'next/link';
+import Image from 'next/image';
 import { HeroSection } from '@/components/homepage/HeroSection';
 import { TrustBar } from '@/components/homepage/TrustBar';
 import { HowItWorks } from '@/components/homepage/HowItWorks';
@@ -220,11 +221,14 @@ export default async function Home() {
                   className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
                 >
                   {post.coverImageUrl && (
-                    <div className="aspect-video overflow-hidden">
-                      <img
+                    <div className="relative aspect-video overflow-hidden">
+                      <Image
                         src={post.coverImageUrl}
                         alt=""
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        unoptimized
                       />
                     </div>
                   )}

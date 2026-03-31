@@ -55,7 +55,7 @@ describe('createIntentSchema', () => {
   });
 
   it('rejects missing donorEmail', () => {
-    const { donorEmail, ...noEmail } = validInput;
+    const { donorEmail: _donorEmail, ...noEmail } = validInput;
     const result = createIntentSchema.safeParse(noEmail);
     expect(result.success).toBe(false);
   });
@@ -87,7 +87,7 @@ describe('createIntentSchema', () => {
   });
 
   it('accepts missing donorName (optional field)', () => {
-    const { donorName, ...noName } = validInput;
+    const { donorName: _donorName, ...noName } = validInput;
     const result = createIntentSchema.safeParse(noName);
     expect(result.success).toBe(true);
   });
@@ -98,7 +98,7 @@ describe('createIntentSchema', () => {
   });
 
   it('defaults isAnonymous to false when omitted', () => {
-    const { isAnonymous, ...input } = validInput;
+    const { isAnonymous: _isAnonymous, ...input } = validInput;
     const result = createIntentSchema.safeParse(input);
     expect(result.success).toBe(true);
     if (result.success) {
@@ -107,7 +107,7 @@ describe('createIntentSchema', () => {
   });
 
   it('defaults isRecurring to false when omitted', () => {
-    const { isRecurring, ...input } = validInput;
+    const { isRecurring: _isRecurring, ...input } = validInput;
     const result = createIntentSchema.safeParse(input);
     expect(result.success).toBe(true);
     if (result.success) {

@@ -14,7 +14,7 @@ import type { CampaignOrganizer } from '@/types';
 /**
  * GET /api/v1/user-campaigns — List authenticated user's own campaigns
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const requestId = randomUUID();
 
   try {

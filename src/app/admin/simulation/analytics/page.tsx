@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { SimulationAnalytics } from '@/components/admin/SimulationAnalytics';
 import { db } from '@/db';
 import { campaigns, donations, fundPoolAllocations } from '@/db/schema';
-import { sql, eq } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {

@@ -3,7 +3,6 @@ import { db } from '@/db';
 import { blogPosts } from '@/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { BlogCard } from '@/components/blog/BlogCard';
-import type { BlogPost } from '@/types';
 
 export const metadata: Metadata = {
   title: 'Stories & Impact',

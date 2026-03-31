@@ -5,7 +5,7 @@ import { donations, campaignSeedMessages, campaigns, auditLogs } from '@/db/sche
 import { eq, sql, and } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   const requestId = randomUUID();
 
   try {

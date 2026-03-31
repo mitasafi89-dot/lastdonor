@@ -8,8 +8,7 @@ import Link from 'next/link';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { ProgressBar } from '@/components/campaign/ProgressBar';
 import { PhaseBadge } from '@/components/campaign/PhaseBadge';
-import { DonorFeed, type DonorFeedItem } from '@/components/campaign/DonorFeed';
-import { ImpactTiers } from '@/components/campaign/ImpactTiers';
+import { type DonorFeedItem } from '@/components/campaign/DonorFeed';
 import { CampaignUpdates } from '@/components/campaign/CampaignUpdates';
 import { ShareButtons } from '@/components/campaign/ShareButtons';
 import { Badge } from '@/components/ui/badge';
@@ -144,7 +143,7 @@ async function getApprovedEvidence(campaignId: string) {
     .orderBy(milestoneEvidence.createdAt);
 }
 
-async function getRelatedCampaigns(category: CampaignCategory, currentId: string) {
+async function getRelatedCampaigns(category: CampaignCategory, _currentId: string) {
   return db
     .select({
       id: campaigns.id,

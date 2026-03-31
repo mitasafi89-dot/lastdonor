@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth';
 import { db } from '@/db';
-import { donations, campaigns, newsletterSubscribers } from '@/db/schema';
-import { eq, sql, gte, and, inArray } from 'drizzle-orm';
+import { donations, newsletterSubscribers } from '@/db/schema';
+import { eq, sql, gte, and } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
 

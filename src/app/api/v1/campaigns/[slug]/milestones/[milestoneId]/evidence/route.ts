@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { campaignMilestones, milestoneEvidence, campaigns, users } from '@/db/schema';
-import { eq, and, desc, count } from 'drizzle-orm';
+import { eq, and, count } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { notifyAdminEvidenceSubmitted } from '@/lib/notifications';
 import { z } from 'zod';

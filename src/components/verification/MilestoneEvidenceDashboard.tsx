@@ -12,7 +12,6 @@ import {
   ExclamationTriangleIcon,
   BanknotesIcon,
 } from '@heroicons/react/24/outline';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';

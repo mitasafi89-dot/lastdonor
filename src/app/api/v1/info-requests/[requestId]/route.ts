@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { infoRequests, campaigns, auditLogs, users } from '@/db/schema';
+import { infoRequests, campaigns, auditLogs } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { auth, UnauthorizedError } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 import { randomUUID } from 'crypto';
 import { supabase, BUCKET_NAME, getPublicUrl } from '@/lib/supabase-storage';
 import type { ApiError } from '@/types/api';

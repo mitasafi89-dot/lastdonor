@@ -7,7 +7,6 @@ import {
   DONORS_BY_CITY,
   DONORS_BY_LAST_NAME,
   MILITARY_DONOR_IDS,
-  type SimulatedDonor,
 } from '@/lib/seed/donor-pool';
 
 describe('DONOR_POOL', () => {

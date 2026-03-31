@@ -10,8 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { formatDate, formatRelativeTime } from '@/lib/utils/dates';
 import { toast } from 'sonner';
+import { formatRelativeTime } from '@/lib/utils/dates';
 import {
   ChevronDownIcon,
   ChevronRightIcon,

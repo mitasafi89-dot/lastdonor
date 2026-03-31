@@ -159,7 +159,6 @@ export function PhotoUpload({ value, onChange, error, disabled }: PhotoUploadPro
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         aria-label="Upload campaign photo"
-        aria-invalid={!!displayError}
         className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-10 text-center transition-colors ${
           dragOver
             ? 'border-primary bg-primary/5'

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { campaigns, verificationDocuments, auditLogs, users } from '@/db/schema';
-import { eq, and, count } from 'drizzle-orm';
+import { eq, count } from 'drizzle-orm';
 import { auth, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import { submitVerificationSchema } from '@/lib/validators/verification';
 import { notifyAdminsVerificationSubmitted } from '@/lib/notifications';

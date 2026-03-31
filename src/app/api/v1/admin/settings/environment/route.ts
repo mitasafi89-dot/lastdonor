@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth';
 import { db } from '@/db';
 import { siteSettings, auditLogs } from '@/db/schema';
-import { eq, like } from 'drizzle-orm';
+import { like } from 'drizzle-orm';
 import { encryptSecret, verifySecurityToken } from '@/lib/crypto.server';
 import { resolveEnvVar, type ManagedEnvKey } from '@/lib/settings.server';
 import { randomUUID } from 'crypto';

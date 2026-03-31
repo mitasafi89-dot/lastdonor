@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { ShareButtons } from '@/components/campaign/ShareButtons';
 import { formatDate } from '@/lib/utils/dates';
 import { buildArticleJsonLd } from '@/lib/blog/geo-optimizer';
-import type { BlogPost as BlogPostType } from '@/types';
 import Image from 'next/image';
 
 const CATEGORY_LABELS: Record<string, string> = {

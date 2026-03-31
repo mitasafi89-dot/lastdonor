@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import { db } from '@/db';
 import * as schema from '@/db/schema';
-import { eq, sql, sum, count } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { clearDatabase, seedUser, seedCampaign, seedDonation } from '../../../../../test/helpers';
 
 describe('User Integration', () => {

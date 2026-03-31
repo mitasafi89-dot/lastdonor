@@ -24,9 +24,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   ShieldCheckIcon,
-  ShieldExclamationIcon,
   MagnifyingGlassIcon,
-  DocumentTextIcon,
   EyeIcon,
   CheckCircleIcon,
   XCircleIcon,
@@ -526,7 +524,7 @@ export function VerificationDashboard({ initialCampaigns, stats }: VerificationD
                           </section>
 
                           {/* Milestone Sections */}
-                          {milestoneStatuses.map(({ milestone, displayStatus }, idx) => {
+                          {milestoneStatuses.map(({ milestone, displayStatus }, _idx) => {
                             const colors = MILESTONE_DISPLAY_COLORS[displayStatus];
                             const phase = milestone.phase;
                             const isM1 = phase === 1;

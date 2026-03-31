@@ -39,7 +39,7 @@ describe('registerSchema', () => {
   });
 
   it('rejects missing name', () => {
-    const { name, ...noName } = validInput;
+    const { name: _name, ...noName } = validInput;
     const result = registerSchema.safeParse(noName);
     expect(result.success).toBe(false);
   });

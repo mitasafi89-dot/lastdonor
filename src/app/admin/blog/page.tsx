@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { blogPosts } from '@/db/schema';
-import { desc, count, eq } from 'drizzle-orm';
+import { desc, count } from 'drizzle-orm';
 import { BlogPostsList } from '@/components/admin/BlogPostsList';
 import type { Metadata } from 'next';
 

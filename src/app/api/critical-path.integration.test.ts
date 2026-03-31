@@ -119,7 +119,7 @@ describe('Critical Path Integration', () => {
       const donation2 = 7500;
 
       // Both donations insert concurrently
-      const [d1, d2] = await Promise.all([
+      const [_d1, _d2] = await Promise.all([
         seedDonation(campaign.id, {
           amount: donation1,
           stripePaymentId: 'pi_concurrent_1',

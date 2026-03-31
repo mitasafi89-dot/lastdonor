@@ -1,11 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   scoreContextRichness,
   getWordRange,
   selectStoryPattern,
   PATTERN_DEFINITIONS,
   type StoryPattern,
-  type ContextRichness,
 } from '@/lib/ai/prompts/story-structures';
 import type { ExtractedEntity } from '@/lib/ai/prompts/extract-entities';
 import type { CampaignCategory } from '@/types';

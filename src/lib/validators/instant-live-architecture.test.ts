@@ -511,11 +511,11 @@ describe('Notification functions — new lifecycle notifications', () => {
       expect(fn![1]).toBe('campaign_completed');
     });
 
-    it('links to campaign verification page', () => {
+    it('links to campaign milestones page', () => {
       const fn = notifSource.match(/notifyCreatorCampaignCompleted[\s\S]*?link:\s*`([^`]+)`/);
       expect(fn).not.toBeNull();
       expect(fn![1]).toContain('/dashboard/campaigns/');
-      expect(fn![1]).toContain('/verification');
+      expect(fn![1]).toContain('/milestones');
     });
 
     it('passes documentRequirementsHtml to email template', () => {
@@ -906,9 +906,9 @@ describe('Architectural invariants', () => {
     const milestoneCreatorFn = notifSource.match(/notifyCreatorMilestoneReached[\s\S]*?link:\s*`([^`]+)`/);
     expect(milestoneCreatorFn![1]).toContain('/campaigns/');
 
-    // 2. On completion: → verification request (verification page link)
+    // 2. On completion: → milestones page link
     const completionFn = notifSource.match(/notifyCreatorCampaignCompleted[\s\S]*?link:\s*`([^`]+)`/);
-    expect(completionFn![1]).toContain('/verification');
+    expect(completionFn![1]).toContain('/milestones');
 
     // 3. Reminder: → verification page
     const reminderFn = notifSource.match(/notifyVerificationReminder[\s\S]*?link:\s*`([^`]+)`/);

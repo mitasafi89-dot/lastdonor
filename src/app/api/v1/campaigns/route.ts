@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
   const requestId = randomUUID();
 
   try {
-    const session = await requireRole(['editor', 'admin']);
+    await requireRole(['editor', 'admin']);
 
     const body = await request.json();
     const parsed = createCampaignSchema.safeParse(body);

@@ -160,7 +160,7 @@ const AUDIT_EVENT_LABELS: Record<string, string> = {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function FundReleaseDashboard({ initialCampaigns, stats }: FundReleaseDashboardProps) {
+export function FundReleaseDashboard({ initialCampaigns, stats: _stats }: FundReleaseDashboardProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -869,7 +869,7 @@ export function FundReleaseDashboard({ initialCampaigns, stats }: FundReleaseDas
                               milestone,
                               displayStatus,
                               eligibility,
-                              prerequisites,
+                              prerequisites: _prerequisites,
                             }) => {
                               const colors =
                                 MILESTONE_DISPLAY_COLORS[displayStatus];

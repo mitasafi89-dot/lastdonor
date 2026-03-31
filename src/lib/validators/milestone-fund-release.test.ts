@@ -291,7 +291,7 @@ describe('Evidence submission validation', () => {
   });
 
   it('rejects missing fileUrl', () => {
-    const { fileUrl, ...rest } = validEvidence;
+    const { fileUrl: _fileUrl, ...rest } = validEvidence;
     const result = submitEvidenceSchema.safeParse(rest);
     expect(result.success).toBe(false);
   });

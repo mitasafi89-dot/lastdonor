@@ -55,6 +55,9 @@ const EXPECTED_CAMPAIGN_KEYS = [
   'totalReleasedAmount',
   'updatedAt',
   'verificationStatus',
+  'cancellationReason',
+  'cancellationNotes',
+  'cancelledAt',
 ].sort();
 
 /** Expected public campaign card keys — sorted. */

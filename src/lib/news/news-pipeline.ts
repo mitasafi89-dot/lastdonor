@@ -374,7 +374,7 @@ export async function runNewsPipeline(
       // Step 5c: Cross-source duplicate detection
       // Check if a different source already covered the same entity
       // (e.g., same person from AP and Reuters)
-      const normalizedHometown = normalizeLocation(entity.hometown);
+      const _normalizedHometown = normalizeLocation(entity.hometown);
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       const recentNewsForEntity = await db
         .select({ id: schema.newsItems.id, title: schema.newsItems.title })

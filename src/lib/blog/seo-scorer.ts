@@ -3,7 +3,7 @@
  * Used by the quality gate and admin dashboard.
  */
 
-import { analyzeKeywordPlacement, type KeywordAnalysis } from './keyword-analyzer';
+import { analyzeKeywordPlacement } from './keyword-analyzer';
 
 export interface SeoScore {
   total: number; // 0-100

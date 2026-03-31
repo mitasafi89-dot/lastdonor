@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { infoRequests, campaigns, users, auditLogs } from '@/db/schema';
-import { eq, and, desc, sql, count } from 'drizzle-orm';
-import { requireRole, UnauthorizedError, ForbiddenError, auth } from '@/lib/auth';
+import { eq, and, desc, count } from 'drizzle-orm';
+import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import { createInfoRequestSchema, infoRequestsQueueQuerySchema } from '@/lib/validators/verification';
 import { notifyInfoRequest } from '@/lib/notifications';
 import { randomUUID } from 'crypto';

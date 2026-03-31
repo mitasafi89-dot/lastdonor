@@ -4,11 +4,11 @@
  * These tests require a running database (DATABASE_URL).
  * Run with: npm run test:integration
  */
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, afterAll, beforeEach } from 'vitest';
 import { db } from '@/db';
 import * as schema from '@/db/schema';
-import { eq, sql, count } from 'drizzle-orm';
-import { clearDatabase, seedCampaign, seedUser, seedDonation } from '../../../../../test/helpers';
+import { eq, sql } from 'drizzle-orm';
+import { clearDatabase, seedCampaign } from '../../../../../test/helpers';
 
 describe('Campaign API Integration', () => {
   beforeEach(async () => {

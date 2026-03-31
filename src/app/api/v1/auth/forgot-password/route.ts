@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { users, verificationTokens } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { resend } from '@/lib/resend';
-import bcrypt from 'bcryptjs';
 import type { ApiError } from '@/types/api';
 
 const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour

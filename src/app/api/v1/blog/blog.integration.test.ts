@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import { db } from '@/db';
 import * as schema from '@/db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { clearDatabase } from '../../../../../test/helpers';
 
 describe('Blog Integration', () => {

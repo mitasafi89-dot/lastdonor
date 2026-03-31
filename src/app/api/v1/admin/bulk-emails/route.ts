@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { bulkEmails, campaigns, donations, donorCampaignSubscriptions, auditLogs } from '@/db/schema';
+import { bulkEmails, donations, donorCampaignSubscriptions, auditLogs } from '@/db/schema';
 import { eq, and, desc, sql, count } from 'drizzle-orm';
 import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import { createBulkEmailSchema, bulkEmailQuerySchema } from '@/lib/validators/verification';

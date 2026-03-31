@@ -329,7 +329,7 @@ export function CampaignEditor({ mode, campaignId, defaultValues }: CampaignEdit
                 </p>
               )}
               {fields.map((field, index) => {
-                const tierCents = watch(`impactTiers.${index}.amount`);
+                const _tierCents = watch(`impactTiers.${index}.amount`);
                 return (
                   <div key={field.id} className="flex items-end gap-2">
                     <div className="w-28 shrink-0">

@@ -11,7 +11,7 @@
  */
 
 import { db } from '@/db';
-import { notifications, donations, users, campaigns, donorCampaignSubscriptions } from '@/db/schema';
+import { notifications, donations, users, donorCampaignSubscriptions } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { resend } from '@/lib/resend';
 import {
@@ -26,9 +26,7 @@ import {
   campaignPausedDonorEmail,
   campaignResumedDonorEmail,
   campaignSuspendedDonorEmail,
-  campaignCancelledRefundEmail,
   infoRequestCampaignerEmail,
-  infoRequestReminderEmail,
   milestoneAchievedDonorEmail,
   fundReleasedEmail,
   milestoneReachedCreatorEmail,

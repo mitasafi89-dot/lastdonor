@@ -349,7 +349,7 @@ describe('User Campaign Integration', () => {
 
     it('admin notification created for campaign submission', async () => {
       const admin = await seedUser({ role: 'admin', email: 'admin-notif@test.com' });
-      const creator = await seedUser({ role: 'donor', email: 'creator-notif@test.com', name: 'Jane Creator' });
+      const _creator = await seedUser({ role: 'donor', email: 'creator-notif@test.com', name: 'Jane Creator' });
 
       // Simulate creating a notification like notifyAdminsCampaignSubmitted does
       await db.insert(schema.notifications).values({

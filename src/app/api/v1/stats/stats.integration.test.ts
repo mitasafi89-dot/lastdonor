@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import { db } from '@/db';
 import * as schema from '@/db/schema';
-import { eq, sql, sum, count, and } from 'drizzle-orm';
+import { eq, sum, count, and } from 'drizzle-orm';
 import { clearDatabase, seedCampaign, seedDonation } from '../../../../../test/helpers';
 
 describe('Stats Integration', () => {

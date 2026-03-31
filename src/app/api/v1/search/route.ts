@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { campaigns, blogPosts } from '@/db/schema';
-import { eq, and, or, desc, ilike, sql } from 'drizzle-orm';
+import { eq, and, or, desc, ilike } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import type { ApiResponse, ApiError } from '@/types/api';
 import type { CampaignCategory } from '@/types';

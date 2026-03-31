@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireRole, auth } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { db } from '@/db';
 import { users, donations, campaigns, auditLogs, interactionLogs, donorRelationships } from '@/db/schema';
 import { eq, desc, and, sql, count, gte, or } from 'drizzle-orm';

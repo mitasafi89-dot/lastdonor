@@ -9,7 +9,7 @@ import type { ApiError } from '@/types/api';
 /**
  * GET /api/v1/admin/fund-pool/export — Export fund pool data as CSV.
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const requestId = randomUUID();
 
   try {

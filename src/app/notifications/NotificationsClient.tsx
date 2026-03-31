@@ -117,7 +117,7 @@ const PAGE_SIZES = [10, 20, 50, 100];
 
 export function NotificationsClient({
   notifications: initial,
-  totalCount,
+  totalCount: _totalCount,
   unreadCount: initialUnread,
 }: {
   notifications: Notification[];

@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { blogTopicQueue } from '@/db/schema';
-import { desc, count, sql } from 'drizzle-orm';
+import { desc, count } from 'drizzle-orm';
 import { TopicQueueList } from '@/components/admin/TopicQueueList';
 import type { Metadata } from 'next';
 

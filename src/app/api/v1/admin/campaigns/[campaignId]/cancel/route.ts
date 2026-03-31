@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
-import { campaigns, donations, auditLogs, refundBatches, refundRecords, users } from '@/db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { campaigns, donations, auditLogs, refundBatches, refundRecords } from '@/db/schema';
+import { eq, and } from 'drizzle-orm';
 import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import { cancelCampaignSchema } from '@/lib/validators/verification';
 import { notifyBulkRefundCompleted } from '@/lib/notifications';

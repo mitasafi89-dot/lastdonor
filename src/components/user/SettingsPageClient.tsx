@@ -55,7 +55,7 @@ function SettingRow({ label, description, checked, onCheckedChange, id }: Settin
 
 export default function SettingsPageClient() {
   const { data: session } = useSession();
-  const router = useRouter();
+  const _router = useRouter();
   const [preferences, setPreferences] = useState<UserPreferences>(DEFAULT_PREFERENCES);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

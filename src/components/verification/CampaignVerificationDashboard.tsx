@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -123,7 +123,7 @@ export function CampaignVerificationDashboard({ campaign, documents, infoRequest
   const responseFileRef = useRef<HTMLInputElement>(null);
 
   const identityVerified = ['identity_verified', 'fully_verified'].includes(campaign.verificationStatus);
-  const canStartVeriff = !identityVerified && !campaign.veriffSessionId;
+  const _canStartVeriff = !identityVerified && !campaign.veriffSessionId;
   const veriffPending = !!campaign.veriffSessionId && !identityVerified;
   const canUploadDocs = ['unverified', 'pending', 'documents_uploaded', 'info_requested', 'identity_verified'].includes(
     campaign.verificationStatus,

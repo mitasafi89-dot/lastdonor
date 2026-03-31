@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { db } from '@/db';
 import { auditLogs } from '@/db/schema';
-import { desc, sql } from 'drizzle-orm';
+import { desc } from 'drizzle-orm';
 import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
 import type { Metadata } from 'next';
 

@@ -51,7 +51,7 @@ interface DonationFormProps {
 
 function PaymentStep({
   amount,
-  campaignTitle,
+  campaignTitle: _campaignTitle,
   onSuccess,
   onBack,
 }: {

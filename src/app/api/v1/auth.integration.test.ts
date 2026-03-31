@@ -6,7 +6,6 @@
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import { db } from '@/db';
 import * as schema from '@/db/schema';
-import { eq } from 'drizzle-orm';
 import { clearDatabase, seedUser } from '../../../../test/helpers';
 
 describe('Auth Integration', () => {

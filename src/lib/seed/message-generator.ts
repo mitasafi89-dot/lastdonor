@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import * as schema from '@/db/schema';
-import { eq, and, sql, count, desc } from 'drizzle-orm';
+import { eq, and, sql, count } from 'drizzle-orm';
 import { buildGenerateMessagesPrompt } from '@/lib/ai/prompts/generate-messages';
 import { callAI } from '@/lib/ai/call-ai';
 import { getCampaignPhase } from '@/lib/utils/phase';

@@ -191,7 +191,7 @@ export function ShareYourStoryForm() {
 
   const saveDraft = useCallback((data: FormData, currentStep: number) => {
     try {
-      const { agreedToTerms, confirmedTruthful, ...draftFields } = data;
+      const { agreedToTerms: _agreedToTerms, confirmedTruthful: _confirmedTruthful, ...draftFields } = data;
       localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...draftFields, _step: currentStep }));
     } catch {
       // localStorage full or unavailable, acceptable degradation
@@ -465,7 +465,7 @@ export function ShareYourStoryForm() {
   const storyLen = form.story.trim().length;
   const storyMsg = storyCharMessage(storyLen);
   const showBeneficiaryConsent = form.beneficiaryRelation && form.beneficiaryRelation !== 'self';
-  const totalPct = form.milestones.reduce((sum, m) => sum + (parseInt(m.fundPercentage) || 0), 0);
+  const _totalPct = form.milestones.reduce((sum, m) => sum + (parseInt(m.fundPercentage) || 0), 0);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">

@@ -32,7 +32,7 @@ export function CampaignTimeline({ events }: { events: TimelineEvent[] }) {
       {/* Vertical line */}
       <div className="absolute left-5 top-3 bottom-3 w-0.5 bg-gray-200 dark:bg-gray-700" />
 
-      {events.map((event, idx) => {
+      {events.map((event, _idx) => {
         const config = EVENT_ICONS[event.type] ?? EVENT_ICONS.created;
         const ts = typeof event.timestamp === 'string' ? new Date(event.timestamp) : event.timestamp;
 

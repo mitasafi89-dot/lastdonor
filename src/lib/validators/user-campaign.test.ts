@@ -52,7 +52,7 @@ describe('createUserCampaignSchema', () => {
   // ── subjectHometown (required) ─────────────────────────────────────────
 
   it('rejects missing subjectHometown', () => {
-    const { subjectHometown, ...rest } = valid;
+    const { subjectHometown: _subjectHometown, ...rest } = valid;
     const result = createUserCampaignSchema.safeParse(rest);
     expect(result.success).toBe(false);
   });
@@ -65,7 +65,7 @@ describe('createUserCampaignSchema', () => {
   // ── beneficiaryRelation ────────────────────────────────────────────────
 
   it('rejects missing beneficiaryRelation', () => {
-    const { beneficiaryRelation, ...rest } = valid;
+    const { beneficiaryRelation: _beneficiaryRelation, ...rest } = valid;
     const result = createUserCampaignSchema.safeParse(rest);
     expect(result.success).toBe(false);
   });
@@ -187,7 +187,7 @@ describe('createUserCampaignSchema', () => {
   });
 
   it('accepts missing fundUsagePlan', () => {
-    const { fundUsagePlan, ...rest } = valid;
+    const { fundUsagePlan: _fundUsagePlan, ...rest } = valid;
     const result = createUserCampaignSchema.safeParse(rest);
     expect(result.success).toBe(true);
   });
@@ -195,7 +195,7 @@ describe('createUserCampaignSchema', () => {
   // ── heroImageUrl (required) ────────────────────────────────────────────
 
   it('rejects missing heroImageUrl', () => {
-    const { heroImageUrl, ...rest } = valid;
+    const { heroImageUrl: _heroImageUrl, ...rest } = valid;
     const result = createUserCampaignSchema.safeParse(rest);
     expect(result.success).toBe(false);
   });
@@ -213,7 +213,7 @@ describe('createUserCampaignSchema', () => {
   });
 
   it('rejects missing agreedToTerms', () => {
-    const { agreedToTerms, ...rest } = valid;
+    const { agreedToTerms: _agreedToTerms, ...rest } = valid;
     const result = createUserCampaignSchema.safeParse(rest);
     expect(result.success).toBe(false);
   });
@@ -226,7 +226,7 @@ describe('createUserCampaignSchema', () => {
   });
 
   it('rejects missing confirmedTruthful', () => {
-    const { confirmedTruthful, ...rest } = valid;
+    const { confirmedTruthful: _confirmedTruthful, ...rest } = valid;
     const result = createUserCampaignSchema.safeParse(rest);
     expect(result.success).toBe(false);
   });
@@ -248,7 +248,7 @@ describe('createUserCampaignSchema', () => {
   // ── milestones ─────────────────────────────────────────────────────────
 
   it('rejects missing milestones', () => {
-    const { milestones, ...rest } = valid;
+    const { milestones: _milestones, ...rest } = valid;
     const result = createUserCampaignSchema.safeParse(rest);
     expect(result.success).toBe(false);
   });

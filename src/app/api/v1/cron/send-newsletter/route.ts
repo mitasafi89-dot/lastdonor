@@ -5,7 +5,7 @@ import {
   newsletterSubscribers,
   auditLogs,
 } from '@/db/schema';
-import { eq, and, isNull, desc, sql } from 'drizzle-orm';
+import { eq, isNull, desc, sql } from 'drizzle-orm';
 import { buildGenerateNewsletterPrompt } from '@/lib/ai/prompts/generate-newsletter';
 import { callAI } from '@/lib/ai/call-ai';
 import { resend } from '@/lib/resend';

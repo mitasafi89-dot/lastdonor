@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { db } from '@/db';
-import { campaigns, users, donations } from '@/db/schema';
+import { campaigns, users } from '@/db/schema';
 import { eq, desc, sql, and, isNotNull, or } from 'drizzle-orm';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { centsToDollars } from '@/lib/utils/currency';

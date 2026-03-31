@@ -1,5 +1,4 @@
 import { redirect, notFound } from 'next/navigation';
-import Link from 'next/link';
 import { auth } from '@/lib/auth';
 import { db } from '@/db';
 import { campaigns, donations } from '@/db/schema';

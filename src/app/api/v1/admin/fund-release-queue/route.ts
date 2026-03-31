@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { campaigns, campaignMilestones, milestoneEvidence, users } from '@/db/schema';
-import { eq, and, desc, sql, count, inArray } from 'drizzle-orm';
+import { eq, desc, sql, count, inArray } from 'drizzle-orm';
 import { requireRole } from '@/lib/auth';
 import { fundReleaseQueueQuerySchema } from '@/lib/validators/verification';
 import { randomUUID } from 'crypto';

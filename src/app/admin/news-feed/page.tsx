@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { newsItems } from '@/db/schema';
-import { desc, sql, count } from 'drizzle-orm';
+import { desc, count } from 'drizzle-orm';
 import { NewsFeedMonitor } from '@/components/admin/NewsFeedMonitor';
 import type { Metadata } from 'next';
 

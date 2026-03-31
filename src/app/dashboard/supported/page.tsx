@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { auth } from '@/lib/auth';
 import { db } from '@/db';
 import { donations, campaigns } from '@/db/schema';
@@ -83,12 +84,14 @@ export default async function SupportedCampaignsPage() {
               <Card key={c.campaignId} className="overflow-hidden">
                 <CardContent className="p-0">
                   {c.heroImageUrl && (
-                    <div className="aspect-[16/9] overflow-hidden bg-muted">
-                      <img
+                    <div className="relative aspect-[16/9] overflow-hidden bg-muted">
+                      <Image
                         src={c.heroImageUrl}
                         alt=""
-                        className="h-full w-full object-cover"
-                        loading="lazy"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        unoptimized
                       />
                     </div>
                   )}

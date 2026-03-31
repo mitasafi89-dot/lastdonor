@@ -64,7 +64,7 @@ export function SystemSettings({ initialSettings, hasSecurityQuestion: initialHa
 
   // ─── Environment config state ──────────────────────────────────────
   const [envStatuses, setEnvStatuses] = useState<Record<string, EnvKeyStatus>>({});
-  const [envLoading, setEnvLoading] = useState(false);
+  const [, setEnvLoading] = useState(false);
   const [hasSQ, setHasSQ] = useState(initialHasSQ);
   const [securityToken, setSecurityToken] = useState<string | null>(null);
   const [tokenExpiry, setTokenExpiry] = useState<number>(0);

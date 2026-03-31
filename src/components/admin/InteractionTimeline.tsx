@@ -25,7 +25,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
 } from '@heroicons/react/24/outline';
-import { formatDate, formatRelativeTime } from '@/lib/utils/dates';
+import { formatDate } from '@/lib/utils/dates';
 import type { InteractionType } from '@/types';
 
 interface Interaction {

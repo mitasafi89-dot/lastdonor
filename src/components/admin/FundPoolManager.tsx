@@ -54,7 +54,7 @@ function formatCents(cents: number): string {
 
 export function FundPoolManager({ allocations: initialAllocations, summary, targetCampaigns }: Props) {
   const router = useRouter();
-  const [allocations, setAllocations] = useState(initialAllocations);
+  const [allocations, _setAllocations] = useState(initialAllocations);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const [filter, setFilter] = useState<'all' | 'pending' | 'allocated' | 'disbursed'>('all');

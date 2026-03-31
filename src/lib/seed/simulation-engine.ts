@@ -2,7 +2,7 @@ import { db } from '@/db';
 import * as schema from '@/db/schema';
 import { eq, and, sql, inArray, desc } from 'drizzle-orm';
 import { seedAmountCents } from './amount-generator';
-import { selectSimulatedDonor, maybeBuildCohort, type SelectedDonor } from './donor-selector';
+import { selectSimulatedDonor, maybeBuildCohort } from './donor-selector';
 import { pickSeedMessage, generatePhaseTransitionMessages } from './message-generator';
 import { getCampaignPhase } from '@/lib/utils/phase';
 import { buildGenerateUpdatePrompt, buildPhaseTransitionTitle } from '@/lib/ai/prompts/generate-update';

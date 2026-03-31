@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { campaigns, donations, fundPoolAllocations } from '@/db/schema';
-import { eq, and, inArray, sql } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import type { ApiResponse, ApiError } from '@/types/api';

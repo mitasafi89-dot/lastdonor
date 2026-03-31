@@ -57,7 +57,7 @@ export function DonorSegmentation() {
   const [activeSegment, setActiveSegment] = useState<string | null>(null);
   const [result, setResult] = useState<SegmentResult | null>(null);
   const [segmentCounts, setSegmentCounts] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const [offset, setOffset] = useState(0);
 
   // Custom filter state

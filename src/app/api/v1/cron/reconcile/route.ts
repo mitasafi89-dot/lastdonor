@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { campaigns, donations, auditLogs, fundPoolAllocations, notifications, users } from '@/db/schema';
 import { eq, and, sql, lt } from 'drizzle-orm';
-import { stripe } from '@/lib/stripe';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -46,7 +45,7 @@ export async function GET(request: NextRequest) {
 
         // Check for discrepancy (stripe reconciliation skipped for seed-only campaigns)
         const realDonationTotal = dbTotal.totalAmount;
-        const dbRaisedReal = campaign.raisedAmount; // This includes seed donations
+        // dbRaisedReal includes seed donations - using realDonationTotal instead
 
         // Get actual seed total
         const [seedTotal] = await db

@@ -70,6 +70,7 @@ export async function GET(_request: Request, { params }: Params) {
         }}
       >
         {/* Background image */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={campaign.heroImageUrl}
           alt=""

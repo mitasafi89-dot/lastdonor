@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { bulkEmails, donations, donorCampaignSubscriptions, auditLogs } from '@/db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { bulkEmails, donations, auditLogs } from '@/db/schema';
+import { eq, and } from 'drizzle-orm';
 import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import { resend } from '@/lib/resend';
 import { randomUUID } from 'crypto';

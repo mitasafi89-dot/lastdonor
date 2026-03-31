@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { campaigns, campaignMessages, users } from '@/db/schema';
 import { publicMessageSelect } from '@/db/public-select';
-import { eq, and, desc, gte, sql, or, inArray } from 'drizzle-orm';
+import { eq, and, desc, gte, sql, or } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { auth } from '@/lib/auth';
 import { messageSchema } from '@/lib/validators/message';

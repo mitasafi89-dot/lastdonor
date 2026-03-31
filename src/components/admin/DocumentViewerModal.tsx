@@ -184,6 +184,7 @@ export function DocumentViewerModal({
             {/* Document display */}
             <div className="flex-1 w-full overflow-auto flex items-center justify-center p-4">
               {isImage && (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={doc.fileUrl}
                   alt={doc.fileName}

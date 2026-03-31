@@ -4,7 +4,7 @@ import { auditLogs, users } from '@/db/schema';
 import { desc, eq, and, gte, sql, inArray } from 'drizzle-orm';
 import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import { randomUUID } from 'crypto';
-import type { ApiResponse, ApiError } from '@/types/api';
+import type { ApiError } from '@/types/api';
 
 // Event categories for filtering
 const EVENT_CATEGORIES: Record<string, string[]> = {

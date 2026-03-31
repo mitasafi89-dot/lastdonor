@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import {
   PencilSquareIcon,
   ShieldCheckIcon,
-  ChartBarIcon,
   NewspaperIcon,
   UserGroupIcon,
   BanknotesIcon,
@@ -19,7 +18,7 @@ import {
 } from '@heroicons/react/24/outline';
 import type { Metadata } from 'next';
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params: _params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   return {
     title: 'Campaign Management — Dashboard — LastDonor.org',
     robots: { index: false },

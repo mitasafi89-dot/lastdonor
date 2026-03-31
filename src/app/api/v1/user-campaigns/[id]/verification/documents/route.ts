@@ -4,7 +4,7 @@ import { campaigns, verificationDocuments } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { auth, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import { supabase, BUCKET_NAME, getPublicUrl } from '@/lib/supabase-storage';
-import { uploadVerificationDocumentSchema, DOCUMENT_TYPES } from '@/lib/validators/verification';
+import { uploadVerificationDocumentSchema } from '@/lib/validators/verification';
 import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
 

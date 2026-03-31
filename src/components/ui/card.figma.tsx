@@ -1,5 +1,5 @@
 import figma from "@figma/code-connect"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 
 /**
  * Replace the Figma URL below with the actual URL of your Card component in Figma.

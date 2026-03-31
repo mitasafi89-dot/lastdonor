@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { donations, campaigns, users, auditLogs } from '@/db/schema';
+import { donations, campaigns, auditLogs } from '@/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import { notifyDonationRefund } from '@/lib/notifications';

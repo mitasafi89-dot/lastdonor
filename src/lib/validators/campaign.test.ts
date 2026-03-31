@@ -58,7 +58,7 @@ describe('createCampaignSchema', () => {
   });
 
   it('rejects missing title', () => {
-    const { title, ...noTitle } = validInput;
+    const { title: _title, ...noTitle } = validInput;
     const result = createCampaignSchema.safeParse(noTitle);
     expect(result.success).toBe(false);
   });
@@ -69,7 +69,7 @@ describe('createCampaignSchema', () => {
   });
 
   it('rejects missing heroImageUrl', () => {
-    const { heroImageUrl, ...noImage } = validInput;
+    const { heroImageUrl: _heroImageUrl, ...noImage } = validInput;
     const result = createCampaignSchema.safeParse(noImage);
     expect(result.success).toBe(false);
   });
@@ -131,7 +131,7 @@ describe('createCampaignSchema', () => {
   });
 
   it('rejects missing subjectName', () => {
-    const { subjectName, ...noSubject } = validInput;
+    const { subjectName: _subjectName, ...noSubject } = validInput;
     const result = createCampaignSchema.safeParse(noSubject);
     expect(result.success).toBe(false);
   });

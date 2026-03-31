@@ -16,7 +16,7 @@ interface Params {
 /**
  * Verify session + ownership. Returns { session, campaign } or a Response.
  */
-async function requireOwner(id: string, requestId: string) {
+async function requireOwner(id: string, _requestId: string) {
   const session = await auth();
   if (!session?.user) throw new UnauthorizedError();
 

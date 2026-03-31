@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { refundBatches, refundRecords, campaigns } from '@/db/schema';
+import { refundBatches, campaigns } from '@/db/schema';
 import { eq, and, desc, count } from 'drizzle-orm';
 import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import { refundBatchQuerySchema } from '@/lib/validators/verification';

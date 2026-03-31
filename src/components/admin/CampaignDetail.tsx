@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { CampaignStatusBadge } from '@/components/campaigns/CampaignStatusBadge';
-import { VerificationBadge, MilestoneProgress, FundReleaseIndicator } from '@/components/campaigns/TrustBadge';
+import { VerificationBadge, FundReleaseIndicator } from '@/components/campaigns/TrustBadge';
 import { centsToDollars } from '@/lib/utils/currency';
 import { formatDate } from '@/lib/utils/dates';
 import {
@@ -469,6 +469,7 @@ export function CampaignDetail({ campaign, milestones, donations, updates, phase
                 dangerouslySetInnerHTML={{ __html: u.bodyHtml }}
               />
               {u.imageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={u.imageUrl}
                   alt={u.title}
