@@ -35,11 +35,12 @@ export function HeroSection({ featuredCampaign }: HeroSectionProps) {
           {/* Left column: Copy + CTAs + Trust metrics */}
           <div>
             <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              You Know Exactly Where Your Money Goes
+              Every Dollar Tracked. Every Campaign Verified.
             </h1>
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
-              No hidden tips. No surprise fees. Just verified campaigns for real
-              people, with every dollar tracked from your wallet to their hands.
+              Give to real people and see exactly where your money goes. No
+              hidden tips, no surprise fees, no platform charges. 100% of your
+              donation reaches the person who needs it.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">

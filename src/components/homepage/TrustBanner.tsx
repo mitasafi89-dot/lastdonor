@@ -10,7 +10,7 @@ const trustPoints = [
     icon: ShieldCheckIcon,
     title: 'Verified by a real person',
     description:
-      'Every campaign is document-verified before a single dollar is raised.',
+      'Every campaign is document-verified by a real reviewer before a single dollar is raised.',
   },
   {
     icon: EyeIcon,
@@ -22,7 +22,7 @@ const trustPoints = [
     icon: CurrencyDollarIcon,
     title: '0% platform fees',
     description:
-      'No hidden tips, no surprise charges. More money reaches those in need.',
+      'No hidden tips, no surprise charges at checkout. More of your donation reaches the person who needs it.',
   },
 ];
 
@@ -31,7 +31,7 @@ export function TrustBanner() {
     <section className="bg-primary py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 className="text-center font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
-          Your trust comes first
+          Built on Trust. Backed by Proof.
         </h2>
         <div className="mt-12 grid gap-8 sm:grid-cols-3">
           {trustPoints.map((point) => (

@@ -8,23 +8,23 @@ const steps = [
   {
     number: '1',
     icon: MagnifyingGlassIcon,
-    title: 'Choose a Campaign',
+    title: 'Find a Verified Campaign',
     description:
-      'Browse verified fundraisers by category. Every campaign is audited by a real person before it goes live.',
+      'Browse fundraisers by category. Every campaign is reviewed and audited by a real person before it goes live.',
   },
   {
     number: '2',
     icon: CreditCardIcon,
-    title: 'Make Your Donation',
+    title: 'Donate Securely Online',
     description:
-      'Give securely with 0% platform fees. Every cent of your donation goes directly to the person who needs it.',
+      'Pay with any credit or debit card. 0% platform fees means every cent of your donation goes directly to the person who needs it.',
   },
   {
     number: '3',
     icon: CheckBadgeIcon,
-    title: 'See Your Impact',
+    title: 'Track Your Impact',
     description:
-      'Track where your money goes with milestone updates and proof of delivery. Full transparency, always.',
+      'Receive milestone updates with photos and receipts. See exactly how your donation was used, from start to finish.',
   },
 ];
 
@@ -34,10 +34,11 @@ export function HowItWorks() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Giving made simple
+            3 Simple Steps to Give with Confidence
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Three steps from decision to real-world impact.
+            Choose a verified campaign, donate securely, and see your impact
+            with real updates and receipts.
           </p>
         </div>
 

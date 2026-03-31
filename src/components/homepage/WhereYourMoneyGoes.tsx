@@ -71,13 +71,13 @@ export function WhereYourMoneyGoes() {
   return (
     <section className="py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
+        <div className="mx-auto max-w-2xl text-center">
           <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Where your money actually goes
+            90 Cents of Every Dollar Goes Directly to the Person in Need
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-base text-muted-foreground">
-            Other platforms hide a 15% &quot;optional&quot; tip at checkout. We
-            charge 0% platform fees so more money reaches the people who need it.
+          <p className="mt-3 text-base text-muted-foreground">
+            Most platforms add a 15% &quot;optional&quot; tip at checkout. We
+            charge 0% platform fees. The only cost is payment processing.
           </p>
         </div>
 

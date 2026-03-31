@@ -32,11 +32,11 @@ export function Newsletter() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl rounded-2xl border border-border bg-card p-8 text-center shadow-sm sm:p-12">
           <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Stay in the loop
+            Verified Campaign Updates, Straight to Your Inbox
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Get updates on verified campaigns, impact stories, and ways to help.
-            No spam, ever.
+            New campaigns, impact stories, and ways to help. Delivered weekly.
+            No spam, unsubscribe anytime.
           </p>
 
           {status === 'success' ? (

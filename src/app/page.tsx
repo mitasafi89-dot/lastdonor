@@ -154,10 +154,11 @@ export default async function Home() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                Verified fundraisers
+                Verified Campaigns Raising Money Right Now
               </h2>
               <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
-                Every campaign is verified and tracked with full transparency. Give with confidence.
+                Every campaign below has been reviewed by a real person.
+                Give with confidence knowing your donation is tracked from start to finish.
               </p>
             </div>
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -205,10 +206,10 @@ export default async function Home() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                Real stories, real impact
+                Impact Stories from Real Campaigns
               </h2>
               <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
-                Updates, insights, and the stories behind every campaign.
+                Updates, results, and the real stories behind the people you help.
               </p>
             </div>
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

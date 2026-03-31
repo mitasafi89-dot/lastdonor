@@ -3,21 +3,21 @@ import { StarIcon } from '@heroicons/react/24/solid';
 const testimonials = [
   {
     quote:
-      'I was skeptical at first, but LastDonor showed me exactly where my $50 went. I could see the receipts, the updates, everything.',
-    name: 'Sarah M.',
-    role: 'Donor',
+      'I donated $50 and got an update with receipts showing exactly how it was used. I have never experienced that from any other platform.',
+    name: 'Linda R.',
+    role: 'Donor, Ohio',
   },
   {
     quote:
-      'We raised the full amount in 12 days. The verification process gave our donors confidence that this was real.',
+      'We raised the full amount for my sister\'s medical bills in 12 days. The verification process gave our donors real confidence.',
     name: 'James K.',
-    role: 'Campaign Organizer',
+    role: 'Campaign Organizer, Texas',
   },
   {
     quote:
-      'No hidden fees was the main reason I chose LastDonor. Every other platform tried to sneak in a tip at checkout.',
-    name: 'Priya D.',
-    role: 'Recurring Donor',
+      'No hidden fees at checkout. That was the deciding factor for me. I now give monthly through LastDonor.',
+    name: 'Carol W.',
+    role: 'Monthly Donor, Florida',
   },
 ];
 
@@ -26,7 +26,7 @@ export function Testimonials() {
     <section className="py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 className="text-center font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          What people are saying
+          Trusted by Donors Across America
         </h2>
         <div className="mt-12 grid gap-8 sm:grid-cols-3">
           {testimonials.map((t) => (

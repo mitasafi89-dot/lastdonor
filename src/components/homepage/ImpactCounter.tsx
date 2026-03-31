@@ -70,11 +70,11 @@ export function ImpactCounter({
       />
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 className="text-center font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
-          What this community has done
+          Real Numbers. Real People Helped.
         </h2>
         <p className="mx-auto mt-3 max-w-2xl text-center text-base text-white/70">
-          Real people donating to verified fundraisers with 0% platform fees.
-          Every dollar tracked from your wallet to their hands.
+          These are not projections. These are verified totals from real donors
+          giving to real campaigns with 0% platform fees.
         </p>
         <div className="mt-12 grid grid-cols-2 gap-8 md:grid-cols-4">
           <StatItem value={raisedDollars} label="Raised So Far" prefix="$" />

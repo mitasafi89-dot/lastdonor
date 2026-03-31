@@ -38,10 +38,11 @@ export function CategoryShowcase() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Browse fundraisers by category
+            Find a Cause You Care About
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
-            People around the world are raising money for what they are passionate about.
+            Medical bills, emergencies, education, community needs. Browse
+            verified campaigns by category and give where it matters most to you.
           </p>
         </div>
 
