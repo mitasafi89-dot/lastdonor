@@ -1,0 +1,9 @@
+{
+  "name": "LastDonor Design Token Importer",
+  "id": "lastdonor-design-tokens",
+  "api": "1.0.0",
+  "main": "code.js",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "editorType": ["figma"]
+}

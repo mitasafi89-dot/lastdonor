@@ -1,0 +1,10 @@
+{
+  "$schema": "https://github.com/figma/code-connect/blob/main/cli/config-schema.json",
+  "codeConnect": {
+    "parser": "react",
+    "include": ["src/**/*.figma.tsx"],
+    "importPaths": {
+      "@/components/*": ["src/components/*"]
+    }
+  }
+}

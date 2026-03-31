@@ -1,32 +1,66 @@
 import Link from 'next/link';
-import { ShieldCheckIcon } from '@heroicons/react/24/outline';
+import {
+  ShieldCheckIcon,
+  EyeIcon,
+  CurrencyDollarIcon,
+} from '@heroicons/react/24/outline';
+
+const trustPoints = [
+  {
+    icon: ShieldCheckIcon,
+    title: 'Verified by a real person',
+    description:
+      'Every campaign is document-verified before a single dollar is raised.',
+  },
+  {
+    icon: EyeIcon,
+    title: 'Full fund tracking',
+    description:
+      'See exactly where every donation goes with milestone-based releases.',
+  },
+  {
+    icon: CurrencyDollarIcon,
+    title: '0% platform fees',
+    description:
+      'No hidden tips, no surprise charges. More money reaches those in need.',
+  },
+];
 
 export function TrustBanner() {
   return (
-    <section className="bg-brand-teal py-20 sm:py-28">
+    <section className="bg-primary py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <p className="font-display text-lg font-bold text-white/90">
-          Your trust comes first.
-        </p>
-        <p className="mt-6 max-w-3xl font-display text-3xl font-bold leading-snug text-white sm:text-4xl lg:text-5xl lg:leading-tight">
-          Every campaign is{' '}
-          <Link href="/how-it-works" className="underline decoration-white/50 underline-offset-4 hover:decoration-white">
-            verified by a real person
-          </Link>{' '}
-          and tracked from start to finish. With 0% platform fees and{' '}
-          <Link href="/transparency" className="underline decoration-white/50 underline-offset-4 hover:decoration-white">
-            full fund tracking
-          </Link>
-          , you always know where your money ends up.
-        </p>
-        <div className="mt-10 flex items-center gap-2 text-white/80">
-          <ShieldCheckIcon className="h-5 w-5" />
+        <h2 className="text-center font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          Your trust comes first
+        </h2>
+        <div className="mt-12 grid gap-8 sm:grid-cols-3">
+          {trustPoints.map((point) => (
+            <div key={point.title} className="text-center">
+              <point.icon className="mx-auto h-8 w-8 text-white/80" />
+              <h3 className="mt-4 font-display text-lg font-bold text-white">
+                {point.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-white/70">
+                {point.description}
+              </p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-12 text-center">
           <Link
-            href="/how-it-works"
-            className="text-sm font-medium underline underline-offset-4 hover:text-white"
+            href="/campaigns"
+            className="inline-flex rounded-full bg-brand-amber px-8 py-3.5 text-sm font-bold text-white shadow-lg transition-all hover:bg-brand-amber/90 hover:shadow-xl"
           >
-            Read the LastDonor Giving Guarantee
+            Start giving today
           </Link>
+          <p className="mt-4 text-sm text-white/60">
+            <Link
+              href="/how-it-works"
+              className="font-medium text-white/80 underline underline-offset-4 hover:text-white"
+            >
+              Read the LastDonor Giving Guarantee
+            </Link>
+          </p>
         </div>
       </div>
     </section>

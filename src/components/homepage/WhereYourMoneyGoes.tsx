@@ -1,83 +1,114 @@
 import Link from 'next/link';
 
+function DonutChart() {
+  // 90% direct (teal), 10% processing (amber), 0% hidden
+  // Circle: r=15.9155 gives circumference of ~100
+  const radius = 15.9155;
+  const circumference = 2 * Math.PI * radius;
+  const directLen = circumference * 0.9;
+  const processingLen = circumference * 0.1;
+  const directOffset = 0;
+  const processingOffset = -(directLen);
+
+  return (
+    <div className="relative mx-auto h-56 w-56 sm:h-64 sm:w-64">
+      <svg viewBox="0 0 42 42" className="h-full w-full -rotate-90" aria-hidden="true">
+        {/* 90% Direct */}
+        <circle
+          cx="21"
+          cy="21"
+          r={radius}
+          fill="none"
+          strokeWidth="5"
+          className="stroke-primary"
+          strokeDasharray={`${directLen} ${circumference - directLen}`}
+          strokeDashoffset={directOffset}
+          strokeLinecap="round"
+        />
+        {/* 10% Processing */}
+        <circle
+          cx="21"
+          cy="21"
+          r={radius}
+          fill="none"
+          strokeWidth="5"
+          className="stroke-brand-amber"
+          strokeDasharray={`${processingLen} ${circumference - processingLen}`}
+          strokeDashoffset={processingOffset}
+          strokeLinecap="round"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="font-mono text-4xl font-bold text-foreground">90%</span>
+        <span className="text-xs text-muted-foreground">goes directly</span>
+      </div>
+    </div>
+  );
+}
+
 export function WhereYourMoneyGoes() {
   const items = [
     {
       label: 'Direct to the Person in Need',
       percent: 90,
-      colorClass: 'bg-primary',
+      dotClass: 'bg-primary',
       description: 'Straight to the individual or family. No middlemen, no fund-locking, no delays.',
     },
     {
       label: 'Payment Processing & Hosting',
       percent: 10,
-      colorClass: 'bg-brand-amber',
-      description: 'Stripe processing, servers, and campaign verification costs. These are the only costs we pass through.',
+      dotClass: 'bg-brand-amber',
+      description: 'Stripe processing, servers, and campaign verification costs.',
     },
     {
       label: 'Hidden Fees or Tips',
       percent: 0,
-      colorClass: 'bg-muted-foreground',
+      dotClass: 'bg-muted-foreground',
       description: 'Zero. None. We will never sneak a tip onto your donation.',
     },
   ];
 
   return (
-    <section className="py-16">
+    <section className="py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <hr className="mb-12 border-border" />
-        <div className="grid gap-12 md:grid-cols-2">
-          <div>
-            <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              Where your money actually goes
-            </h2>
-            <p className="mt-3 text-lg text-muted-foreground">
-              Other platforms hide a 15% &quot;optional&quot; tip at checkout. We
-              charge 0% platform fees because a fundraiser with no platform fees
-              means more money reaches the people who need it.
-            </p>
-            <p className="mt-4 text-sm text-muted-foreground">
-              Every campaign on LastDonor is document-verified by a real person.
-              Funds are released in milestone-based phases
-              tied to real evidence, so you always know your donation is going
-              exactly where it was promised.
-            </p>
+        <div className="text-center">
+          <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Where your money actually goes
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-base text-muted-foreground">
+            Other platforms hide a 15% &quot;optional&quot; tip at checkout. We
+            charge 0% platform fees so more money reaches the people who need it.
+          </p>
+        </div>
+
+        <div className="mt-14 grid items-center gap-12 md:grid-cols-2">
+          <DonutChart />
+
+          <div className="space-y-6">
+            {items.map((item) => (
+              <div key={item.label} className="flex gap-4">
+                <span className={`mt-1.5 h-3 w-3 flex-shrink-0 rounded-full ${item.dotClass}`} />
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-mono text-lg font-bold text-foreground">
+                      {item.percent}%
+                    </span>
+                    <span className="text-sm font-semibold text-foreground">
+                      {item.label}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    {item.description}
+                  </p>
+                </div>
+              </div>
+            ))}
             <Link
               href="/how-it-works"
-              className="mt-6 inline-flex rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              className="inline-flex rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
             >
               See how it works
             </Link>
-          </div>
-          <div className="space-y-6">
-            {items.map((item) => (
-              <div key={item.label}>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-sm font-semibold text-foreground">
-                    {item.label}
-                  </span>
-                  <span className="font-mono text-lg font-bold text-foreground">
-                    {item.percent}%
-                  </span>
-                </div>
-                <div
-                  className="mt-2 h-3 w-full overflow-hidden rounded-full bg-muted"
-                  role="progressbar"
-                  aria-valuenow={item.percent}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-label={`${item.label}: ${item.percent}%`}
-                >
-                  <div
-                    className={`h-full rounded-full ${item.colorClass} transition-all duration-700`}
-                    style={{ width: `${item.percent}%` }}
-                  />
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {item.description}
-                </p>
-              </div>
-            ))}
           </div>
         </div>
       </div>

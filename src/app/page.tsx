@@ -5,10 +5,13 @@ import { eq, and, or, desc, sql, ne } from 'drizzle-orm';
 import Link from 'next/link';
 import { HeroSection } from '@/components/homepage/HeroSection';
 import { TrustBar } from '@/components/homepage/TrustBar';
+import { HowItWorks } from '@/components/homepage/HowItWorks';
 import { CategoryShowcase } from '@/components/homepage/CategoryShowcase';
 import { ImpactCounter } from '@/components/homepage/ImpactCounter';
 import { WhereYourMoneyGoes } from '@/components/homepage/WhereYourMoneyGoes';
 import { TrustBanner } from '@/components/homepage/TrustBanner';
+import { Testimonials } from '@/components/homepage/Testimonials';
+import { Newsletter } from '@/components/homepage/Newsletter';
 import { CampaignCard } from '@/components/campaign/CampaignCard';
 
 export const metadata: Metadata = {
@@ -58,7 +61,7 @@ async function getHomepageData() {
         .orderBy(desc(campaigns.publishedAt))
         .limit(1),
 
-      // Active campaigns for grid (top 8 by total donations)
+      // Active campaigns for grid (top 6 by total donations)
       db
         .select({
           slug: campaigns.slug,
@@ -71,6 +74,7 @@ async function getHomepageData() {
           subjectHometown: campaigns.subjectHometown,
           raisedAmount: campaigns.raisedAmount,
           goalAmount: campaigns.goalAmount,
+          donorCount: campaigns.donorCount,
         })
         .from(campaigns)
         .where(
@@ -80,7 +84,7 @@ async function getHomepageData() {
           ),
         )
         .orderBy(desc(campaigns.raisedAmount))
-        .limit(9),
+        .limit(6),
 
       // Aggregate platform stats
       db
@@ -142,28 +146,19 @@ export default async function Home() {
     <>
       <HeroSection featuredCampaign={data.featuredCampaign} />
       <TrustBar totalDonors={data.totalDonors} />
-      <CategoryShowcase />
+      <HowItWorks />
 
       {/* Active Campaigns */}
       {data.activeCampaigns.length > 0 && (
-        <section className="py-16">
+        <section className="py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <hr className="mb-12 border-border" />
-            <div className="grid items-start gap-6 md:grid-cols-[2fr_1fr]">
-              <div>
-                <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                  Verified fundraisers
-                </h2>
-                <p className="mt-3 text-lg text-muted-foreground">
-                  Every campaign is verified and tracked with full transparency. Give with confidence.
-                </p>
-                <Link
-                  href="/campaigns"
-                  className="mt-6 inline-flex rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  See all fundraisers
-                </Link>
-              </div>
+            <div className="text-center">
+              <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                Verified fundraisers
+              </h2>
+              <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
+                Every campaign is verified and tracked with full transparency. Give with confidence.
+              </p>
             </div>
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {data.activeCampaigns.map((c) => (
@@ -177,8 +172,17 @@ export default async function Home() {
                   location={c.location || c.subjectHometown}
                   raisedAmount={c.raisedAmount}
                   goalAmount={c.goalAmount}
+                  donorCount={c.donorCount}
                 />
               ))}
+            </div>
+            <div className="mt-8 text-center">
+              <Link
+                href="/campaigns"
+                className="inline-flex rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                See all fundraisers
+              </Link>
             </div>
           </div>
         </section>
@@ -191,46 +195,44 @@ export default async function Home() {
         peopleSupported={data.peopleSupported}
       />
       <WhereYourMoneyGoes />
+      <CategoryShowcase />
+      <Testimonials />
       <TrustBanner />
 
       {/* Blog Preview */}
       {data.latestPosts.length > 0 && (
-        <section className="py-16">
+        <section className="py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <hr className="mb-12 border-border" />
-            <div className="grid items-start gap-6 md:grid-cols-[2fr_1fr]">
-              <div>
-                <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                  Real stories, real impact
-                </h2>
-                <p className="mt-3 text-lg text-muted-foreground">
-                  Updates, insights, and the stories behind every campaign.
-                </p>
-                <Link
-                  href="/blog"
-                  className="mt-6 inline-flex rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-                >
-                  Read more stories
-                </Link>
-              </div>
+            <div className="text-center">
+              <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                Real stories, real impact
+              </h2>
+              <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
+                Updates, insights, and the stories behind every campaign.
+              </p>
             </div>
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {data.latestPosts.map((post) => (
                 <Link
                   key={post.slug}
                   href={`/blog/${post.slug}`}
-                  className="group overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md"
+                  className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
                 >
                   {post.coverImageUrl && (
                     <div className="aspect-video overflow-hidden">
                       <img
                         src={post.coverImageUrl}
                         alt=""
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
                   )}
-                  <div className="p-4">
+                  <div className="p-5">
+                    {post.category && (
+                      <span className="mb-2 inline-block text-xs font-medium capitalize text-primary">
+                        {post.category}
+                      </span>
+                    )}
                     <h3 className="line-clamp-2 font-display text-lg font-semibold text-card-foreground">
                       {post.title}
                     </h3>
@@ -239,16 +241,26 @@ export default async function Home() {
                         {post.excerpt}
                       </p>
                     )}
-                    <p className="mt-2 text-xs text-muted-foreground">
+                    <p className="mt-3 text-xs text-muted-foreground">
                       {post.authorName}
                     </p>
                   </div>
                 </Link>
               ))}
             </div>
+            <div className="mt-8 text-center">
+              <Link
+                href="/blog"
+                className="inline-flex rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                Read more stories
+              </Link>
+            </div>
           </div>
         </section>
       )}
+
+      <Newsletter />
     </>
   );
 }
