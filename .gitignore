@@ -1,0 +1,42 @@
+# dependencies
+node_modules/
+
+# env files — NEVER commit secrets
+.env
+.env.local
+.env.*.local
+
+# next.js
+.next/
+out/
+
+# build
+dist/
+build/
+
+# debug
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# sentry
+.sentryclirc
+
+# testing
+coverage/
+playwright-report/
+test-results/
+trace/
+
+# temp / logs
+*.log
+mig.log
+migration-output.log
+temp-blog-post.json
+1

@@ -1,0 +1,560 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { CampaignStatusBadge } from '@/components/campaigns/CampaignStatusBadge';
+import { VerificationBadge, MilestoneProgress, FundReleaseIndicator } from '@/components/campaigns/TrustBadge';
+import { centsToDollars } from '@/lib/utils/currency';
+import { formatDate } from '@/lib/utils/dates';
+import {
+  PencilSquareIcon,
+  ArchiveBoxIcon,
+  ArrowPathIcon,
+  PlusIcon,
+  PauseIcon,
+  PlayIcon,
+  NoSymbolIcon,
+  XCircleIcon,
+} from '@heroicons/react/24/outline';
+
+interface CampaignData {
+  id: string;
+  title: string;
+  slug: string;
+  status: string;
+  category: string;
+  heroImageUrl: string;
+  subjectName: string;
+  subjectHometown: string | null;
+  storyHtml: string;
+  goalAmount: number;
+  raisedAmount: number;
+  donorCount: number;
+  location: string | null;
+  photoCredit: string | null;
+  verificationStatus: string;
+  totalReleasedAmount: number;
+  pausedAt: string | null;
+  pausedReason: string | null;
+  suspendedAt: string | null;
+  suspendedReason: string | null;
+  cancelledAt: string | null;
+  cancellationReason: string | null;
+  publishedAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lastDonorId: string | null;
+}
+
+interface Donation {
+  id: string;
+  donorName: string;
+  donorEmail: string;
+  donorLocation: string | null;
+  amount: number;
+  message: string | null;
+  isAnonymous: boolean;
+  phaseAtTime: string;
+  source: string;
+  refunded: boolean;
+  createdAt: string;
+}
+
+interface Update {
+  id: string;
+  title: string;
+  bodyHtml: string;
+  imageUrl: string | null;
+  createdAt: string;
+}
+
+interface PhaseRow {
+  phase: string;
+  count: number;
+  total: number;
+}
+
+interface MilestoneData {
+  phase: number;
+  title: string;
+  status: string;
+  fundPercentage: number;
+  releasedAmount: number;
+}
+
+interface CampaignDetailProps {
+  campaign: CampaignData;
+  milestones: MilestoneData[];
+  donations: Donation[];
+  updates: Update[];
+  phaseBreakdown: PhaseRow[];
+}
+
+const PHASE_LABELS: Record<string, string> = {
+  first_believers: 'First Believers',
+  the_push: 'The Push',
+  closing_in: 'Closing In',
+  last_donor_zone: 'Last Donor Zone',
+};
+
+function formatCategory(cat: string) {
+  return cat.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+}
+
+export function CampaignDetail({ campaign, milestones, donations, updates, phaseBreakdown }: CampaignDetailProps) {
+  const router = useRouter();
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [governanceAction, setGovernanceAction] = useState<{ action: string; label: string } | null>(null);
+  const [governanceReason, setGovernanceReason] = useState('');
+
+  const pct = campaign.goalAmount > 0
+    ? Math.min((campaign.raisedAmount / campaign.goalAmount) * 100, 100)
+    : 0;
+
+  const canArchive = ['draft', 'completed'].includes(campaign.status);
+  const canRestore = campaign.status === 'archived';
+  const canPause = ['active', 'last_donor_zone'].includes(campaign.status);
+  const canResume = campaign.status === 'paused';
+  const canSuspend = ['active', 'last_donor_zone', 'paused', 'under_review'].includes(campaign.status);
+  const canCancel = !['cancelled', 'completed', 'archived'].includes(campaign.status);
+
+  async function handleArchive() {
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/v1/campaigns/${campaign.id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error?.message ?? 'Archive failed');
+      }
+      router.refresh();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Archive failed');
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleRestore() {
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/v1/campaigns/${campaign.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'draft' }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error?.message ?? 'Restore failed');
+      }
+      router.refresh();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Restore failed');
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleGovernanceAction() {
+    if (!governanceAction) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const body: Record<string, unknown> = {};
+      if (governanceAction.action === 'pause') body.reason = governanceReason || 'Administrative action';
+      if (governanceAction.action === 'suspend') body.publicReason = governanceReason || 'Under investigation';
+      if (governanceAction.action === 'cancel') body.reason = governanceReason || 'policy_violation';
+
+      const res = await fetch(`/api/v1/admin/campaigns/${campaign.id}/${governanceAction.action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error?.message ?? `${governanceAction.label} failed`);
+      }
+      setGovernanceAction(null);
+      setGovernanceReason('');
+      router.refresh();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Action failed');
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* CDS page header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold tracking-tight">{campaign.title}</h1>
+            <CampaignStatusBadge status={campaign.status} />
+            <VerificationBadge status={campaign.verificationStatus} />
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {campaign.subjectName}
+            {campaign.subjectHometown && ` · ${campaign.subjectHometown}`}
+            {' · '}
+            {formatCategory(campaign.category)}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Created {formatDate(campaign.createdAt)}
+            {campaign.publishedAt && ` · Published ${formatDate(campaign.publishedAt)}`}
+            {campaign.completedAt && ` · Completed ${formatDate(campaign.completedAt)}`}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href={`/admin/campaigns/${campaign.id}/edit`}
+            className="inline-flex items-center rounded-md border border-border px-3 py-2 text-sm font-medium transition-colors duration-100 hover:bg-muted/60"
+          >
+            <PencilSquareIcon className="mr-1.5 h-4 w-4" />
+            Edit
+          </Link>
+          {canPause && (
+            <button
+              onClick={() => setGovernanceAction({ action: 'pause', label: 'Pause Campaign' })}
+              disabled={actionLoading}
+              className="inline-flex items-center rounded-md border border-amber-500/40 px-3 py-2 text-sm font-medium text-amber-600 transition-colors duration-100 hover:bg-amber-50 disabled:opacity-50 dark:hover:bg-amber-950"
+            >
+              <PauseIcon className="mr-1.5 h-4 w-4" />
+              Pause
+            </button>
+          )}
+          {canResume && (
+            <button
+              onClick={() => setGovernanceAction({ action: 'resume', label: 'Resume Campaign' })}
+              disabled={actionLoading}
+              className="inline-flex items-center rounded-md border border-green-500/40 px-3 py-2 text-sm font-medium text-green-600 transition-colors duration-100 hover:bg-green-50 disabled:opacity-50 dark:hover:bg-green-950"
+            >
+              <PlayIcon className="mr-1.5 h-4 w-4" />
+              Resume
+            </button>
+          )}
+          {canSuspend && (
+            <button
+              onClick={() => setGovernanceAction({ action: 'suspend', label: 'Suspend Campaign' })}
+              disabled={actionLoading}
+              className="inline-flex items-center rounded-md border border-red-500/40 px-3 py-2 text-sm font-medium text-red-600 transition-colors duration-100 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950"
+            >
+              <NoSymbolIcon className="mr-1.5 h-4 w-4" />
+              Suspend
+            </button>
+          )}
+          {canCancel && (
+            <button
+              onClick={() => setGovernanceAction({ action: 'cancel', label: 'Cancel Campaign' })}
+              disabled={actionLoading}
+              className="inline-flex items-center rounded-md border border-destructive/40 px-3 py-2 text-sm font-medium text-destructive transition-colors duration-100 hover:bg-destructive/10 disabled:opacity-50"
+            >
+              <XCircleIcon className="mr-1.5 h-4 w-4" />
+              Cancel
+            </button>
+          )}
+          {canArchive && (
+            <button
+              onClick={handleArchive}
+              disabled={actionLoading}
+              className="inline-flex items-center rounded-md border border-destructive/40 px-3 py-2 text-sm font-medium text-destructive transition-colors duration-100 hover:bg-destructive/10 disabled:opacity-50"
+            >
+              <ArchiveBoxIcon className="mr-1.5 h-4 w-4" />
+              Archive
+            </button>
+          )}
+          {canRestore && (
+            <button
+              onClick={handleRestore}
+              disabled={actionLoading}
+              className="inline-flex items-center rounded-md border border-border px-3 py-2 text-sm font-medium transition-colors duration-100 hover:bg-muted/60 disabled:opacity-50"
+            >
+              <ArrowPathIcon className="mr-1.5 h-4 w-4" />
+              Restore to Draft
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Status banner for paused / suspended / cancelled */}
+      {campaign.status === 'paused' && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950">
+          <p className="font-medium text-amber-800 dark:text-amber-200">Campaign Paused</p>
+          {campaign.pausedReason && <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">Reason: {campaign.pausedReason}</p>}
+          {campaign.pausedAt && <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">Since {formatDate(campaign.pausedAt)}</p>}
+        </div>
+      )}
+      {campaign.status === 'suspended' && (
+        <div className="rounded-lg border border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-950">
+          <p className="font-medium text-red-800 dark:text-red-200">Campaign Suspended</p>
+          {campaign.suspendedReason && <p className="mt-1 text-sm text-red-700 dark:text-red-300">Reason: {campaign.suspendedReason}</p>}
+          {campaign.suspendedAt && <p className="mt-1 text-xs text-red-600 dark:text-red-400">Since {formatDate(campaign.suspendedAt)}</p>}
+        </div>
+      )}
+      {campaign.status === 'cancelled' && (
+        <div className="rounded-lg border border-gray-300 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900">
+          <p className="font-medium text-gray-800 dark:text-gray-200">Campaign Cancelled</p>
+          {campaign.cancellationReason && <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">Reason: {campaign.cancellationReason}</p>}
+          {campaign.cancelledAt && <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">Since {formatDate(campaign.cancelledAt)}</p>}
+        </div>
+      )}
+
+      {actionError && (
+        <p className="text-sm text-destructive">{actionError}</p>
+      )}
+
+      {/* CDS stat tiles */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="rounded-lg border border-border bg-background px-4 py-4">
+          <p className="text-xs font-medium text-muted-foreground">Raised</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums leading-none">{centsToDollars(campaign.raisedAmount)}</p>
+        </div>
+        <div className="rounded-lg border border-border bg-background px-4 py-4">
+          <p className="text-xs font-medium text-muted-foreground">Goal</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums leading-none">{centsToDollars(campaign.goalAmount)}</p>
+        </div>
+        <div className="rounded-lg border border-border bg-background px-4 py-4">
+          <p className="text-xs font-medium text-muted-foreground">Donors</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums leading-none">{campaign.donorCount}</p>
+        </div>
+        <div className="rounded-lg border border-border bg-background px-4 py-4">
+          <p className="text-xs font-medium text-muted-foreground">Progress</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums leading-none">{pct.toFixed(1)}%</p>
+          <div className="mt-2 h-1 overflow-hidden rounded-full bg-border">
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-300"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* CDS phase breakdown */}
+      {phaseBreakdown.length > 0 && (
+        <section>
+          <h2 className="text-sm font-semibold">
+            Donation phase breakdown
+          </h2>
+          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {phaseBreakdown.map((p) => (
+              <div key={p.phase} className="rounded-lg border border-border bg-background px-4 py-4">
+                <p className="text-xs font-medium text-muted-foreground">
+                  {PHASE_LABELS[p.phase] ?? p.phase}
+                </p>
+                <p className="mt-1 text-lg font-semibold tabular-nums leading-none">{centsToDollars(p.total)}</p>
+                <p className="mt-1.5 text-xs text-muted-foreground/70">{p.count} donations</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* CDS Data Table — Recent Donations */}
+      <section>
+        <h2 className="text-sm font-semibold">
+          Recent donations ({donations.length})
+        </h2>
+        <div className="mt-4 overflow-hidden rounded-lg border border-border">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/50">
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Donor</th>
+                <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground">Amount</th>
+                <th className="hidden px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground sm:table-cell">Phase</th>
+                <th className="hidden px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground md:table-cell">Source</th>
+                <th className="hidden px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground lg:table-cell">Message</th>
+                <th className="hidden px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground sm:table-cell">Date</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {donations.map((d) => (
+                <tr key={d.id} className={`transition-colors duration-100 hover:bg-muted/30${d.refunded ? ' opacity-50' : ''}`}>
+                  <td className="px-4 py-3">
+                    <div>
+                      <p className="font-medium">
+                        {d.isAnonymous ? 'Anonymous' : d.donorName}
+                      </p>
+                      {!d.isAnonymous && (
+                        <p className="text-xs text-muted-foreground">{d.donorEmail}</p>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-right font-mono tabular-nums">
+                    {centsToDollars(d.amount)}
+                    {d.refunded && (
+                      <Badge variant="destructive" className="ml-1 text-[10px]">
+                        Refunded
+                      </Badge>
+                    )}
+                  </td>
+                  <td className="hidden px-4 py-3 sm:table-cell">
+                    <Badge variant="outline" className="text-[10px]">
+                      {PHASE_LABELS[d.phaseAtTime] ?? d.phaseAtTime}
+                    </Badge>
+                  </td>
+                  <td className="hidden px-4 py-3 md:table-cell">
+                    <Badge
+                      variant={d.source === 'seed' ? 'secondary' : 'default'}
+                      className="text-[10px]"
+                    >
+                      {d.source}
+                    </Badge>
+                  </td>
+                  <td className="hidden max-w-[200px] truncate px-4 py-3 text-muted-foreground lg:table-cell">
+                    {d.message || '—'}
+                  </td>
+                  <td className="hidden px-4 py-3 text-muted-foreground sm:table-cell">
+                    {formatDate(d.createdAt)}
+                  </td>
+                </tr>
+              ))}
+              {donations.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-muted-foreground">
+                    No donations yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </section>
+
+      {/* CDS Updates section */}
+      <section>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold">
+            Updates ({updates.length})
+          </h2>
+          <Link
+            href={`/admin/campaigns/${campaign.id}/updates/new`}
+            className="inline-flex items-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors duration-100 hover:bg-primary/90"
+          >
+            <PlusIcon className="mr-1.5 h-4 w-4" />
+            Add Update
+          </Link>
+        </div>
+        <div className="mt-4 space-y-4">
+          {updates.map((u) => (
+            <div key={u.id} className="rounded-lg border border-border p-4">
+              <div className="flex items-start justify-between">
+                <p className="font-medium">{u.title}</p>
+                <span className="text-xs text-muted-foreground">
+                  {formatDate(u.createdAt)}
+                </span>
+              </div>
+              <div
+                className="prose prose-sm mt-2 max-w-none text-muted-foreground dark:prose-invert"
+                dangerouslySetInnerHTML={{ __html: u.bodyHtml }}
+              />
+              {u.imageUrl && (
+                <img
+                  src={u.imageUrl}
+                  alt={u.title}
+                  className="mt-3 max-h-48 rounded-md object-cover"
+                />
+              )}
+            </div>
+          ))}
+          {updates.length === 0 && (
+            <div className="rounded-lg border border-dashed border-border px-6 py-10 text-center text-sm text-muted-foreground">
+              No updates posted yet.
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* CDS Milestones & Fund Release */}
+      {milestones.length > 0 && (
+        <section>
+          <h2 className="text-sm font-semibold">Milestones &amp; fund release</h2>
+          <div className="mt-4 space-y-3">
+            {milestones.map((m) => (
+              <div key={m.phase} className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
+                <div>
+                  <p className="font-medium">Phase {m.phase}: {m.title}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{m.status.replace(/_/g, ' ')}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-mono text-sm tabular-nums">{centsToDollars(m.releasedAmount)} released</p>
+                  <p className="text-xs text-muted-foreground/70">{m.fundPercentage}% of funds</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4">
+            <FundReleaseIndicator
+              totalReleased={campaign.totalReleasedAmount}
+              raisedAmount={campaign.raisedAmount}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* Campaign link */}
+      <div className="text-sm text-muted-foreground">
+        Public link:{' '}
+        <Link href={`/campaigns/${campaign.slug}`} className="text-primary underline-offset-4 hover:underline">
+          /campaigns/{campaign.slug}
+        </Link>
+      </div>
+
+      {/* Governance Action Dialog */}
+      <Dialog open={!!governanceAction} onOpenChange={(open) => { if (!open) { setGovernanceAction(null); setGovernanceReason(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{governanceAction?.label}</DialogTitle>
+            <DialogDescription>
+              {governanceAction?.action === 'resume'
+                ? 'Resume this campaign and make it active again.'
+                : `Provide a reason to ${governanceAction?.action} this campaign.`}
+            </DialogDescription>
+          </DialogHeader>
+          {governanceAction?.action !== 'resume' && (
+            <textarea
+              className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              rows={3}
+              placeholder="Reason…"
+              value={governanceReason}
+              onChange={(e) => setGovernanceReason(e.target.value)}
+            />
+          )}
+          {actionError && <p className="text-sm text-destructive">{actionError}</p>}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setGovernanceAction(null); setGovernanceReason(''); }}>
+              Cancel
+            </Button>
+            <Button
+              variant={governanceAction?.action === 'resume' ? 'default' : 'destructive'}
+              disabled={actionLoading}
+              onClick={handleGovernanceAction}
+            >
+              {actionLoading ? 'Processing…' : governanceAction?.label}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

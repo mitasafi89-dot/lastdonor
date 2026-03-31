@@ -1,0 +1,415 @@
+'use client';
+
+import { useMemo, useState, useCallback } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { CampaignStatusBadge } from '@/components/campaigns/CampaignStatusBadge';
+import { VerificationBadge } from '@/components/campaigns/TrustBadge';
+import { centsToDollars } from '@/lib/utils/currency';
+import { formatDate } from '@/lib/utils/dates';
+import {
+  PlusIcon,
+  MagnifyingGlassIcon,
+  EllipsisVerticalIcon,
+} from '@heroicons/react/24/outline';
+
+interface Campaign {
+  id: string;
+  title: string;
+  slug: string;
+  status: string;
+  category: string;
+  verificationStatus: string;
+  source: string;
+  creatorName: string | null;
+  raisedAmount: number;
+  goalAmount: number;
+  donorCount: number;
+  createdAt: string;
+}
+
+interface CampaignsListProps {
+  campaigns: Campaign[];
+  statusCounts: Record<string, number>;
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  draft: 'Draft',
+  active: 'Active',
+  last_donor_zone: 'Last Donor Zone',
+  completed: 'Completed',
+  archived: 'Archived',
+  paused: 'Paused',
+  under_review: 'Under Review',
+  suspended: 'Suspended',
+  cancelled: 'Cancelled',
+};
+
+const CATEGORIES = [
+  'medical', 'disaster', 'military', 'veterans',
+  'memorial', 'first-responders', 'community', 'essential-needs',
+];
+
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  draft: ['active', 'archived'],
+  active: ['draft', 'paused', 'completed', 'archived'],
+  last_donor_zone: ['active', 'paused', 'completed', 'archived'],
+  completed: ['archived'],
+  archived: ['draft'],
+  paused: ['active'],
+  under_review: ['active', 'suspended'],
+  suspended: ['active', 'cancelled'],
+  cancelled: [],
+};
+
+function formatCategoryLabel(cat: string) {
+  return cat.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+}
+
+export function CampaignsList({ campaigns, statusCounts }: CampaignsListProps) {
+  const router = useRouter();
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Campaign | null>(null);
+  const [statusTarget, setStatusTarget] = useState<{ campaign: Campaign; newStatus: string } | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const handleStatusChange = useCallback(async () => {
+    if (!statusTarget) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/v1/admin/campaigns/${statusTarget.campaign.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: statusTarget.newStatus }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setActionError(body?.error?.message ?? 'Failed to change status');
+        return;
+      }
+      setStatusTarget(null);
+      router.refresh();
+    } finally {
+      setActionLoading(false);
+    }
+  }, [statusTarget, router]);
+
+  const handleDelete = useCallback(async () => {
+    if (!deleteTarget) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/v1/admin/campaigns/${deleteTarget.id}`, {
+        method: 'DELETE',
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setActionError(body?.error?.message ?? 'Failed to delete campaign');
+        return;
+      }
+      setDeleteTarget(null);
+      router.refresh();
+    } finally {
+      setActionLoading(false);
+    }
+  }, [deleteTarget, router]);
+
+  const filtered = useMemo(() => {
+    let result = campaigns;
+
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (c) =>
+          c.title.toLowerCase().includes(q) ||
+          c.slug.toLowerCase().includes(q),
+      );
+    }
+
+    if (statusFilter) {
+      result = result.filter((c) => c.status === statusFilter);
+    }
+
+    if (categoryFilter) {
+      result = result.filter((c) => c.category === categoryFilter);
+    }
+
+    return result;
+  }, [campaigns, search, statusFilter, categoryFilter]);
+
+  const totalCount = campaigns.length;
+  const statuses = ['draft', 'active', 'last_donor_zone', 'completed', 'archived', 'paused', 'under_review', 'suspended', 'cancelled'];
+
+  return (
+    <div>
+      {/* CDS page header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">Campaigns</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {totalCount} total · {filtered.length} shown
+          </p>
+        </div>
+        <Link
+          href="/admin/campaigns/new"
+          className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-100 hover:bg-primary/90"
+        >
+          <PlusIcon className="mr-1.5 h-4 w-4" />
+          New Campaign
+        </Link>
+      </div>
+
+      {/* CDS status filter tiles */}
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9">
+        {statuses.map((s) => {
+          const count = statusCounts[s] ?? 0;
+          const isActive = statusFilter === s;
+          return (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(isActive ? null : s)}
+              className={`rounded-lg border border-border px-3 py-3 text-left transition-colors duration-100 ${
+                isActive
+                  ? 'border-primary/40 bg-primary/5'
+                  : 'bg-background hover:bg-muted/60'
+              }`}
+            >
+              <p className="text-2xl font-semibold tabular-nums leading-none">{count}</p>
+              <p className="mt-1.5 text-xs font-medium text-muted-foreground">{STATUS_LABELS[s]}</p>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* CDS search + category filter */}
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+        <div className="relative flex-1">
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
+          <input
+            type="text"
+            placeholder="Search campaigns…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-md border border-border bg-background py-2 pl-9 pr-3 text-sm outline-none transition-colors duration-100 focus:border-primary focus:ring-2 focus:ring-ring"
+          />
+        </div>
+        <select
+          value={categoryFilter ?? ''}
+          onChange={(e) => setCategoryFilter(e.target.value || null)}
+          className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none transition-colors duration-100 focus:border-primary focus:ring-2 focus:ring-ring"
+        >
+          <option value="">All Categories</option>
+          {CATEGORIES.map((cat) => (
+            <option key={cat} value={cat}>
+              {formatCategoryLabel(cat)}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* CDS Data Table */}
+      <div className="mt-4 overflow-hidden rounded-lg border border-border">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/50">
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Title</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Status</th>
+                <th className="hidden px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground sm:table-cell">Category</th>
+                <th className="hidden px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground md:table-cell">Progress</th>
+                <th className="px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground">Raised</th>
+                <th className="hidden px-4 py-2.5 text-right text-xs font-semibold text-muted-foreground md:table-cell">Donors</th>
+                <th className="hidden px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground lg:table-cell">Created</th>
+                <th className="px-2 py-2.5 text-right text-xs font-semibold text-muted-foreground"><span className="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+                {filtered.map((c) => {
+                  const pct = c.goalAmount > 0 ? Math.min((c.raisedAmount / c.goalAmount) * 100, 100) : 0;
+                  return (
+                    <tr key={c.id} className="transition-colors duration-100 hover:bg-muted/30">
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/admin/campaigns/${c.id}`}
+                          className="font-medium text-foreground underline-offset-4 hover:underline"
+                        >
+                          {c.title}
+                        </Link>
+                        <p className="text-xs text-muted-foreground">
+                          {c.creatorName ? `by ${c.creatorName}` : c.source === 'automated' ? 'Automated' : 'Editorial'}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1.5">
+                          <CampaignStatusBadge status={c.status} />
+                          <VerificationBadge status={c.verificationStatus} compact />
+                        </div>
+                      </td>
+                      <td className="hidden px-4 py-3 text-muted-foreground sm:table-cell">
+                        {formatCategoryLabel(c.category)}
+                      </td>
+                      <td className="hidden px-4 py-3 text-right md:table-cell">
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="h-1 w-16 overflow-hidden rounded-full bg-border">
+                            <div
+                              className="h-full rounded-full bg-primary transition-all duration-300"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                            {pct.toFixed(0)}%
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono tabular-nums">
+                        {centsToDollars(c.raisedAmount)}
+                      </td>
+                      <td className="hidden px-4 py-3 text-right tabular-nums text-muted-foreground md:table-cell">{c.donorCount}</td>
+                      <td className="hidden px-4 py-3 text-muted-foreground lg:table-cell">
+                        {formatDate(c.createdAt)}
+                      </td>
+                      <td className="px-2 py-3 text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <EllipsisVerticalIcon className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem asChild>
+                              <Link href={`/admin/campaigns/${c.id}`}>View Details</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link href={`/admin/campaigns/${c.id}/edit`}>Edit</Link>
+                            </DropdownMenuItem>
+                            {(ALLOWED_TRANSITIONS[c.status]?.length ?? 0) > 0 && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuSub>
+                                  <DropdownMenuSubTrigger>Change Status</DropdownMenuSubTrigger>
+                                  <DropdownMenuSubContent>
+                                    {ALLOWED_TRANSITIONS[c.status]?.map((s) => (
+                                      <DropdownMenuItem
+                                        key={s}
+                                        onClick={() => setStatusTarget({ campaign: c, newStatus: s })}
+                                      >
+                                        {STATUS_LABELS[s] ?? s}
+                                      </DropdownMenuItem>
+                                    ))}
+                                  </DropdownMenuSubContent>
+                                </DropdownMenuSub>
+                              </>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() => setDeleteTarget(c)}
+                            >
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="px-4 py-12 text-center text-sm text-muted-foreground">
+                      {totalCount === 0 ? (
+                        <>
+                          No campaigns yet.{' '}
+                          <Link href="/admin/campaigns/new" className="text-primary underline underline-offset-4">
+                            Create one
+                          </Link>
+                        </>
+                      ) : (
+                        'No campaigns match your filters.'
+                      )}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      {/* Status change confirmation */}
+      <Dialog open={!!statusTarget} onOpenChange={() => { setStatusTarget(null); setActionError(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Campaign Status</DialogTitle>
+            <DialogDescription>
+              Change &ldquo;{statusTarget?.campaign.title}&rdquo; from{' '}
+              <strong>{STATUS_LABELS[statusTarget?.campaign.status ?? ''] ?? statusTarget?.campaign.status}</strong>{' '}
+              to <strong>{STATUS_LABELS[statusTarget?.newStatus ?? ''] ?? statusTarget?.newStatus}</strong>?
+            </DialogDescription>
+          </DialogHeader>
+          {actionError && (
+            <p className="text-sm text-destructive">{actionError}</p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setStatusTarget(null); setActionError(null); }} disabled={actionLoading}>
+              Cancel
+            </Button>
+            <Button onClick={handleStatusChange} disabled={actionLoading}>
+              {actionLoading ? 'Updating…' : 'Confirm'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation */}
+      <Dialog open={!!deleteTarget} onOpenChange={() => { setDeleteTarget(null); setActionError(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Campaign</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete &ldquo;{deleteTarget?.title}&rdquo;?{' '}
+              {(deleteTarget?.donorCount ?? 0) > 0
+                ? 'This campaign has donations and will be archived instead of permanently deleted.'
+                : 'This action cannot be undone.'}
+            </DialogDescription>
+          </DialogHeader>
+          {actionError && (
+            <p className="text-sm text-destructive">{actionError}</p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setDeleteTarget(null); setActionError(null); }} disabled={actionLoading}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={actionLoading}>
+              {actionLoading ? 'Deleting…' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

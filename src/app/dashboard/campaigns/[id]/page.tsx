@@ -1,0 +1,338 @@
+import { redirect, notFound } from 'next/navigation';
+import Link from 'next/link';
+import { auth } from '@/lib/auth';
+import { db } from '@/db';
+import { campaigns, donations, campaignUpdates, campaignMilestones } from '@/db/schema';
+import { eq, desc, and } from 'drizzle-orm';
+import { centsToDollars } from '@/lib/utils/currency';
+import { formatDate } from '@/lib/utils/dates';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  PencilSquareIcon,
+  ShieldCheckIcon,
+  ChartBarIcon,
+  NewspaperIcon,
+  UserGroupIcon,
+  BanknotesIcon,
+  ArrowTopRightOnSquareIcon,
+} from '@heroicons/react/24/outline';
+import type { Metadata } from 'next';
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  return {
+    title: 'Campaign Management — Dashboard — LastDonor.org',
+    robots: { index: false },
+  };
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export default async function CampaignDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  if (!UUID_RE.test(id)) notFound();
+
+  const session = await auth();
+  if (!session?.user?.id) redirect('/login?callbackUrl=/dashboard/campaigns');
+
+  const [campaign] = await db
+    .select({
+      id: campaigns.id,
+      title: campaigns.title,
+      slug: campaigns.slug,
+      status: campaigns.status,
+      category: campaigns.category,
+      goalAmount: campaigns.goalAmount,
+      raisedAmount: campaigns.raisedAmount,
+      donorCount: campaigns.donorCount,
+      verificationStatus: campaigns.verificationStatus,
+      beneficiaryRelation: campaigns.beneficiaryRelation,
+      creatorId: campaigns.creatorId,
+      createdAt: campaigns.createdAt,
+      publishedAt: campaigns.publishedAt,
+      totalReleasedAmount: campaigns.totalReleasedAmount,
+    })
+    .from(campaigns)
+    .where(eq(campaigns.id, id))
+    .limit(1);
+
+  if (!campaign) notFound();
+  if (campaign.creatorId !== session.user.id && !['editor', 'admin'].includes(session.user.role as string)) {
+    redirect('/dashboard/campaigns');
+  }
+
+  const pct = campaign.goalAmount > 0
+    ? Math.min(100, Math.round((campaign.raisedAmount / campaign.goalAmount) * 100))
+    : 0;
+
+  // Recent donors
+  const recentDonors = await db
+    .select({
+      id: donations.id,
+      donorName: donations.donorName,
+      amount: donations.amount,
+      message: donations.message,
+      anonymous: donations.isAnonymous,
+      phaseAtTime: donations.phaseAtTime,
+      createdAt: donations.createdAt,
+    })
+    .from(donations)
+    .where(and(eq(donations.campaignId, id), eq(donations.source, 'real')))
+    .orderBy(desc(donations.createdAt))
+    .limit(5);
+
+  // Recent updates
+  const recentUpdates = await db
+    .select({
+      id: campaignUpdates.id,
+      title: campaignUpdates.title,
+      updateType: campaignUpdates.updateType,
+      createdAt: campaignUpdates.createdAt,
+    })
+    .from(campaignUpdates)
+    .where(eq(campaignUpdates.campaignId, id))
+    .orderBy(desc(campaignUpdates.createdAt))
+    .limit(5);
+
+  // Milestones
+  const milestones = await db
+    .select({
+      phase: campaignMilestones.phase,
+      title: campaignMilestones.title,
+      status: campaignMilestones.status,
+      fundPercentage: campaignMilestones.fundPercentage,
+      fundAmount: campaignMilestones.fundAmount,
+      releasedAmount: campaignMilestones.releasedAmount,
+    })
+    .from(campaignMilestones)
+    .where(eq(campaignMilestones.campaignId, id))
+    .orderBy(campaignMilestones.phase);
+
+  const isEditable = ['draft', 'active'].includes(campaign.status);
+
+  return (
+    <>
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-display text-2xl font-bold text-foreground">{campaign.title}</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+            <Badge variant={campaign.status === 'active' || campaign.status === 'last_donor_zone' ? 'default' : 'secondary'}>
+              {campaign.status === 'last_donor_zone' ? 'Last Donor Zone' : campaign.status}
+            </Badge>
+            <span className="capitalize text-muted-foreground">{campaign.category}</span>
+            {campaign.publishedAt && (
+              <span className="text-muted-foreground">Published {formatDate(campaign.publishedAt)}</span>
+            )}
+          </div>
+        </div>
+        <Link
+          href={`/campaigns/${campaign.slug}`}
+          target="_blank"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          View public page
+          <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+        </Link>
+      </div>
+
+      {/* Stats */}
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Raised</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="font-mono text-2xl font-bold text-brand-teal">{centsToDollars(campaign.raisedAmount)}</p>
+            <p className="text-xs text-muted-foreground">of {centsToDollars(campaign.goalAmount)} goal</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Progress</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="font-mono text-2xl font-bold text-foreground">{pct}%</p>
+            <div className="mt-1 h-1.5 w-full rounded-full bg-muted">
+              <div className="h-full rounded-full bg-brand-teal" style={{ width: `${pct}%` }} />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Donors</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="font-mono text-2xl font-bold text-foreground">{campaign.donorCount}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Funds Released</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="font-mono text-2xl font-bold text-foreground">
+              {centsToDollars(campaign.totalReleasedAmount ?? 0)}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {isEditable && (
+          <Link
+            href={`/dashboard/campaigns/${id}/edit`}
+            className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm transition-colors hover:border-primary hover:bg-muted/40"
+          >
+            <PencilSquareIcon className="h-5 w-5 text-muted-foreground" />
+            <span className="font-medium">Edit Campaign</span>
+          </Link>
+        )}
+        <Link
+          href={`/dashboard/campaigns/${id}/updates`}
+          className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm transition-colors hover:border-primary hover:bg-muted/40"
+        >
+          <NewspaperIcon className="h-5 w-5 text-muted-foreground" />
+          <span className="font-medium">Updates ({recentUpdates.length})</span>
+        </Link>
+        <Link
+          href={`/dashboard/campaigns/${id}/donors`}
+          className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm transition-colors hover:border-primary hover:bg-muted/40"
+        >
+          <UserGroupIcon className="h-5 w-5 text-muted-foreground" />
+          <span className="font-medium">Donors ({campaign.donorCount})</span>
+        </Link>
+        <Link
+          href={`/dashboard/campaigns/${id}/verification`}
+          className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm transition-colors hover:border-primary hover:bg-muted/40"
+        >
+          <ShieldCheckIcon className="h-5 w-5 text-muted-foreground" />
+          <span className="font-medium">
+            Verification
+            <Badge variant="outline" className="ml-2 text-xs">{campaign.verificationStatus}</Badge>
+          </span>
+        </Link>
+        <Link
+          href={`/dashboard/campaigns/${id}/milestones`}
+          className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm transition-colors hover:border-primary hover:bg-muted/40"
+        >
+          <BanknotesIcon className="h-5 w-5 text-muted-foreground" />
+          <span className="font-medium">Milestones & Fund Releases</span>
+        </Link>
+      </div>
+
+      {/* Two-column layout: Donors + Updates */}
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        {/* Recent Donors */}
+        <section>
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-lg font-bold text-foreground">Recent Donors</h2>
+            <Link href={`/dashboard/campaigns/${id}/donors`} className="text-sm font-medium text-brand-teal hover:underline">
+              View all
+            </Link>
+          </div>
+          {recentDonors.length === 0 ? (
+            <Card className="mt-3">
+              <CardContent className="py-6 text-center">
+                <p className="text-sm text-muted-foreground">No donations yet.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="mt-3 space-y-2">
+              {recentDonors.map((d) => (
+                <Card key={d.id}>
+                  <CardContent className="flex items-center justify-between py-3">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {d.anonymous ? 'Anonymous' : d.donorName ?? 'Donor'}
+                      </p>
+                      {d.message && (
+                        <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{d.message}</p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="font-mono text-sm font-semibold text-foreground">{centsToDollars(d.amount)}</p>
+                      <p className="text-xs text-muted-foreground">{formatDate(d.createdAt)}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Recent Updates */}
+        <section>
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-lg font-bold text-foreground">Recent Updates</h2>
+            <Link href={`/dashboard/campaigns/${id}/updates`} className="text-sm font-medium text-brand-teal hover:underline">
+              View all
+            </Link>
+          </div>
+          {recentUpdates.length === 0 ? (
+            <Card className="mt-3">
+              <CardContent className="py-6 text-center">
+                <p className="text-sm text-muted-foreground">No updates posted yet.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="mt-3 space-y-2">
+              {recentUpdates.map((upd) => (
+                <Card key={upd.id}>
+                  <CardContent className="flex items-center justify-between py-3">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{upd.title}</p>
+                      <Badge variant="outline" className="mt-1 text-xs">{upd.updateType}</Badge>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{formatDate(upd.createdAt)}</span>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+
+      {/* Milestones */}
+      {milestones.length > 0 && (
+        <section className="mt-6">
+          <h2 className="font-display text-lg font-bold text-foreground">Milestones</h2>
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            {milestones.map((m) => {
+              const statusColor: Record<string, string> = {
+                pending: 'bg-muted text-muted-foreground',
+                reached: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
+                evidence_submitted: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+                approved: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+                rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+                overdue: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+              };
+              return (
+                <Card key={m.phase}>
+                  <CardContent className="py-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold uppercase text-muted-foreground">Phase {m.phase}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColor[m.status] ?? ''}`}>
+                        {m.status}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm font-medium text-foreground">{m.title}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {m.fundPercentage}% &middot; {centsToDollars(m.fundAmount ?? 0)}
+                    </p>
+                    {(m.releasedAmount ?? 0) > 0 && (
+                      <p className="mt-0.5 text-xs font-medium text-green-600 dark:text-green-400">
+                        Released: {centsToDollars(m.releasedAmount ?? 0)}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+      )}
+    </>
+  );
+}

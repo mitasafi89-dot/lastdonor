@@ -1,0 +1,134 @@
+import { redirect } from 'next/navigation';
+import { auth } from '@/lib/auth';
+import { db } from '@/db';
+import { donations, campaigns } from '@/db/schema';
+import { eq, sql, gte, and, desc } from 'drizzle-orm';
+import { FinancialReports } from '@/components/admin/FinancialReports';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Financial Reports — Admin — LastDonor.org',
+  robots: { index: false },
+};
+
+export const revalidate = 60;
+
+export default async function AdminReportsPage() {
+  const session = await auth();
+  if (session?.user?.role !== 'admin') {
+    redirect('/admin');
+  }
+
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+  const realNonRefunded = and(eq(donations.source, 'real'), eq(donations.refunded, false));
+
+  const [
+    monthlyRevenue,
+    [ytdTotals],
+    [mtdTotals],
+    [allTimeTotals],
+    topCampaigns,
+    categoryRevenue,
+    [refundTotals],
+  ] = await Promise.all([
+    // Monthly revenue (12 months)
+    db
+      .select({
+        month: sql<string>`to_char(date_trunc('month', ${donations.createdAt}), 'YYYY-MM')`,
+        total: sql<number>`coalesce(sum(${donations.amount}), 0)::int`,
+        count: sql<number>`count(*)::int`,
+        avgDonation: sql<number>`coalesce(avg(${donations.amount}), 0)::int`,
+      })
+      .from(donations)
+      .where(and(gte(donations.createdAt, twelveMonthsAgo), realNonRefunded))
+      .groupBy(sql`date_trunc('month', ${donations.createdAt})`)
+      .orderBy(sql`date_trunc('month', ${donations.createdAt})`),
+    // YTD
+    db
+      .select({
+        total: sql<number>`coalesce(sum(${donations.amount}), 0)::int`,
+        count: sql<number>`count(*)::int`,
+        avgDonation: sql<number>`coalesce(avg(${donations.amount}), 0)::int`,
+      })
+      .from(donations)
+      .where(and(gte(donations.createdAt, startOfYear), realNonRefunded)),
+    // MTD
+    db
+      .select({
+        total: sql<number>`coalesce(sum(${donations.amount}), 0)::int`,
+        count: sql<number>`count(*)::int`,
+        avgDonation: sql<number>`coalesce(avg(${donations.amount}), 0)::int`,
+      })
+      .from(donations)
+      .where(and(gte(donations.createdAt, startOfMonth), realNonRefunded)),
+    // All-time
+    db
+      .select({
+        total: sql<number>`coalesce(sum(${donations.amount}), 0)::int`,
+        count: sql<number>`count(*)::int`,
+        avgDonation: sql<number>`coalesce(avg(${donations.amount}), 0)::int`,
+      })
+      .from(donations)
+      .where(realNonRefunded),
+    // Top campaigns
+    db
+      .select({
+        id: campaigns.id,
+        title: campaigns.title,
+        slug: campaigns.slug,
+        status: campaigns.status,
+        raisedAmount: campaigns.raisedAmount,
+        goalAmount: campaigns.goalAmount,
+        donorCount: campaigns.donorCount,
+        category: campaigns.category,
+      })
+      .from(campaigns)
+      .orderBy(desc(campaigns.raisedAmount))
+      .limit(15),
+    // Revenue by category
+    db
+      .select({
+        category: campaigns.category,
+        total: sql<number>`coalesce(sum(${donations.amount}), 0)::int`,
+        count: sql<number>`count(${donations.id})::int`,
+        campaigns: sql<number>`count(distinct ${campaigns.id})::int`,
+      })
+      .from(donations)
+      .innerJoin(campaigns, eq(donations.campaignId, campaigns.id))
+      .where(realNonRefunded)
+      .groupBy(campaigns.category)
+      .orderBy(sql`sum(${donations.amount}) desc`),
+    // Refunds
+    db
+      .select({
+        total: sql<number>`coalesce(sum(${donations.amount}), 0)::int`,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(donations)
+      .where(and(eq(donations.source, 'real'), eq(donations.refunded, true))),
+  ]);
+
+  return (
+    <>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">Financial Reports</h1>
+        <p className="text-sm text-muted-foreground">
+          Revenue analytics and campaign performance
+        </p>
+      </div>
+      <FinancialReports
+        monthlyRevenue={monthlyRevenue}
+        ytd={ytdTotals}
+        mtd={mtdTotals}
+        allTime={allTimeTotals}
+        topCampaigns={topCampaigns}
+        categoryRevenue={categoryRevenue}
+        refunds={refundTotals}
+      />
+    </>
+  );
+}

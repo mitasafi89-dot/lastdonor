@@ -1,0 +1,219 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db';
+import { donations, campaigns, users, auditLogs } from '@/db/schema';
+import { eq, sql } from 'drizzle-orm';
+import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
+import { notifyDonationRefund } from '@/lib/notifications';
+import { stripe } from '@/lib/stripe';
+import { randomUUID } from 'crypto';
+import type { ApiError } from '@/types/api';
+import type { UserRole } from '@/types';
+
+type RouteParams = { params: Promise<{ id: string }> };
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * GET /api/v1/admin/donations/[id] — Get donation detail
+ */
+export async function GET(_request: NextRequest, { params }: RouteParams) {
+  const requestId = randomUUID();
+  const { id } = await params;
+
+  try {
+    await requireRole(['admin']);
+
+    if (!UUID_REGEX.test(id)) {
+      return NextResponse.json(
+        { ok: false, error: { code: 'VALIDATION_ERROR', message: 'Invalid donation ID', requestId } } satisfies ApiError,
+        { status: 400 },
+      );
+    }
+
+    const [donation] = await db
+      .select({
+        id: donations.id,
+        amount: donations.amount,
+        donorName: donations.donorName,
+        donorEmail: donations.donorEmail,
+        donorLocation: donations.donorLocation,
+        message: donations.message,
+        isAnonymous: donations.isAnonymous,
+        isRecurring: donations.isRecurring,
+        phaseAtTime: donations.phaseAtTime,
+        source: donations.source,
+        refunded: donations.refunded,
+        stripePaymentId: donations.stripePaymentId,
+        createdAt: donations.createdAt,
+        campaignId: donations.campaignId,
+        campaignTitle: campaigns.title,
+        campaignSlug: campaigns.slug,
+        userId: donations.userId,
+      })
+      .from(donations)
+      .innerJoin(campaigns, eq(donations.campaignId, campaigns.id))
+      .where(eq(donations.id, id))
+      .limit(1);
+
+    if (!donation) {
+      return NextResponse.json(
+        { ok: false, error: { code: 'NOT_FOUND', message: 'Donation not found', requestId } } satisfies ApiError,
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({ ok: true, data: donation });
+  } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json({ ok: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required', requestId } } satisfies ApiError, { status: 401 });
+    }
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ ok: false, error: { code: 'FORBIDDEN', message: 'Admin access required', requestId } } satisfies ApiError, { status: 403 });
+    }
+    console.error('[GET /api/v1/admin/donations/[id]]', error);
+    return NextResponse.json({ ok: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to fetch donation', requestId } } satisfies ApiError, { status: 500 });
+  }
+}
+
+/**
+ * PATCH /api/v1/admin/donations/[id] — Mark donation as refunded
+ */
+export async function PATCH(request: NextRequest, { params }: RouteParams) {
+  const requestId = randomUUID();
+  const { id } = await params;
+
+  try {
+    const session = await requireRole(['admin']);
+
+    if (!UUID_REGEX.test(id)) {
+      return NextResponse.json(
+        { ok: false, error: { code: 'VALIDATION_ERROR', message: 'Invalid donation ID', requestId } } satisfies ApiError,
+        { status: 400 },
+      );
+    }
+
+    let body: { refunded?: boolean };
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { ok: false, error: { code: 'VALIDATION_ERROR', message: 'Invalid JSON body', requestId } } satisfies ApiError,
+        { status: 400 },
+      );
+    }
+
+    if (typeof body.refunded !== 'boolean') {
+      return NextResponse.json(
+        { ok: false, error: { code: 'VALIDATION_ERROR', message: '"refunded" must be a boolean', requestId } } satisfies ApiError,
+        { status: 400 },
+      );
+    }
+
+    // Refunds are irreversible — Stripe cannot un-refund money
+    if (body.refunded === false) {
+      return NextResponse.json(
+        { ok: false, error: { code: 'VALIDATION_ERROR', message: 'Refunds cannot be reversed', requestId } } satisfies ApiError,
+        { status: 400 },
+      );
+    }
+
+    const [donation] = await db
+      .select({
+        id: donations.id,
+        amount: donations.amount,
+        donorEmail: donations.donorEmail,
+        donorName: donations.donorName,
+        refunded: donations.refunded,
+        campaignId: donations.campaignId,
+        source: donations.source,
+        stripePaymentId: donations.stripePaymentId,
+      })
+      .from(donations)
+      .where(eq(donations.id, id))
+      .limit(1);
+
+    if (!donation) {
+      return NextResponse.json(
+        { ok: false, error: { code: 'NOT_FOUND', message: 'Donation not found', requestId } } satisfies ApiError,
+        { status: 404 },
+      );
+    }
+
+    if (donation.refunded === body.refunded) {
+      return NextResponse.json({ ok: true, data: { id, refunded: body.refunded, changed: false } });
+    }
+
+    // Issue actual Stripe refund when marking as refunded
+    if (body.refunded && donation.stripePaymentId) {
+      try {
+        await stripe.refunds.create({ payment_intent: donation.stripePaymentId });
+      } catch (stripeErr: unknown) {
+        const msg = stripeErr instanceof Error ? stripeErr.message : 'Unknown Stripe error';
+        console.error('[admin/donations] Stripe refund failed:', msg);
+        return NextResponse.json(
+          { ok: false, error: { code: 'INTERNAL_ERROR', message: `Stripe refund failed: ${msg}`, requestId } } satisfies ApiError,
+          { status: 502 },
+        );
+      }
+    }
+
+    await db.update(donations).set({ refunded: body.refunded }).where(eq(donations.id, id));
+
+    // Update campaign raised amount and donor count
+    if (donation.source === 'real') {
+      const amountDelta = body.refunded ? -donation.amount : donation.amount;
+      const countDelta = body.refunded ? -1 : 1;
+
+      await db.update(campaigns).set({
+        raisedAmount: sql`GREATEST(${campaigns.raisedAmount} + ${amountDelta}, 0)`,
+        donorCount: sql`GREATEST(${campaigns.donorCount} + ${countDelta}, 0)`,
+        updatedAt: new Date(),
+      }).where(eq(campaigns.id, donation.campaignId));
+    }
+
+    await db.insert(auditLogs).values({
+      eventType: 'donation.refunded',
+      actorId: session.user?.id ?? null,
+      actorRole: session.user?.role as UserRole,
+      targetType: 'donation',
+      targetId: id,
+      severity: 'warning',
+      details: {
+        amount: donation.amount,
+        donorEmail: donation.donorEmail,
+        campaignId: donation.campaignId,
+        source: donation.source,
+      },
+    });
+
+    // Notify the donor (fire-and-forget — never block the admin response)
+    const [cam] = await db
+      .select({ title: campaigns.title, slug: campaigns.slug })
+      .from(campaigns)
+      .where(eq(campaigns.id, donation.campaignId))
+      .limit(1);
+
+    if (cam) {
+      notifyDonationRefund({
+        donationId: id,
+        donorEmail: donation.donorEmail,
+        donorName: donation.donorName,
+        amount: donation.amount,
+        campaignTitle: cam.title,
+        campaignSlug: cam.slug,
+        refunded: body.refunded,
+      }).catch((err) => console.error('[admin/donations] notification error:', err));
+    }
+
+    return NextResponse.json({ ok: true, data: { id, refunded: body.refunded, changed: true } });
+  } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json({ ok: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required', requestId } } satisfies ApiError, { status: 401 });
+    }
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ ok: false, error: { code: 'FORBIDDEN', message: 'Admin access required', requestId } } satisfies ApiError, { status: 403 });
+    }
+    console.error('[PATCH /api/v1/admin/donations/[id]]', error);
+    return NextResponse.json({ ok: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to update donation', requestId } } satisfies ApiError, { status: 500 });
+  }
+}

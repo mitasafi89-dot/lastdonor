@@ -1,0 +1,100 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db';
+import { users, verificationTokens } from '@/db/schema';
+import { eq, and } from 'drizzle-orm';
+import { randomUUID } from 'crypto';
+import { resend } from '@/lib/resend';
+import bcrypt from 'bcryptjs';
+import type { ApiError } from '@/types/api';
+
+const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
+
+/**
+ * POST /api/v1/auth/forgot-password
+ * Body: { email: string }
+ * Sends a password reset email if the user exists.
+ */
+export async function POST(request: NextRequest) {
+  const requestId = randomUUID();
+
+  try {
+    const body = await request.json();
+    const email = (body.email as string)?.trim()?.toLowerCase();
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json(
+        { ok: false, error: { code: 'VALIDATION_ERROR', message: 'Valid email is required', requestId } } satisfies ApiError,
+        { status: 400 },
+      );
+    }
+
+    // Always return success to prevent email enumeration
+    const successResponse = NextResponse.json({
+      ok: true,
+      data: { message: 'If an account with that email exists, a password reset link has been sent.' },
+    });
+
+    // Look up the user
+    const [user] = await db
+      .select({ id: users.id, passwordHash: users.passwordHash })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+
+    // Only send if user exists and has a password (not OAuth-only)
+    if (!user?.passwordHash) {
+      return successResponse;
+    }
+
+    // Generate token
+    const token = randomUUID();
+    const expires = new Date(Date.now() + TOKEN_EXPIRY_MS);
+
+    // Delete any existing tokens for this email
+    await db
+      .delete(verificationTokens)
+      .where(eq(verificationTokens.identifier, `reset:${email}`));
+
+    // Insert new token
+    await db.insert(verificationTokens).values({
+      identifier: `reset:${email}`,
+      token,
+      expires,
+    });
+
+    // Send email
+    const resetUrl = `${process.env.NEXTAUTH_URL || 'https://lastdonor.org'}/login/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
+
+    const { error: sendError } = await resend.emails.send({
+      from: 'LastDonor.org <noreply@lastdonor.org>',
+      to: email,
+      subject: 'Reset Your Password — LastDonor.org',
+      html: `
+        <div style="font-family: 'DM Sans', sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+          <h1 style="color: #0F766E; font-size: 24px;">Password Reset Request</h1>
+          <p>We received a request to reset your password. Click the link below to set a new password:</p>
+          <p style="margin: 24px 0;">
+            <a href="${resetUrl}" style="background-color: #0F766E; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+              Reset Password
+            </a>
+          </p>
+          <p style="color: #666; font-size: 14px;">This link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+          <p style="color: #999; font-size: 12px;">LastDonor.org</p>
+        </div>
+      `,
+    });
+
+    if (sendError) {
+      console.error('[forgot-password] Resend API error:', sendError);
+    }
+
+    return successResponse;
+  } catch (error) {
+    console.error('[POST /api/v1/auth/forgot-password]', error);
+    return NextResponse.json(
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to process request', requestId } } satisfies ApiError,
+      { status: 500 },
+    );
+  }
+}

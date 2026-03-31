@@ -1,0 +1,186 @@
+import type { Metadata } from 'next';
+import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description:
+    'How LastDonor.org handles your data. Short version: we never sell it, we never share it for profit, and we use privacy-focused analytics that do not track you.',
+  openGraph: {
+    title: 'Privacy Policy | LastDonor.org',
+    description:
+      'We never sell your data. We never share it for profit. We use privacy-focused analytics that do not track you.',
+    images: [
+      {
+        url: '/api/v1/og/page?title=Privacy+Policy&subtitle=We+never+sell+your+data.+We+use+privacy-focused+analytics.',
+        width: 1200,
+        height: 630,
+        alt: 'Privacy Policy at LastDonor.org',
+      },
+    ],
+  },
+};
+
+export default function PrivacyPage() {
+  return (
+    <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+      <Breadcrumbs />
+      <h1 className="mt-6 font-display text-4xl font-bold text-foreground">
+        Privacy Policy
+      </h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Last updated: January 1, 2025
+      </p>
+
+      <p className="mt-4 text-muted-foreground leading-relaxed">
+        We keep this simple because we think privacy policies should be readable
+        by normal people, not just lawyers. Here is what we collect, why, and
+        who sees it.
+      </p>
+
+      <div className="mt-8 space-y-8 text-muted-foreground leading-relaxed">
+        <section>
+          <h2 className="font-display text-xl font-bold text-foreground">
+            1. What We Collect
+          </h2>
+          <p className="mt-3">
+            When you use LastDonor.org, we collect information you provide
+            directly:
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-6">
+            <li>
+              <strong>Account information:</strong> Name, email address,
+              password (hashed), and optional location.
+            </li>
+            <li>
+              <strong>Donation information:</strong> Donor name, email,
+              location, donation amount, and optional message. Payment details
+              (credit card numbers) are processed directly by Stripe and never
+              stored on our servers.
+            </li>
+            <li>
+              <strong>Newsletter subscriptions:</strong> Email address and
+              sign-up source.
+            </li>
+            <li>
+              <strong>Story submissions:</strong> Name, email, and story
+              details submitted via the Share Your Story form.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="font-display text-xl font-bold text-foreground">
+            2. How We Use Your Information
+          </h2>
+          <ul className="mt-3 list-disc space-y-1 pl-6">
+            <li>Process and acknowledge donations</li>
+            <li>Send tax receipts and donation confirmations</li>
+            <li>Display public donor names on campaign pages (unless anonymous)</li>
+            <li>Send newsletter updates (with your consent)</li>
+            <li>Improve platform functionality and user experience</li>
+            <li>Comply with legal and regulatory requirements</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="font-display text-xl font-bold text-foreground">
+            3. Cookies &amp; Analytics
+          </h2>
+          <p className="mt-3">
+            We use Plausible Analytics, a privacy-focused analytics tool that
+            does not use cookies and does not collect personal data. We may use
+            essential cookies for authentication (session tokens) and theme
+            preference (dark mode).
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-display text-xl font-bold text-foreground">
+            4. Who Sees Your Data
+          </h2>
+          <p className="mt-3">
+            We do not sell, rent, or trade your personal information. Not now,
+            not ever. We only share data with the services that make the
+            platform work:
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-6">
+            <li>
+              <strong>Stripe:</strong> For payment processing
+            </li>
+            <li>
+              <strong>Resend:</strong> For transactional emails
+            </li>
+            <li>
+              <strong>Supabase:</strong> For database hosting
+            </li>
+            <li>
+              <strong>Vercel:</strong> For application hosting
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="font-display text-xl font-bold text-foreground">
+            5. Your Rights (CCPA)
+          </h2>
+          <p className="mt-3">
+            California residents have the right to:
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-6">
+            <li>Know what personal information we collect</li>
+            <li>Request deletion of their personal information</li>
+            <li>Opt out of any data sales (we do not sell data)</li>
+            <li>Non-discrimination for exercising these rights</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="font-display text-xl font-bold text-foreground">
+            6. Data Deletion
+          </h2>
+          <p className="mt-3">
+            You may request deletion of your account and personal data by
+            visiting your Profile page and selecting &quot;Delete my
+            account,&quot; or by emailing{' '}
+            <a
+              href="mailto:privacy@lastdonor.org"
+              className="text-primary underline underline-offset-4"
+            >
+              privacy@lastdonor.org
+            </a>
+            . Donation records will be anonymized but retained for financial
+            reporting compliance.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-display text-xl font-bold text-foreground">
+            7. Security
+          </h2>
+          <p className="mt-3">
+            We implement industry-standard security measures including
+            encrypted connections (TLS), bcrypt password hashing, role-based
+            access control, and regular security audits. Payment processing is
+            handled entirely by Stripe, a PCI DSS Level 1 certified provider.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-display text-xl font-bold text-foreground">
+            8. Contact
+          </h2>
+          <p className="mt-3">
+            For privacy-related inquiries, contact us at{' '}
+            <a
+              href="mailto:privacy@lastdonor.org"
+              className="text-primary underline underline-offset-4"
+            >
+              privacy@lastdonor.org
+            </a>
+            .
+          </p>
+        </section>
+      </div>
+    </div>
+  );
+}
