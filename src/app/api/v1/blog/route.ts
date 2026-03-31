@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       ? and(publishedFilter, categoryFilter)
       : publishedFilter;
 
-    let query = db
+    const query = db
       .select({
         id: blogPosts.id,
         slug: blogPosts.slug,

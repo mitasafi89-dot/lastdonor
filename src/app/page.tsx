@@ -46,7 +46,7 @@ async function getHomepageData() {
           title: campaigns.title,
           heroImageUrl: campaigns.heroImageUrl,
           subjectName: campaigns.subjectName,
-          campaignOrganizer: campaigns.campaignOrganizer,
+          campaignOrganizer: sql<string | undefined>`${campaigns.campaignOrganizer}::text`,
           category: campaigns.category,
           raisedAmount: campaigns.raisedAmount,
           goalAmount: campaigns.goalAmount,

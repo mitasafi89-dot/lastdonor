@@ -1,6 +1,7 @@
 import { db } from '@/db';
 import * as schema from '@/db/schema';
 import { eq, and, gte, sql } from 'drizzle-orm';
+import type { CampaignCategory } from '@/types';
 import {
   DONOR_POOL,
   DONOR_POOL_SIZE,
@@ -318,7 +319,7 @@ function pickByAffinity(category: string, rand: () => number): SimulatedDonor {
     // Try to find a donor with matching affinity (sample up to 20 random picks)
     for (let i = 0; i < 20; i++) {
       const donor = DONOR_POOL[Math.floor(rand() * DONOR_POOL_SIZE)];
-      if (donor.categoryAffinity.includes(category as any)) {
+      if (donor.categoryAffinity.includes(category as CampaignCategory)) {
         return donor;
       }
     }

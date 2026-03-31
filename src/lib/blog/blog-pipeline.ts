@@ -130,7 +130,7 @@ export async function runBlogPipeline(
       const briefStartMs = Date.now();
       await logPipelineStep(topic.id, 'brief_started');
 
-      let secondaryKeywords = Array.isArray(topic.secondaryKeywords)
+      const secondaryKeywords = Array.isArray(topic.secondaryKeywords)
         ? (topic.secondaryKeywords as string[])
         : [];
 

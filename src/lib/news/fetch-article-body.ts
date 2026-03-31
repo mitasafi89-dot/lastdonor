@@ -60,7 +60,7 @@ export async function fetchArticleBody(
  */
 function extractArticleText(html: string): string {
   // Remove scripts, styles, and non-content elements
-  let cleaned = html
+  const cleaned = html
     .replace(/<script[\s\S]*?<\/script>/gi, '')
     .replace(/<style[\s\S]*?<\/style>/gi, '')
     .replace(/<nav[\s\S]*?<\/nav>/gi, '')

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -441,18 +442,18 @@ export function ShareYourStoryForm() {
           Check your email for tips on how to share your campaign effectively.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <a
+          <Link
             href="/dashboard"
             className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
           >
             Go to Dashboard
-          </a>
-          <a
+          </Link>
+          <Link
             href="/"
             className="inline-flex items-center justify-center rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground hover:bg-accent"
           >
             Back to Home
-          </a>
+          </Link>
         </div>
       </div>
     );

@@ -123,7 +123,7 @@ describe('CampaignFilters', () => {
     });
 
     it('shows active category label on pill when selected', () => {
-      render(<CampaignFilters {...defaultProps} activeCategory={'medical' as any} />);
+      render(<CampaignFilters {...defaultProps} activeCategory={'medical' as CampaignCategory} />);
       // The pill should show "Medical" not "Category"
       const pills = screen.getAllByRole('button');
       const categoryPill = pills.find((b) => b.textContent?.includes('Medical'));
@@ -150,7 +150,7 @@ describe('CampaignFilters', () => {
     it('toggles category off when same category clicked again', async () => {
       const user = userEvent.setup();
       mockSearchParams = new URLSearchParams('category=medical');
-      render(<CampaignFilters {...defaultProps} activeCategory={'medical' as any} />);
+      render(<CampaignFilters {...defaultProps} activeCategory={'medical' as CampaignCategory} />);
 
       // Open popover
       const categoryPill = screen.getAllByRole('button').find((b) => b.textContent?.includes('Medical'));
@@ -332,7 +332,7 @@ describe('CampaignFilters', () => {
       render(
         <CampaignFilters
           {...defaultProps}
-          activeCategory={'medical' as any}
+          activeCategory={'medical' as CampaignCategory}
           activeSort="newest"
           activeCloseToTarget={true}
           activeLocation="Texas"
@@ -360,7 +360,7 @@ describe('CampaignFilters', () => {
       render(
         <CampaignFilters
           {...defaultProps}
-          activeCategory={'medical' as any}
+          activeCategory={'medical' as CampaignCategory}
           searchQuery="help"
         />,
       );

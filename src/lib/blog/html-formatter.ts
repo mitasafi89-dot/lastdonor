@@ -25,7 +25,7 @@ export function injectTableOfContents(html: string): string {
   let index = 0;
 
   // First pass — collect headings and add IDs
-  let processed = html.replace(h2Regex, (_match, attrs: string, content: string) => {
+  const processed = html.replace(h2Regex, (_match, attrs: string, content: string) => {
     const plainText = content.replace(/<[^>]+>/g, '').trim();
     const id = `section-${index++}`;
     headings.push({ id, text: plainText });

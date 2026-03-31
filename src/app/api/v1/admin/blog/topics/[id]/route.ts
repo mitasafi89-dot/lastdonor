@@ -38,7 +38,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       );
     }
 
-    let updateData: Record<string, unknown> = { updatedAt: new Date() };
+    const updateData: Record<string, unknown> = { updatedAt: new Date() };
 
     switch (action) {
       case 'generate':

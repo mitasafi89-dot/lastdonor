@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import {
   MagnifyingGlassIcon,
@@ -93,12 +94,12 @@ export default function HowItWorksPage() {
         <p className="mt-2 text-muted-foreground">
           Find someone who needs help and be part of getting them there.
         </p>
-        <a
+        <Link
           href="/campaigns"
           className="mt-4 inline-flex rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
         >
           Browse Campaigns
-        </a>
+        </Link>
       </div>
     </div>
   );
