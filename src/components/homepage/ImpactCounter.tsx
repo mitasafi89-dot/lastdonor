@@ -69,10 +69,10 @@ export function ImpactCounter({
         }}
       />
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+        <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
           Real Numbers. Real People Helped.
         </h2>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-base text-white/70">
+        <p className="mt-3 max-w-2xl text-base text-white/70">
           These are not projections. These are verified totals from real donors
           giving to real campaigns with 0% platform fees.
         </p>
@@ -82,7 +82,7 @@ export function ImpactCounter({
           <StatItem value={campaignsCompleted} label="Campaigns Funded" />
           <StatItem value={peopleSupported} label="Lives Changed" />
         </div>
-        <p className="mt-10 text-center text-sm text-white/60">
+        <p className="mt-10 text-sm text-white/60">
           We publish a full breakdown of every campaign&apos;s funds.{' '}
           <Link
             href="/transparency"

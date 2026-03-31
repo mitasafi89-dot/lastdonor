@@ -152,11 +152,11 @@ export default async function Home() {
       {data.activeCampaigns.length > 0 && (
         <section className="py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
+            <div>
               <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                 Verified Campaigns Raising Money Right Now
               </h2>
-              <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
+              <p className="mt-3 max-w-xl text-base text-muted-foreground">
                 Every campaign below has been reviewed by a real person.
                 Give with confidence knowing your donation is tracked from start to finish.
               </p>
@@ -177,7 +177,7 @@ export default async function Home() {
                 />
               ))}
             </div>
-            <div className="mt-8 text-center">
+            <div className="mt-8">
               <Link
                 href="/campaigns"
                 className="inline-flex rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
@@ -204,11 +204,11 @@ export default async function Home() {
       {data.latestPosts.length > 0 && (
         <section className="py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
+            <div>
               <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                 Impact Stories from Real Campaigns
               </h2>
-              <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
+              <p className="mt-3 max-w-xl text-base text-muted-foreground">
                 Updates, results, and the real stories behind the people you help.
               </p>
             </div>

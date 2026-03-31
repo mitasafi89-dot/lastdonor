@@ -36,11 +36,11 @@ export function CategoryShowcase() {
   return (
     <section className="py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
+        <div>
           <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Find a Cause You Care About
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
+          <p className="mt-3 max-w-xl text-base text-muted-foreground">
             Medical bills, emergencies, education, community needs. Browse
             verified campaigns by category and give where it matters most to you.
           </p>
@@ -62,7 +62,7 @@ export function CategoryShowcase() {
           ))}
         </div>
 
-        <div className="mt-8 text-center">
+        <div className="mt-8">
           <Link
             href="/campaigns"
             className="inline-flex rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"

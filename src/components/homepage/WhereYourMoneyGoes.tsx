@@ -71,18 +71,25 @@ export function WhereYourMoneyGoes() {
   return (
     <section className="py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            90 Cents of Every Dollar Goes Directly to the Person in Need
-          </h2>
-          <p className="mt-3 text-base text-muted-foreground">
-            Most platforms add a 15% &quot;optional&quot; tip at checkout. We
-            charge 0% platform fees. The only cost is payment processing.
-          </p>
+        <div className="grid items-center gap-12 md:grid-cols-2">
+          {/* Left column: copy */}
+          <div>
+            <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              90 Cents of Every Dollar Goes Directly to the Person in Need
+            </h2>
+            <p className="mt-3 max-w-lg text-base text-muted-foreground">
+              Most platforms add a 15% &quot;optional&quot; tip at checkout. We
+              charge 0% platform fees. The only cost is payment processing.
+            </p>
+          </div>
+
+          {/* Right column: chart */}
+          <DonutChart />
         </div>
 
         <div className="mt-14 grid items-center gap-12 md:grid-cols-2">
-          <DonutChart />
+          {/* Legend items below */}
+          <div />
 
           <div className="space-y-6">
             {items.map((item) => (

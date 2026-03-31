@@ -30,13 +30,13 @@ export function TrustBanner() {
   return (
     <section className="bg-primary py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+        <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
           Built on Trust. Backed by Proof.
         </h2>
         <div className="mt-12 grid gap-8 sm:grid-cols-3">
           {trustPoints.map((point) => (
-            <div key={point.title} className="text-center">
-              <point.icon className="mx-auto h-8 w-8 text-white/80" />
+            <div key={point.title}>
+              <point.icon className="h-8 w-8 text-white/80" />
               <h3 className="mt-4 font-display text-lg font-bold text-white">
                 {point.title}
               </h3>
@@ -46,7 +46,7 @@ export function TrustBanner() {
             </div>
           ))}
         </div>
-        <div className="mt-12 text-center">
+        <div className="mt-12">
           <Link
             href="/campaigns"
             className="inline-flex rounded-full bg-brand-amber px-8 py-3.5 text-sm font-bold text-white shadow-lg transition-all hover:bg-brand-amber/90 hover:shadow-xl"

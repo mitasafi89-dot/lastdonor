@@ -32,11 +32,11 @@ export function HowItWorks() {
   return (
     <section className="py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
+        <div>
           <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             3 Simple Steps to Give with Confidence
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+          <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
             Choose a verified campaign, donate securely, and see your impact
             with real updates and receipts.
           </p>

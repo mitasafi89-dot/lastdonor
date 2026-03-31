@@ -30,7 +30,7 @@ export function Newsletter() {
   return (
     <section className="py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl rounded-2xl border border-border bg-card p-8 text-center shadow-sm sm:p-12">
+        <div className="mx-auto max-w-2xl rounded-2xl border border-border bg-card p-8 shadow-sm sm:p-12">
           <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             Verified Campaign Updates, Straight to Your Inbox
           </h2>
