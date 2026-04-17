@@ -19,7 +19,7 @@ import type { DonationPhase } from '@/types';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Campaign Donors — Dashboard — LastDonor.org',
+  title: 'Campaign Donors - Dashboard - LastDonor.org',
   robots: { index: false },
 };
 

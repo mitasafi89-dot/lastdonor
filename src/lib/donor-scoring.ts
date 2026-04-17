@@ -15,10 +15,10 @@ interface ScoreInput {
 /**
  * RFM-based donor scoring algorithm.
  *
- * Recency (R)   — 0-30 pts: how recently they donated
- * Frequency (F) — 0-30 pts: how many donations total
- * Monetary (M)  — 0-30 pts: lifetime value in dollars
- * Engagement (E) — 0-10 pts: profile completeness + engagement signals
+ * Recency (R)   - 0-30 pts: how recently they donated
+ * Frequency (F) - 0-30 pts: how many donations total
+ * Monetary (M)  - 0-30 pts: lifetime value in dollars
+ * Engagement (E) - 0-10 pts: profile completeness + engagement signals
  *
  * Total: 0-100
  */

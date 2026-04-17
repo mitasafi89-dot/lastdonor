@@ -8,7 +8,7 @@ import type { Metadata } from 'next';
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const metadata: Metadata = {
-  title: 'New Campaign Update — Admin — LastDonor.org',
+  title: 'New Campaign Update - Admin - LastDonor.org',
   robots: { index: false },
 };
 

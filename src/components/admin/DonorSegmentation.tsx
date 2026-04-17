@@ -72,20 +72,22 @@ export function DonorSegmentation() {
 
   // Load counts for all segments on mount
   useEffect(() => {
+    const controller = new AbortController();
     async function loadCounts() {
       const counts: Record<string, number> = {};
       await Promise.all(
         SEGMENTS.map(async (seg) => {
           try {
-            const res = await fetch(`/api/v1/admin/donors/segments?segment=${seg.key}&limit=1`);
+            const res = await fetch(`/api/v1/admin/donors/segments?segment=${seg.key}&limit=1`, { signal: controller.signal });
             const json = await res.json();
             if (json.ok) counts[seg.key] = json.data.total;
           } catch { /* ignore */ }
         }),
       );
-      setSegmentCounts(counts);
+      if (!controller.signal.aborted) setSegmentCounts(counts);
     }
     loadCounts();
+    return () => controller.abort();
   }, []);
 
   const fetchSegment = useCallback(async (params: URLSearchParams) => {
@@ -168,7 +170,7 @@ export function DonorSegmentation() {
                 <p className="text-xs text-muted-foreground">{seg.description}</p>
               </div>
               <span className="text-2xl font-semibold tabular-nums">
-                {segmentCounts[seg.key] ?? '—'}
+                {segmentCounts[seg.key] ?? '-'}
               </span>
             </button>
           );

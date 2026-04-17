@@ -7,7 +7,7 @@ import { NotificationsClient } from '@/app/notifications/NotificationsClient';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Notifications — LastDonor.org',
+  title: 'Notifications - LastDonor.org',
   robots: { index: false },
 };
 

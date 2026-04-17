@@ -1,5 +1,5 @@
 /**
- * GEO Optimizer — Generative Engine Optimization for AI/LLM citation readiness.
+ * GEO Optimizer - Generative Engine Optimization for AI/LLM citation readiness.
  * Ensures content is structured for extraction by ChatGPT, Perplexity, Gemini, etc.
  */
 

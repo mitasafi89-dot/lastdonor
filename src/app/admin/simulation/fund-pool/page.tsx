@@ -7,7 +7,7 @@ import { sql, eq, and } from 'drizzle-orm';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Fund Pool — Admin — LastDonor.org',
+  title: 'Fund Pool - Admin - LastDonor.org',
   robots: { index: false },
 };
 

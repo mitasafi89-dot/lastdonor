@@ -28,7 +28,7 @@ describe('PhaseBadge', () => {
     const badge = screen.getByText('First Believers');
     expect(badge).toHaveAttribute(
       'aria-label',
-      'Campaign phase: First Believers — 0 to 25% funded',
+      'Campaign phase: First Believers - 0 to 25% funded',
     );
   });
 
@@ -37,7 +37,7 @@ describe('PhaseBadge', () => {
     const badge = screen.getByText('Last Donor Zone');
     expect(badge).toHaveAttribute(
       'aria-label',
-      'Campaign phase: Last Donor Zone — 91 to 100% funded',
+      'Campaign phase: Last Donor Zone - 91 to 100% funded',
     );
   });
 

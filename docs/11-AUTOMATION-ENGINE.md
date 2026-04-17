@@ -1,4 +1,4 @@
-# LastDonor.org — Automation Engine Specification
+# LastDonor.org - Automation Engine Specification
 
 **Version**: 0.1 (Pre-Development)
 **Date**: March 20, 2026
@@ -8,18 +8,18 @@
 
 ## 1. Design Principles
 
-1. **Zero human intervention** — Every process from news ingestion to campaign publishing to donor simulation runs autonomously.
-2. **Instant auto-publish** — No editorial approval queue. Campaigns go live immediately on generation.
-3. **Campaign-contextual** — All generated content (stories, messages, updates) references specific names, locations, units, and events.
-4. **Indistinguishable from real** — Simulated donor activity must be impossible to differentiate from organic activity.
-5. **Cost-efficient** — AI operations use GPT-4o-mini via OpenRouter. Target < $1/month for full simulation.
+1. **Zero human intervention** - Every process from news ingestion to campaign publishing to donor simulation runs autonomously.
+2. **Instant auto-publish** - No editorial approval queue. Campaigns go live immediately on generation.
+3. **Campaign-contextual** - All generated content (stories, messages, updates) references specific names, locations, units, and events.
+4. **Indistinguishable from real** - Simulated donor activity must be impossible to differentiate from organic activity.
+5. **Cost-efficient** - AI operations use GPT-4o-mini via OpenRouter. Target < $1/month for full simulation.
 
 ---
 
 ## 2. AI Infrastructure
 
 ### Provider
-- **OpenRouter** (openrouter.ai) — OpenAI-compatible API gateway
+- **OpenRouter** (openrouter.ai) - OpenAI-compatible API gateway
 - **SDK**: `openai` npm package pointed at `https://openrouter.ai/api/v1`
 - **Primary model**: `openai/gpt-4o-mini` (cheap, fast, sufficient quality)
 - **Fallback model**: `anthropic/claude-3.5-haiku` (if primary unavailable)
@@ -31,7 +31,7 @@ OPENROUTER_API_KEY=sk-or-v1-...
 
 ---
 
-## 3. Content Pipeline — News to Campaign
+## 3. Content Pipeline - News to Campaign
 
 ### 3.1 Flow
 
@@ -69,7 +69,7 @@ OPENROUTER_API_KEY=sk-or-v1-...
 
 ### 3.2 News Sources
 
-#### A. GNews API — Cross-Category Keyword Sets
+#### A. GNews API - Cross-Category Keyword Sets
 
 | Category | Keywords (rotated per query) |
 |----------|-----|
@@ -82,7 +82,7 @@ OPENROUTER_API_KEY=sk-or-v1-...
 | community | "hit by drunk driver", "shooting victim family", "domestic violence survivor", "crime victim fundraiser" |
 | essential-needs | "family facing eviction", "utilities shutoff", "can't pay rent", "job loss family", "food insecurity" |
 
-#### B. RSS Feeds — Military / Veterans
+#### B. RSS Feeds - Military / Veterans
 
 | Source | Feed URL | Content |
 |--------|----------|---------|
@@ -91,26 +91,26 @@ OPENROUTER_API_KEY=sk-or-v1-...
 | Stars and Stripes | stripes.com (RSS) | On-the-ground stories, service member profiles |
 | Military Times | militarytimes.com (RSS) | Branch-specific stories, family stories |
 
-#### C. RSS Feeds + APIs — First Responders
+#### C. RSS Feeds + APIs - First Responders
 
 | Source | Feed URL | Content |
 |--------|----------|---------|
-| ODMP (odmp.org) | odmp.org (scrape/RSS) | Law enforcement LODDs — officer name, agency, EOW date, family |
-| USFA Firefighter Fatalities | apps.usfa.fema.gov/firefighter-fatalities/api/fatalityDatums/feed | Firefighter fatalities — name, department, city, state, cause, date (RSS + CSV API) |
+| ODMP (odmp.org) | odmp.org (scrape/RSS) | Law enforcement LODDs - officer name, agency, EOW date, family |
+| USFA Firefighter Fatalities | apps.usfa.fema.gov/firefighter-fatalities/api/fatalityDatums/feed | Firefighter fatalities - name, department, city, state, cause, date (RSS + CSV API) |
 | Firehouse.com | firehouse.com (RSS) | Fire service news, LODDs section, daily updates |
 | FireRescue1.com | firerescue1.com (RSS) | Fire/EMS news, LODDs, first responder stories |
 | PoliceOne / Police1.com | police1.com (RSS) | Law enforcement news, LODDs, officer injuries |
 
-#### D. RSS Feeds + APIs — Disaster Relief
+#### D. RSS Feeds + APIs - Disaster Relief
 
 | Source | Feed URL | Content |
 |--------|----------|---------|
-| FEMA Disaster Declarations | fema.gov/api/open/v2/DisasterDeclarations | JSON API — declared disasters with type, state, date, counties |
-| NWS Alerts | api.weather.gov/alerts/active | Active severe weather alerts — tornadoes, hurricanes, floods, winter storms |
+| FEMA Disaster Declarations | fema.gov/api/open/v2/DisasterDeclarations | JSON API - declared disasters with type, state, date, counties |
+| NWS Alerts | api.weather.gov/alerts/active | Active severe weather alerts - tornadoes, hurricanes, floods, winter storms |
 | NIFC InciWeb | inciweb.wildfire.gov (RSS) | Active wildfire incidents, location, size, containment |
 | ReliefWeb | reliefweb.int (RSS) | Humanitarian disaster reports, US-specific filter available |
 
-#### E. Local News Aggregation — All Categories
+#### E. Local News Aggregation - All Categories
 
 - GNews API with geo-targeted queries covers medical, memorial, community, and essential-needs stories
 - Target 50+ local TV station RSS feeds (CBS, NBC, ABC, FOX affiliates) for human-interest stories across all categories
@@ -159,7 +159,7 @@ Return JSON:
 
 ### 3.4 AI Entity Extraction Output
 
-Example — Military:
+Example - Military:
 ```json
 {
   "name": "Sgt. Marcus Rivera",
@@ -180,7 +180,7 @@ Example — Military:
 }
 ```
 
-Example — First Responder:
+Example - First Responder:
 ```json
 {
   "name": "Lt. Dale Malone",
@@ -201,7 +201,7 @@ Example — First Responder:
 }
 ```
 
-Example — Medical:
+Example - Medical:
 ```json
 {
   "name": "Maria Gonzalez",
@@ -230,7 +230,7 @@ AI writes using the mandatory 5-section template:
 |---------|---------|--------|
 | **The Hook** | Headline + emotional opening | AI-generated from entities |
 | **Meet Them** | Name, age, hometown, one personal detail | AI-generated from entities |
-| **The Situation** | What happened — plain English, sourced | AI-generated, links original article |
+| **The Situation** | What happened - plain English, sourced | AI-generated, links original article |
 | **The Gap** | What they/family need, specific dollar amounts | AI-estimated from event type |
 | **The Ask** | Tied to the person, impact tiers | AI-generated with standard tiers |
 
@@ -263,8 +263,8 @@ AI adjusts within range based on context (family size, location cost of living, 
 |----------|--------|--------|
 | 1st | DVIDS (military/veterans/first-responders) | Search DVIDS API for unit/event photos from last 14 days (public domain) |
 | 2nd | FEMA / NWS (disaster) | Public domain disaster imagery from active/recent incidents |
-| 3rd | Kling AI (medical/memorial/community/essential-needs) | Generate abstract, non-representational illustrations — teal/amber palette, geometric, no faces |
-| 4th | Category fallback | Branded gradient (teal → dark teal) with category SVG icon — clean, never a fake photo |
+| 3rd | Kling AI (medical/memorial/community/essential-needs) | Generate abstract, non-representational illustrations - teal/amber palette, geometric, no faces |
+| 4th | Category fallback | Branded gradient (teal → dark teal) with category SVG icon - clean, never a fake photo |
 
 #### Platform Image Rotation (Homepage + Category Headers)
 
@@ -298,7 +298,7 @@ Generate realistic, campaign-specific simulated donations with names, locations,
 
 ### 4.2 Donation Amount Generator
 
-Uses **log-normal distribution** — mathematically models how real donations work:
+Uses **log-normal distribution** - mathematically models how real donations work:
 
 ```
 Probability Distribution:
@@ -333,12 +333,12 @@ Static pool of ~500 entries spanning every American demographic:
 Location format varies randomly:
 - "Ken from Michigan"
 - "Maria, Houston TX"
-- "DeShawn — Brooklyn"
+- "DeShawn - Brooklyn"
 - "Anonymous" (5% chance)
 
 ### 4.4 Campaign-Contextual Message Generation
 
-**This is the critical differentiator.** Messages are NOT generic — they reference specific campaign details.
+**This is the critical differentiator.** Messages are NOT generic - they reference specific campaign details.
 
 #### Campaign Context Object
 
@@ -558,7 +558,7 @@ Return plain text, no formatting.
 7 days post-completion, AI generates an impact report:
 
 ```
-Campaign: {name} — {event}
+Campaign: {name} - {event}
 Goal: ${goal} | Raised: ${raised}
 Category: {category}
 

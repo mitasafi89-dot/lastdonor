@@ -90,7 +90,8 @@ export async function GET(request: NextRequest) {
           publishedAt: campaigns.publishedAt,
         })
         .from(campaigns)
-        .orderBy(desc(campaigns.createdAt));
+        .orderBy(desc(campaigns.createdAt))
+        .limit(10000);
 
       const csv = toCSV(
         ['ID', 'Title', 'Slug', 'Status', 'Category', 'Goal ($)', 'Raised ($)', 'Donors', 'Created', 'Published'],

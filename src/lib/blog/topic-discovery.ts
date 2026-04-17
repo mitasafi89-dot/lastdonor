@@ -1,5 +1,5 @@
 /**
- * Topic Discovery — discovers and queues new blog topics from keyword bank,
+ * Topic Discovery - discovers and queues new blog topics from keyword bank,
  * seasonal calendar, and news cross-pollination.
  */
 
@@ -9,6 +9,7 @@ import { eq, desc, and, gte, sql } from 'drizzle-orm';
 import { selectKeywordForTopic, getKeywordCategories } from './keyword-bank';
 import { getInSeasonCategories, getSeasonalBoost } from './seasonal-calendar';
 import { generateSlug } from '@/lib/utils/slug';
+import { checkTopicCandidate } from './publishing-guardrails';
 
 /**
  * Discover new blog topics and add them to the queue.
@@ -64,13 +65,24 @@ export async function discoverTopics(maxTopics: number = 3): Promise<string[]> {
     const title = keywordToTitle(keyword.keyword);
     const slug = generateSlug(title);
 
-    // Check slug uniqueness
+    // Check slug uniqueness in queue AND published posts
     const existing = await db
       .select({ id: blogTopicQueue.id })
       .from(blogTopicQueue)
       .where(eq(blogTopicQueue.slug, slug))
       .limit(1);
     if (existing.length > 0) continue;
+
+    const existingPost = await db
+      .select({ id: blogPosts.id })
+      .from(blogPosts)
+      .where(eq(blogPosts.slug, slug))
+      .limit(1);
+    if (existingPost.length > 0) continue;
+
+    // Publishing guardrails: keyword similarity, title similarity, category cadence
+    const guardrails = await checkTopicCandidate(keyword.keyword, title, category);
+    if (!guardrails.allowed) continue;
 
     const seasonalBoost = getSeasonalBoost(category);
 
@@ -94,7 +106,7 @@ export async function discoverTopics(maxTopics: number = 3): Promise<string[]> {
     allUsed.push(keyword.keyword);
   }
 
-  // 3. News cross-pollination — find recent high-scoring news items
+  // 3. News cross-pollination - find recent high-scoring news items
   //    that could inspire blog content (always runs, has reserved slots)
   {
     const recentNews = await db
@@ -133,6 +145,17 @@ export async function discoverTopics(maxTopics: number = 3): Promise<string[]> {
         .where(eq(blogTopicQueue.slug, slug))
         .limit(1);
       if (existingSlug.length > 0) continue;
+
+      const existingSlugPost = await db
+        .select({ id: blogPosts.id })
+        .from(blogPosts)
+        .where(eq(blogPosts.slug, slug))
+        .limit(1);
+      if (existingSlugPost.length > 0) continue;
+
+      // Publishing guardrails: keyword similarity, title similarity, category cadence
+      const guardrails = await checkTopicCandidate(keyword.keyword, title, news.category);
+      if (!guardrails.allowed) continue;
 
       const [inserted] = await db
         .insert(blogTopicQueue)

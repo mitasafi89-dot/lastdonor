@@ -5,9 +5,10 @@ import { desc, eq } from 'drizzle-orm';
 import { requireRole, UnauthorizedError, ForbiddenError, auth } from '@/lib/auth';
 import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
+import { createBlogTopicSchema } from '@/lib/validators/admin';
 
 /**
- * GET /api/v1/admin/blog/topics — list topic queue
+ * GET /api/v1/admin/blog/topics - list topic queue
  */
 export async function GET() {
   const requestId = randomUUID();
@@ -62,7 +63,7 @@ export async function GET() {
 }
 
 /**
- * POST /api/v1/admin/blog/topics — add a manual topic
+ * POST /api/v1/admin/blog/topics - add a manual topic
  */
 export async function POST(request: Request) {
   const requestId = randomUUID();
@@ -72,14 +73,14 @@ export async function POST(request: Request) {
     const session = await auth();
 
     const body = await request.json();
-    const { title, primaryKeyword, causeCategory, targetWordCount } = body;
-
-    if (!title || !primaryKeyword) {
+    const parsed = createBlogTopicSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { ok: false, error: { code: 'VALIDATION_ERROR', message: 'Title and primary keyword are required', requestId } } satisfies ApiError,
+        { ok: false, error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0]?.message ?? 'Invalid input', requestId } } satisfies ApiError,
         { status: 400 },
       );
     }
+    const { title, primaryKeyword, causeCategory, targetWordCount } = parsed.data;
 
     const slug = title
       .toLowerCase()

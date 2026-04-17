@@ -5,7 +5,7 @@ import { TopicQueueList } from '@/components/admin/TopicQueueList';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Blog Topic Queue — Admin — LastDonor.org',
+  title: 'Blog Topic Queue - Admin - LastDonor.org',
   robots: { index: false },
 };
 

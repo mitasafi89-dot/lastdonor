@@ -9,16 +9,25 @@ import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { passwordSchema } from '@/lib/validators/user';
 
 const resetSchema = z
   .object({
-    password: z.string().min(8, 'Password must be at least 8 characters'),
+    password: passwordSchema,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword'],
   });
+
+const PASSWORD_RULES = [
+  { label: 'At least 10 characters', test: (v: string) => v.length >= 10 },
+  { label: 'One uppercase letter', test: (v: string) => /[A-Z]/.test(v) },
+  { label: 'One lowercase letter', test: (v: string) => /[a-z]/.test(v) },
+  { label: 'One digit', test: (v: string) => /[0-9]/.test(v) },
+] as const;
 
 type ResetFormValues = z.infer<typeof resetSchema>;
 
@@ -34,10 +43,14 @@ function ResetPasswordForm() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<ResetFormValues>({
     resolver: zodResolver(resetSchema),
+    defaultValues: { password: '', confirmPassword: '' },
   });
+
+  const passwordValue = watch('password') ?? '';
 
   async function onSubmit(data: ResetFormValues) {
     setLoading(true);
@@ -106,7 +119,24 @@ function ResetPasswordForm() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <Label htmlFor="password">New Password</Label>
-            <Input id="password" type="password" {...register('password')} />
+            <Input id="password" type="password" autoComplete="new-password" {...register('password')} aria-describedby="password-requirements" />
+            <div id="password-requirements" className="mt-2 space-y-1">
+              {PASSWORD_RULES.map((rule) => {
+                const passes = rule.test(passwordValue);
+                return (
+                  <div key={rule.label} className="flex items-center gap-2 text-xs">
+                    {passes ? (
+                      <CheckCircleIcon className="h-4 w-4 text-brand-green" />
+                    ) : (
+                      <XCircleIcon className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <span className={passes ? 'text-brand-green' : 'text-muted-foreground'}>
+                      {rule.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
             {errors.password && <p className="mt-1 text-sm text-destructive">{errors.password.message}</p>}
           </div>
           <div>

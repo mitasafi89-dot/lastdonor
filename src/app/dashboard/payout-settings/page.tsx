@@ -4,6 +4,8 @@ import { db } from '@/db';
 import { users, campaigns, campaignWithdrawals } from '@/db/schema';
 import { eq, desc, inArray } from 'drizzle-orm';
 import { PayoutSettingsClient } from '@/components/dashboard/PayoutSettingsClient';
+import { isConnectAvailable, getAccountStatus } from '@/lib/stripe-connect';
+import type { ConnectAccountStatus } from '@/lib/stripe-connect';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -76,12 +78,56 @@ async function getPayoutData(userId: string) {
     }));
   }
 
+  // Sync live status from Stripe if user has a Connect account.
+  // This ensures the page always reflects Stripe's actual state,
+  // even if the webhook didn't fire (e.g. missing webhook secret in dev).
+  let resolvedStatus = user?.stripeConnectStatus ?? 'not_started';
+  let resolvedOnboardedAt = user?.stripeConnectOnboardedAt ?? null;
+  let resolvedCurrency = user?.payoutCurrency ?? null;
+
+  if (user?.stripeConnectAccountId) {
+    try {
+      const live = await getAccountStatus(user.stripeConnectAccountId);
+      const liveStatus = live.status as ConnectAccountStatus;
+
+      // Update DB if status diverged
+      if (liveStatus !== resolvedStatus) {
+        const updateFields: Record<string, unknown> = {
+          stripeConnectStatus: liveStatus,
+        };
+
+        // Set onboardedAt on first transition to verified
+        if (liveStatus === 'verified' && !resolvedOnboardedAt) {
+          const now = new Date();
+          updateFields.stripeConnectOnboardedAt = now;
+          resolvedOnboardedAt = now;
+        }
+
+        // Store default currency from Stripe
+        if (live.defaultCurrency && live.defaultCurrency !== resolvedCurrency) {
+          updateFields.payoutCurrency = live.defaultCurrency;
+          resolvedCurrency = live.defaultCurrency;
+        }
+
+        await db
+          .update(users)
+          .set(updateFields)
+          .where(eq(users.id, userId));
+
+        resolvedStatus = liveStatus;
+      }
+    } catch (err) {
+      console.error('[PayoutSettings] Failed to sync live Stripe status:', err);
+      // Fall through with DB status
+    }
+  }
+
   return {
     connectStatus: {
       hasAccount: !!user?.stripeConnectAccountId,
-      status: user?.stripeConnectStatus ?? 'not_started',
-      onboardedAt: user?.stripeConnectOnboardedAt?.toISOString() ?? null,
-      payoutCurrency: user?.payoutCurrency ?? null,
+      status: resolvedStatus,
+      onboardedAt: resolvedOnboardedAt ? resolvedOnboardedAt.toISOString() : null,
+      payoutCurrency: resolvedCurrency,
     },
     campaigns: userCampaigns.map((c) => ({
       id: c.id,
@@ -105,6 +151,7 @@ export default async function PayoutSettingsPage() {
   }
 
   const data = await getPayoutData(session.user.id);
+  const connectAvailable = await isConnectAvailable();
 
   return (
     <>
@@ -117,6 +164,7 @@ export default async function PayoutSettingsPage() {
           connectStatus={data.connectStatus}
           campaigns={data.campaigns}
           withdrawals={data.withdrawals}
+          connectAvailable={connectAvailable}
         />
       </div>
     </>

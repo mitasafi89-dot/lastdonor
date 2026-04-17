@@ -2,25 +2,20 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/lib/auth';
 import { db } from '@/db';
-import { campaigns, donations, campaignUpdates, campaignMilestones } from '@/db/schema';
+import { campaigns, donations, campaignUpdates, impactUpdates } from '@/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { centsToDollars } from '@/lib/utils/currency';
 import { formatDate } from '@/lib/utils/dates';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-  PencilSquareIcon,
-  ShieldCheckIcon,
-  NewspaperIcon,
-  UserGroupIcon,
-  BanknotesIcon,
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline';
 import type { Metadata } from 'next';
 
 export async function generateMetadata({ params: _params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   return {
-    title: 'Campaign Management — Dashboard — LastDonor.org',
+    title: 'Campaign Management - Dashboard - LastDonor.org',
     robots: { index: false },
   };
 }
@@ -93,19 +88,16 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
     .orderBy(desc(campaignUpdates.createdAt))
     .limit(5);
 
-  // Milestones
-  const milestones = await db
+  // Impact update
+  const [impactUpdate] = await db
     .select({
-      phase: campaignMilestones.phase,
-      title: campaignMilestones.title,
-      status: campaignMilestones.status,
-      fundPercentage: campaignMilestones.fundPercentage,
-      fundAmount: campaignMilestones.fundAmount,
-      releasedAmount: campaignMilestones.releasedAmount,
+      status: impactUpdates.status,
+      dueDate: impactUpdates.dueDate,
+      submittedAt: impactUpdates.submittedAt,
     })
-    .from(campaignMilestones)
-    .where(eq(campaignMilestones.campaignId, id))
-    .orderBy(campaignMilestones.phase);
+    .from(impactUpdates)
+    .where(eq(impactUpdates.campaignId, id))
+    .limit(1);
 
   const isEditable = ['draft', 'active'].includes(campaign.status);
 
@@ -182,42 +174,38 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
         {isEditable && (
           <Link
             href={`/dashboard/campaigns/${id}/edit`}
-            className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm transition-colors hover:border-primary hover:bg-muted/40"
+            className="flex items-center rounded-lg border border-border p-3 text-sm font-medium transition-colors hover:border-primary hover:bg-muted/40"
           >
-            <PencilSquareIcon className="h-5 w-5 text-muted-foreground" />
-            <span className="font-medium">Edit Campaign</span>
+            Edit Campaign
           </Link>
         )}
         <Link
           href={`/dashboard/campaigns/${id}/updates`}
-          className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm transition-colors hover:border-primary hover:bg-muted/40"
+          className="flex items-center rounded-lg border border-border p-3 text-sm font-medium transition-colors hover:border-primary hover:bg-muted/40"
         >
-          <NewspaperIcon className="h-5 w-5 text-muted-foreground" />
-          <span className="font-medium">Updates ({recentUpdates.length})</span>
+          Updates ({recentUpdates.length})
         </Link>
         <Link
           href={`/dashboard/campaigns/${id}/donors`}
-          className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm transition-colors hover:border-primary hover:bg-muted/40"
+          className="flex items-center rounded-lg border border-border p-3 text-sm font-medium transition-colors hover:border-primary hover:bg-muted/40"
         >
-          <UserGroupIcon className="h-5 w-5 text-muted-foreground" />
-          <span className="font-medium">Donors ({campaign.donorCount})</span>
+          Donors ({campaign.donorCount})
         </Link>
         <Link
           href={`/dashboard/campaigns/${id}/verification`}
-          className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm transition-colors hover:border-primary hover:bg-muted/40"
+          className="flex items-center gap-2 rounded-lg border border-border p-3 text-sm font-medium transition-colors hover:border-primary hover:bg-muted/40"
         >
-          <ShieldCheckIcon className="h-5 w-5 text-muted-foreground" />
-          <span className="font-medium">
-            Verification
-            <Badge variant="outline" className="ml-2 text-xs">{campaign.verificationStatus}</Badge>
-          </span>
+          Verification
+          <Badge variant="outline" className="text-xs">{campaign.verificationStatus}</Badge>
         </Link>
         <Link
-          href={`/dashboard/campaigns/${id}/milestones`}
-          className="flex items-center gap-3 rounded-lg border border-border p-3 text-sm transition-colors hover:border-primary hover:bg-muted/40"
+          href={`/dashboard/campaigns/${id}/impact-update`}
+          className="flex items-center gap-2 rounded-lg border border-border p-3 text-sm font-medium transition-colors hover:border-primary hover:bg-muted/40"
         >
-          <BanknotesIcon className="h-5 w-5 text-muted-foreground" />
-          <span className="font-medium">Milestones & Fund Releases</span>
+          Impact Update
+          {impactUpdate && (
+            <Badge variant="outline" className="text-xs">{impactUpdate.status}</Badge>
+          )}
         </Link>
       </div>
 
@@ -293,43 +281,31 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
         </section>
       </div>
 
-      {/* Milestones */}
-      {milestones.length > 0 && (
+      {/* Impact Update */}
+      {impactUpdate && (
         <section className="mt-6">
-          <h2 className="font-display text-lg font-bold text-foreground">Milestones</h2>
-          <div className="mt-3 grid gap-3 sm:grid-cols-3">
-            {milestones.map((m) => {
-              const statusColor: Record<string, string> = {
-                pending: 'bg-muted text-muted-foreground',
-                reached: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
-                evidence_submitted: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-                approved: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-                rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-                overdue: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-              };
-              return (
-                <Card key={m.phase}>
-                  <CardContent className="py-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold uppercase text-muted-foreground">Phase {m.phase}</span>
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColor[m.status] ?? ''}`}>
-                        {m.status}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-sm font-medium text-foreground">{m.title}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {m.fundPercentage}% &middot; {centsToDollars(m.fundAmount ?? 0)}
-                    </p>
-                    {(m.releasedAmount ?? 0) > 0 && (
-                      <p className="mt-0.5 text-xs font-medium text-green-600 dark:text-green-400">
-                        Released: {centsToDollars(m.releasedAmount ?? 0)}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+          <h2 className="font-display text-lg font-bold text-foreground">Impact Update</h2>
+          <Card className="mt-3">
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">Status</span>
+                <Badge variant="outline">{impactUpdate.status}</Badge>
+              </div>
+              {impactUpdate.dueDate && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Due by {new Date(impactUpdate.dueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                </p>
+              )}
+              {impactUpdate.status === 'pending' && (
+                <Link
+                  href={`/dashboard/campaigns/${id}/impact-update`}
+                  className="mt-3 inline-block text-sm font-medium text-brand-teal hover:underline"
+                >
+                  Submit your impact update
+                </Link>
+              )}
+            </CardContent>
+          </Card>
         </section>
       )}
     </>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { campaigns, verificationDocuments, users } from '@/db/schema';
-import { eq, and, desc, sql, count } from 'drizzle-orm';
+import { eq, and, desc, asc, count, inArray } from 'drizzle-orm';
 import { requireRole } from '@/lib/auth';
 import { verificationQueueQuerySchema } from '@/lib/validators/verification';
 import { randomUUID } from 'crypto';
@@ -23,6 +23,8 @@ export async function GET(request: NextRequest) {
     const parsed = verificationQueueQuerySchema.safeParse({
       status: searchParams.get('status') || undefined,
       category: searchParams.get('category') || undefined,
+      sortBy: searchParams.get('sortBy') || undefined,
+      sortOrder: searchParams.get('sortOrder') || undefined,
       page: searchParams.get('page') || '1',
       limit: searchParams.get('limit') || '20',
     });
@@ -34,17 +36,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { status, category, page, limit } = parsed.data;
+    const { status, category, sortBy, sortOrder, page, limit } = parsed.data;
     const offset = (page - 1) * limit;
 
+    // Safe ORDER BY using allowlisted column names only
+    const sortColumn = campaigns[sortBy];
+    const orderFn = sortOrder === 'asc' ? asc : desc;
+
     // Reviewable statuses: campaigns that need admin attention
-    const reviewableStatuses = status
-      ? [status]
+    type VerificationStatus = typeof campaigns.$inferSelect.verificationStatus;
+    const reviewableStatuses: VerificationStatus[] = status
+      ? [status as VerificationStatus]
       : ['documents_uploaded', 'submitted_for_review', 'identity_verified'];
 
     // Build conditions
     const conditions = [
-      sql`${campaigns.verificationStatus} IN (${sql.raw(reviewableStatuses.map((s) => `'${s}'`).join(','))})`,
+      inArray(campaigns.verificationStatus, reviewableStatuses),
     ];
 
     if (category) {
@@ -81,7 +88,7 @@ export async function GET(request: NextRequest) {
       .from(campaigns)
       .leftJoin(users, eq(campaigns.creatorId, users.id))
       .where(whereClause!)
-      .orderBy(desc(campaigns.updatedAt))
+      .orderBy(orderFn(sortColumn))
       .limit(limit)
       .offset(offset);
 
@@ -96,7 +103,7 @@ export async function GET(request: NextRequest) {
           count: count(),
         })
         .from(verificationDocuments)
-        .where(sql`${verificationDocuments.campaignId} IN (${sql.raw(campaignIds.map((id) => `'${id}'`).join(','))})`)
+        .where(inArray(verificationDocuments.campaignId, campaignIds))
         .groupBy(verificationDocuments.campaignId);
 
       docCounts = Object.fromEntries(counts.map((c) => [c.campaignId, c.count]));

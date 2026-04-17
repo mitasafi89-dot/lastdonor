@@ -7,7 +7,7 @@ import { UsersList } from '@/components/admin/UsersList';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Users — Admin — LastDonor.org',
+  title: 'Users - Admin - LastDonor.org',
   robots: { index: false },
 };
 

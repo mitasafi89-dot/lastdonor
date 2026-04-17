@@ -1,5 +1,5 @@
 /**
- * Topic Scorer — scores and prioritizes blog topics from the queue.
+ * Topic Scorer - scores and prioritizes blog topics from the queue.
  * Combines keyword metrics, seasonal relevance, news hook freshness,
  * content gap analysis, and category diversity.
  */
@@ -61,7 +61,7 @@ export async function scoreTopic(topic: {
     newsHookBonus = 15;
   }
 
-  // 4. Content gap bonus — check if we already have content for this keyword
+  // 4. Content gap bonus - check if we already have content for this keyword
   const existingPosts = await db
     .select({ id: blogPosts.id })
     .from(blogPosts)
@@ -77,7 +77,7 @@ export async function scoreTopic(topic: {
     contentGapBonus = 10; // No existing content for this keyword
   }
 
-  // 5. Category diversity — check recent posts to avoid over-publishing in one category
+  // 5. Category diversity - check recent posts to avoid over-publishing in one category
   if (topic.causeCategory) {
     const recentInCategory = await db
       .select({ id: blogPosts.id })

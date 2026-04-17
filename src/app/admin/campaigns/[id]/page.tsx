@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { db } from '@/db';
-import { campaigns, donations, campaignUpdates, campaignMilestones } from '@/db/schema';
+import { campaigns, donations, campaignUpdates } from '@/db/schema';
 import { eq, desc, sql } from 'drizzle-orm';
 import { CampaignDetail } from '@/components/admin/CampaignDetail';
 import type { Metadata } from 'next';
@@ -8,7 +8,7 @@ import type { Metadata } from 'next';
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const metadata: Metadata = {
-  title: 'Campaign Detail — Admin — LastDonor.org',
+  title: 'Campaign Detail - Admin - LastDonor.org',
   robots: { index: false },
 };
 
@@ -72,19 +72,6 @@ export default async function AdminCampaignDetailPage({
     .where(eq(donations.campaignId, id))
     .groupBy(donations.phaseAtTime);
 
-  // Campaign milestones
-  const milestones = await db
-    .select({
-      phase: campaignMilestones.phase,
-      title: campaignMilestones.title,
-      status: campaignMilestones.status,
-      fundPercentage: campaignMilestones.fundPercentage,
-      releasedAmount: campaignMilestones.releasedAmount,
-    })
-    .from(campaignMilestones)
-    .where(eq(campaignMilestones.campaignId, id))
-    .orderBy(campaignMilestones.phase);
-
   return (
     <CampaignDetail
       campaign={{
@@ -97,7 +84,6 @@ export default async function AdminCampaignDetailPage({
         suspendedAt: campaign.suspendedAt?.toISOString() ?? null,
         cancelledAt: campaign.cancelledAt?.toISOString() ?? null,
       }}
-      milestones={milestones}
       donations={recentDonations.map((d) => ({
         ...d,
         createdAt: d.createdAt.toISOString(),

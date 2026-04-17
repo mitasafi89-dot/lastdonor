@@ -305,7 +305,7 @@ export function CampaignEditor({ mode, campaignId, defaultValues }: CampaignEdit
           </FormSection>
         </div>
 
-        {/* ─── Right column — Preview & Impact Tiers ─── */}
+        {/* ─── Right column - Preview & Impact Tiers ─── */}
         <div className="space-y-6">
 
           {/* Impact tiers */}
@@ -387,7 +387,7 @@ export function CampaignEditor({ mode, campaignId, defaultValues }: CampaignEdit
         </div>
       </div>
 
-      {/* ─── Story HTML — full width ─── */}
+      {/* ─── Story HTML - full width ─── */}
       <FormSection title="Campaign story">
         <div>
           <FieldLabel required>Story content (HTML)</FieldLabel>

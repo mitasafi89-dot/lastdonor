@@ -25,7 +25,7 @@ export function PhaseBadge({ phase, className }: PhaseBadgeProps) {
         PHASE_STYLES[phase],
         className,
       )}
-      aria-label={`Campaign phase: ${label} — ${range.min} to ${range.max}% funded`}
+      aria-label={`Campaign phase: ${label} - ${range.min} to ${range.max}% funded`}
     >
       {label}
     </span>

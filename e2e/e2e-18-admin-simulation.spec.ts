@@ -56,7 +56,7 @@ test.describe('E2E-18: Admin Simulation Controls', () => {
   test('admin simulation pages do not expose simulation internals to unauthenticated users', async ({
     page,
   }) => {
-    // Visit simulation page without auth — should redirect
+    // Visit simulation page without auth - should redirect
     await page.goto('/admin/simulation');
     const url = page.url();
 

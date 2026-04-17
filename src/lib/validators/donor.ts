@@ -32,25 +32,34 @@ export const addressSchema = z.object({
 });
 
 export const updateDonorProfileSchema = z.object({
-  phone: z.string().max(30).optional().nullable(),
+  phone: z
+    .string()
+    .trim()
+    .max(30, 'Phone must be under 30 characters')
+    .refine(
+      (val) => val === '' || /^\+?[0-9\s\-().]{7,}$/.test(val),
+      'Enter a valid phone number',
+    )
+    .optional()
+    .nullable(),
   donorType: z.enum(DONOR_TYPES).optional(),
-  organizationName: z.string().max(200).optional().nullable(),
+  organizationName: z.string().trim().max(200, 'Organization name must be under 200 characters').optional().nullable(),
   address: addressSchema.optional().nullable(),
-  tags: z.array(z.string().min(1).max(50)).max(20).optional(),
+  tags: z.array(z.string().trim().min(1, 'Tag cannot be empty').max(50, 'Tag must be under 50 characters')).max(20, 'Maximum 20 tags').optional(),
 });
 
 export const createInteractionSchema = z.object({
   type: z.enum(INTERACTION_TYPES),
-  subject: z.string().min(1).max(200),
-  body: z.string().max(5000).optional(),
-  contactedAt: z.string().datetime(),
+  subject: z.string().trim().min(1, 'Subject is required').max(200, 'Subject must be under 200 characters'),
+  body: z.string().trim().max(5000, 'Body must be under 5,000 characters').optional(),
+  contactedAt: z.string().datetime('Must be a valid ISO 8601 date'),
 });
 
 export const createRelationshipSchema = z.object({
-  relatedDonorId: z.string().uuid().optional().nullable(),
-  organizationName: z.string().max(200).optional().nullable(),
+  relatedDonorId: z.string().uuid('Must be a valid UUID').optional().nullable(),
+  organizationName: z.string().trim().max(200, 'Organization name must be under 200 characters').optional().nullable(),
   relationshipType: z.enum(RELATIONSHIP_TYPES),
-  notes: z.string().max(1000).optional(),
+  notes: z.string().trim().max(1000, 'Notes must be under 1,000 characters').optional(),
 });
 
 export type UpdateDonorProfileInput = z.infer<typeof updateDonorProfileSchema>;

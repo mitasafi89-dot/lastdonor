@@ -1,5 +1,5 @@
 /**
- * M11 — 7.4 Frontend Code Audit Test
+ * M11 - 7.4 Frontend Code Audit Test
  *
  * Recursively scans all frontend source files (.ts, .tsx) under
  * src/app/ and src/components/ for patterns that could reveal
@@ -61,13 +61,13 @@ function getFrontendFiles(): string[] {
   return files.filter((f) => {
     const normalised = f.replace(/\\/g, '/');
     if (EXCLUDED_PATHS.some((exc) => normalised.startsWith(exc))) return false;
-    // Exclude test files — they legitimately reference simulation internals
+    // Exclude test files - they legitimately reference simulation internals
     if (/\.(test|spec|integration\.test)\.(ts|tsx)$/.test(normalised)) return false;
     return true;
   });
 }
 
-describe('Frontend Code Audit — Simulation Leak Prevention', () => {
+describe('Frontend Code Audit - Simulation Leak Prevention', () => {
   const frontendFiles = getFrontendFiles();
 
   it('discovers frontend files to scan', () => {
@@ -103,7 +103,7 @@ describe('Frontend Code Audit — Simulation Leak Prevention', () => {
             const upToMatch = source.slice(0, source.indexOf(match[0]));
             const lineNo = (upToMatch.match(/\n/g) ?? []).length + 1;
             expect.fail(
-              `Found "${match[0]}" at ${file}:${lineNo} — ` +
+              `Found "${match[0]}" at ${file}:${lineNo} - ` +
               `${description}. This could leak simulation data to the client.`,
             );
           }

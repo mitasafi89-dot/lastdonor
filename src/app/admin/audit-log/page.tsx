@@ -7,7 +7,7 @@ import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Audit Log — Admin — LastDonor.org',
+  title: 'Audit Log - Admin - LastDonor.org',
   robots: { index: false },
 };
 

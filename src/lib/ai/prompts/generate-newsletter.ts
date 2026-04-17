@@ -52,9 +52,9 @@ CONTEXT:
 - Total newsletter subscribers: ${input.subscriberCount}
 
 Write 3 sections:
-1. Featured campaign (50% of content) — Drive donations to this campaign
-2. Impact update (30%) — Highlight what donations accomplished
-3. One thing to know (20%) — A brief, relevant thought about giving or the cause`;
+1. Featured campaign (50% of content) - Drive donations to this campaign
+2. Impact update (30%) - Highlight what donations accomplished
+3. One thing to know (20%) - A brief, relevant thought about giving or the cause`;
 
   return { systemPrompt, userPrompt };
 }

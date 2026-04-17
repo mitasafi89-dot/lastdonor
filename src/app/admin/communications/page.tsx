@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { BulkEmailDashboard } from '@/components/admin/BulkEmailDashboard';
 
 export const metadata: Metadata = {
-  title: 'Communications — Admin — LastDonor.org',
+  title: 'Communications - Admin - LastDonor.org',
   robots: { index: false },
 };
 

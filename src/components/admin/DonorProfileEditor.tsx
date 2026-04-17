@@ -177,7 +177,7 @@ export function DonorProfileEditor({ userId, initialData }: DonorProfileEditorPr
             <div className="flex items-center gap-2 text-muted-foreground">
               <PhoneIcon className="h-4 w-4 shrink-0" />
               <span className="font-medium text-foreground">Phone:</span>
-              <span>{data.phone || '—'}</span>
+              <span>{data.phone || '-'}</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <BuildingOfficeIcon className="h-4 w-4 shrink-0" />
@@ -193,7 +193,7 @@ export function DonorProfileEditor({ userId, initialData }: DonorProfileEditorPr
               <span>
                 {[addr.street, addr.city, addr.state, addr.zip, addr.country]
                   .filter(Boolean)
-                  .join(', ') || '—'}
+                  .join(', ') || '-'}
               </span>
             </div>
           </div>

@@ -14,7 +14,7 @@ const allocateSchema = z.object({
 });
 
 /**
- * POST /api/v1/admin/fund-pool/allocate — Allocate pending funds to a real campaign.
+ * POST /api/v1/admin/fund-pool/allocate - Allocate pending funds to a real campaign.
  */
 export async function POST(request: NextRequest) {
   const requestId = randomUUID();

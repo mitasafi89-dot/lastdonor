@@ -1,4 +1,4 @@
-# 13 — Implementation Plan
+﻿# 13 â€” Implementation Plan
 
 > **Document ID**: LD-IMPL-001  
 > **Purpose**: Comprehensive, step-by-step development blueprint for LastDonor.org. Every phase, step, substep, file, configuration, and test is documented. This document is the single source of truth for development execution.  
@@ -13,21 +13,21 @@ The following inconsistencies were found across docs and are resolved here. All 
 
 | # | Issue | Resolution |
 |---|---|---|
-| 1 | **Phase boundaries** — Doc 01 says "0-25% First Believers" but doc 08 tests treat 25% as still `first_believers`. Is 25% included in first_believers or the_push? | **25% is the upper bound of `first_believers` (inclusive)**. Thresholds: `0-25` = first_believers, `26-60` = the_push, `61-90` = closing_in, `91-100` = last_donor_zone. Boundary check: `percent <= 25` → first_believers. |
-| 2 | **Phase enum values** — Doc 01 uses "First Believers" (plural), doc 03 uses `first_believer` (singular), doc 07 uses `first_believers` (plural) | **Use snake_case plural**: `first_believers`, `the_push`, `closing_in`, `last_donor_zone`. These are the DB enum and API values. |
-| 3 | **RSS feed check frequency** — Doc 03 says "every 6 hours", doc 04 says "daily", doc 11 says "every 30 min" for GNews and "every 6 hours" for RSS | **GNews API + NWS**: every 30 minutes (via `/api/v1/cron/ingest-news`). **RSS feeds** (DVIDS, Stripes, Military Times, Defense.gov, ODMP, USFA, Firehouse, FireRescue1, Police1): every 6 hours (via `/api/v1/cron/fetch-news`). |
-| 4 | **API route prefix** — Doc 03 uses `/api/campaigns`, doc 07 uses `/api/v1/campaigns`, doc 09 uses both | **All routes use `/api/v1/` prefix** per doc 07 (the API specification doc is authoritative). |
-| 5 | **CSP header** — Doc 06 specifies full CSP, `next.config.ts` omits it | **Add CSP header to `next.config.ts`** in Phase 1.1. |
-| 6 | **Permissions-Policy** — Doc 06 includes `payment=(self)`, current config omits it | **Add `payment=(self)`** to the Permissions-Policy header. |
-| 7 | **Minimum donation (seed vs real)** — Doc 06/07 say $5 minimum. Doc 11 simulation uses $20 minimum | **Platform minimum**: $5 (500 cents) for real donations. **Seed minimum**: $20 (2000 cents) for simulation realism. Both are correct in their respective domains. |
-| 8 | **CMS for blog** — Doc 03 says "MDX files or Sanity (evaluate)" | **Use database-driven blog** (`blog_posts` table) for MVP. MDX adds build complexity. Sanity adds a third-party dependency. Blog content enters via the admin CampaignEditor. |
-| 9 | **File storage** — Doc 03 says "Supabase Storage or Cloudflare R2 (evaluate)" | **Use Supabase Storage** for MVP. Already integrated. R2 is a Phase 2 migration if storage costs grow. |
-| 10 | **`impactTiers` storage** — Not in DB schema but in API spec request/response | **Add `impact_tiers JSONB DEFAULT '[]'` column to `campaigns` table**. Schema: `[{amount: number, label: string}]`. |
-| 11 | **`source` column on donations** — Doc 11 adds it but doc 03 schema doesn't have it | **Add `source TEXT DEFAULT 'real' CHECK (source IN ('real', 'seed'))` to `donations` table**. |
-| 12 | **`phase_at_time` enum values** — Doc 03 uses `first_believer` (singular) | **Normalize to plurals**: `first_believers`, `the_push`, `closing_in`, `last_donor_zone` — matches doc 07 API spec. |
-| 13 | **Photo credit storage** — Mentioned but no DB field | **Add `photo_credit TEXT` column to `campaigns` table**. Format: `"Photo: [name] / DVIDS, [date]"`. |
-| 14 | **Campaign auto-archive** — Doc 11 says "after 90 days of completion" but no cron for it | **Add archive logic to the reconciliation cron** (`/api/v1/cron/reconcile`): any campaign with `status = 'completed'` and `completed_at < NOW() - 90 days` → set `status = 'archived'`. |
-| 15 | **HSTS max-age** — Doc 06 says `31536000` (1 year), `next.config.ts` says `63072000` (2 years) | **Keep 2 years (63072000)** — more secure, already deployed. |
+| 1 | **Phase boundaries** â€” Doc 01 says "0-25% First Believers" but doc 08 tests treat 25% as still `first_believers`. Is 25% included in first_believers or the_push? | **25% is the upper bound of `first_believers` (inclusive)**. Thresholds: `0-25` = first_believers, `26-60` = the_push, `61-90` = closing_in, `91-100` = last_donor_zone. Boundary check: `percent <= 25` â†’ first_believers. |
+| 2 | **Phase enum values** â€” Doc 01 uses "First Believers" (plural), doc 03 uses `first_believer` (singular), doc 07 uses `first_believers` (plural) | **Use snake_case plural**: `first_believers`, `the_push`, `closing_in`, `last_donor_zone`. These are the DB enum and API values. |
+| 3 | **RSS feed check frequency** â€” Doc 03 says "every 6 hours", doc 04 says "daily", doc 11 says "every 30 min" for GNews and "every 6 hours" for RSS | **GNews API + NWS**: every 30 minutes (via `/api/v1/cron/ingest-news`). **RSS feeds** (DVIDS, Stripes, Military Times, Defense.gov, ODMP, USFA, Firehouse, FireRescue1, Police1): every 6 hours (via `/api/v1/cron/fetch-news`). |
+| 4 | **API route prefix** â€” Doc 03 uses `/api/campaigns`, doc 07 uses `/api/v1/campaigns`, doc 09 uses both | **All routes use `/api/v1/` prefix** per doc 07 (the API specification doc is authoritative). |
+| 5 | **CSP header** â€” Doc 06 specifies full CSP, `next.config.ts` omits it | **Add CSP header to `next.config.ts`** in Phase 1.1. |
+| 6 | **Permissions-Policy** â€” Doc 06 includes `payment=(self)`, current config omits it | **Add `payment=(self)`** to the Permissions-Policy header. |
+| 7 | **Minimum donation (seed vs real)** â€” Doc 06/07 say $5 minimum. Doc 11 simulation uses $20 minimum | **Platform minimum**: $5 (500 cents) for real donations. **Seed minimum**: $20 (2000 cents) for simulation realism. Both are correct in their respective domains. |
+| 8 | **CMS for blog** â€” Doc 03 says "MDX files or Sanity (evaluate)" | **Use database-driven blog** (`blog_posts` table) for MVP. MDX adds build complexity. Sanity adds a third-party dependency. Blog content enters via the admin CampaignEditor. |
+| 9 | **File storage** â€” Doc 03 says "Supabase Storage or Cloudflare R2 (evaluate)" | **Use Supabase Storage** for MVP. Already integrated. R2 is a Phase 2 migration if storage costs grow. |
+| 10 | **`impactTiers` storage** â€” Not in DB schema but in API spec request/response | **Add `impact_tiers JSONB DEFAULT '[]'` column to `campaigns` table**. Schema: `[{amount: number, label: string}]`. |
+| 11 | **`source` column on donations** â€” Doc 11 adds it but doc 03 schema doesn't have it | **Add `source TEXT DEFAULT 'real' CHECK (source IN ('real', 'seed'))` to `donations` table**. |
+| 12 | **`phase_at_time` enum values** â€” Doc 03 uses `first_believer` (singular) | **Normalize to plurals**: `first_believers`, `the_push`, `closing_in`, `last_donor_zone` â€” matches doc 07 API spec. |
+| 13 | **Photo credit storage** â€” Mentioned but no DB field | **Add `photo_credit TEXT` column to `campaigns` table**. Format: `"Photo: [name] / DVIDS, [date]"`. |
+| 14 | **Campaign auto-archive** â€” Doc 11 says "after 90 days of completion" but no cron for it | **Add archive logic to the reconciliation cron** (`/api/v1/cron/reconcile`): any campaign with `status = 'completed'` and `completed_at < NOW() - 90 days` â†’ set `status = 'archived'`. |
+| 15 | **HSTS max-age** â€” Doc 06 says `31536000` (1 year), `next.config.ts` says `63072000` (2 years) | **Keep 2 years (63072000)** â€” more secure, already deployed. |
 
 ---
 
@@ -43,9 +43,9 @@ The following inconsistencies were found across docs and are resolved here. All 
 
 ---
 
-## PHASE 1 — Foundation & Infrastructure
+## PHASE 1 â€” Foundation & Infrastructure
 
-### 1.1 — Install Missing Dependencies
+### 1.1 â€” Install Missing Dependencies
 
 **Packages not yet in `package.json` that are required:**
 
@@ -96,7 +96,7 @@ Then install required shadcn/ui components:
 npx shadcn@latest add button input label card dialog dropdown-menu select tabs badge separator avatar sheet textarea toast skeleton table switch radio-group tooltip popover command
 ```
 
-### 1.2 — Project Directory Structure
+### 1.2 â€” Project Directory Structure
 
 Create the following directories. Files listed without content are created in later substeps.
 
@@ -328,10 +328,10 @@ test/
     ci.yml
 public/
   fonts/
-    (self-hosted WOFF2 files — added in 1.4)
+    (self-hosted WOFF2 files â€” added in 1.4)
 ```
 
-### 1.3 — Tailwind CSS 4 Brand Configuration
+### 1.3 â€” Tailwind CSS 4 Brand Configuration
 
 **File: `src/app/globals.css`**
 
@@ -341,7 +341,7 @@ Tailwind CSS 4 uses CSS-first configuration. Define brand tokens as CSS custom p
 @import "tailwindcss";
 
 @theme {
-  /* Brand Colors — Light Mode */
+  /* Brand Colors â€” Light Mode */
   --color-brand-teal: #0F766E;
   --color-brand-amber: #D97706;
   --color-brand-red: #8B2332;
@@ -351,7 +351,7 @@ Tailwind CSS 4 uses CSS-first configuration. Define brand tokens as CSS custom p
   --color-brand-gray: #6B7280;
   --color-brand-border: #E5E7EB;
 
-  /* Brand Colors — Dark Mode */
+  /* Brand Colors â€” Dark Mode */
   --color-dark-bg: #0F1A19;
   --color-dark-surface: #1A2E2B;
   --color-dark-text: #F1F5F9;
@@ -385,7 +385,7 @@ Tailwind CSS 4 uses CSS-first configuration. Define brand tokens as CSS custom p
 }
 ```
 
-### 1.4 — Font Loading (Self-Hosted)
+### 1.4 â€” Font Loading (Self-Hosted)
 
 **Font files to download and place in `public/fonts/`:**
 
@@ -399,7 +399,7 @@ Tailwind CSS 4 uses CSS-first configuration. Define brand tokens as CSS custom p
 
 **Alternative approach (recommended)**: Use `next/font/google` which automatically self-hosts, subsets, and preloads.
 
-**File: `src/app/layout.tsx`** — Font configuration:
+**File: `src/app/layout.tsx`** â€” Font configuration:
 
 ```typescript
 import { DM_Serif_Display, DM_Sans, DM_Mono } from 'next/font/google';
@@ -428,7 +428,7 @@ const dmMono = DM_Mono({
 
 Apply font CSS variables to `<html>` via `className={`${dmSerifDisplay.variable} ${dmSans.variable} ${dmMono.variable}`}`.
 
-### 1.5 — Database Schema (Drizzle ORM)
+### 1.5 â€” Database Schema (Drizzle ORM)
 
 **File: `src/db/schema.ts`**
 
@@ -467,7 +467,7 @@ export const auditSeverityEnum = pgEnum('audit_severity', [
 
 #### Tables
 
-**`campaigns`** — 22 columns:
+**`campaigns`** â€” 22 columns:
 
 | Column | Type | Constraints |
 |---|---|---|
@@ -485,21 +485,21 @@ export const auditSeverityEnum = pgEnum('audit_severity', [
 | `location` | `text` | nullable |
 | `subject_name` | `text` | NOT NULL |
 | `subject_hometown` | `text` | nullable |
-| `impact_tiers` | `jsonb` | DEFAULT `'[]'` — `[{amount, label}]` |
-| `source` | `text` | DEFAULT `'manual'` — `'manual'` or `'automated'` |
+| `impact_tiers` | `jsonb` | DEFAULT `'[]'` â€” `[{amount, label}]` |
+| `source` | `text` | DEFAULT `'manual'` â€” `'manual'` or `'automated'` |
 | `created_at` | `timestamptz` | NOT NULL, DEFAULT `now()` |
 | `updated_at` | `timestamptz` | NOT NULL, DEFAULT `now()` |
 | `published_at` | `timestamptz` | nullable |
 | `completed_at` | `timestamptz` | nullable |
-| `last_donor_id` | `uuid` | FK → `users.id`, nullable |
+| `last_donor_id` | `uuid` | FK â†’ `users.id`, nullable |
 
-**`donations`** — 16 columns:
+**`donations`** â€” 16 columns:
 
 | Column | Type | Constraints |
 |---|---|---|
 | `id` | `uuid` | PRIMARY KEY, `defaultRandom()` |
-| `campaign_id` | `uuid` | FK → `campaigns.id`, NOT NULL |
-| `user_id` | `uuid` | FK → `users.id`, nullable (guest donations) |
+| `campaign_id` | `uuid` | FK â†’ `campaigns.id`, NOT NULL |
+| `user_id` | `uuid` | FK â†’ `users.id`, nullable (guest donations) |
 | `stripe_payment_id` | `text` | NOT NULL |
 | `amount` | `integer` | NOT NULL (cents), CHECK `amount >= 500` |
 | `donor_name` | `text` | NOT NULL |
@@ -513,7 +513,7 @@ export const auditSeverityEnum = pgEnum('audit_severity', [
 | `refunded` | `boolean` | NOT NULL, DEFAULT `false` |
 | `created_at` | `timestamptz` | NOT NULL, DEFAULT `now()` |
 
-**`users`** — 12 columns:
+**`users`** â€” 12 columns:
 
 | Column | Type | Constraints |
 |---|---|---|
@@ -528,21 +528,21 @@ export const auditSeverityEnum = pgEnum('audit_severity', [
 | `total_donated` | `integer` | NOT NULL, DEFAULT `0` (cents) |
 | `campaigns_supported` | `integer` | NOT NULL, DEFAULT `0` |
 | `last_donor_count` | `integer` | NOT NULL, DEFAULT `0` |
-| `badges` | `jsonb` | NOT NULL, DEFAULT `'[]'` — `[{type, campaignSlug, earnedAt}]` |
+| `badges` | `jsonb` | NOT NULL, DEFAULT `'[]'` â€” `[{type, campaignSlug, earnedAt}]` |
 | `created_at` | `timestamptz` | NOT NULL, DEFAULT `now()` |
 
-**`campaign_updates`** — 6 columns:
+**`campaign_updates`** â€” 6 columns:
 
 | Column | Type | Constraints |
 |---|---|---|
 | `id` | `uuid` | PRIMARY KEY, `defaultRandom()` |
-| `campaign_id` | `uuid` | FK → `campaigns.id`, NOT NULL |
+| `campaign_id` | `uuid` | FK â†’ `campaigns.id`, NOT NULL |
 | `title` | `text` | NOT NULL |
 | `body_html` | `text` | NOT NULL |
 | `image_url` | `text` | nullable |
 | `created_at` | `timestamptz` | NOT NULL, DEFAULT `now()` |
 
-**`blog_posts`** — 12 columns:
+**`blog_posts`** â€” 12 columns:
 
 | Column | Type | Constraints |
 |---|---|---|
@@ -559,7 +559,7 @@ export const auditSeverityEnum = pgEnum('audit_severity', [
 | `published_at` | `timestamptz` | nullable |
 | `created_at` | `timestamptz` | NOT NULL, DEFAULT `now()` |
 
-**`newsletter_subscribers`** — 5 columns:
+**`newsletter_subscribers`** â€” 5 columns:
 
 | Column | Type | Constraints |
 |---|---|---|
@@ -567,47 +567,47 @@ export const auditSeverityEnum = pgEnum('audit_severity', [
 | `email` | `text` | UNIQUE, NOT NULL |
 | `subscribed_at` | `timestamptz` | NOT NULL, DEFAULT `now()` |
 | `unsubscribed_at` | `timestamptz` | nullable |
-| `source` | `text` | nullable — `'homepage'`, `'campaign'`, `'blog'`, `'footer'` |
+| `source` | `text` | nullable â€” `'homepage'`, `'campaign'`, `'blog'`, `'footer'` |
 
-**`news_items`** — 11 columns:
+**`news_items`** â€” 11 columns:
 
 | Column | Type | Constraints |
 |---|---|---|
 | `id` | `uuid` | PRIMARY KEY, `defaultRandom()` |
 | `title` | `text` | NOT NULL |
 | `url` | `text` | UNIQUE, NOT NULL |
-| `source` | `text` | NOT NULL — `'gnews'`, `'dvids'`, `'stripes'`, `'military_times'`, `'defense_gov'`, `'odmp'`, `'usfa'`, `'firehouse'`, `'firerescue1'`, `'police1'`, `'fema'`, `'nws'`, `'inciweb'`, `'reliefweb'` |
+| `source` | `text` | NOT NULL â€” `'gnews'`, `'dvids'`, `'stripes'`, `'military_times'`, `'defense_gov'`, `'odmp'`, `'usfa'`, `'firehouse'`, `'firerescue1'`, `'police1'`, `'fema'`, `'nws'`, `'inciweb'`, `'reliefweb'` |
 | `summary` | `text` | nullable |
 | `category` | `campaign_category` | nullable |
 | `relevance_score` | `integer` | nullable (0-100) |
 | `campaign_created` | `boolean` | NOT NULL, DEFAULT `false` |
-| `campaign_id` | `uuid` | FK → `campaigns.id`, nullable |
+| `campaign_id` | `uuid` | FK â†’ `campaigns.id`, nullable |
 | `published_at` | `timestamptz` | nullable |
 | `fetched_at` | `timestamptz` | NOT NULL, DEFAULT `now()` |
 
-**`campaign_seed_messages`** — 7 columns:
+**`campaign_seed_messages`** â€” 7 columns:
 
 | Column | Type | Constraints |
 |---|---|---|
 | `id` | `uuid` | PRIMARY KEY, `defaultRandom()` |
-| `campaign_id` | `uuid` | FK → `campaigns.id`, NOT NULL |
+| `campaign_id` | `uuid` | FK â†’ `campaigns.id`, NOT NULL |
 | `message` | `text` | NOT NULL |
-| `persona` | `text` | nullable — `'veteran'`, `'spouse'`, `'neighbor'`, etc. |
+| `persona` | `text` | nullable â€” `'veteran'`, `'spouse'`, `'neighbor'`, etc. |
 | `phase` | `donation_phase` | NOT NULL |
 | `used` | `boolean` | NOT NULL, DEFAULT `false` |
 | `created_at` | `timestamptz` | NOT NULL, DEFAULT `now()` |
 
-**`audit_logs`** — 10 columns (append-only):
+**`audit_logs`** â€” 10 columns (append-only):
 
 | Column | Type | Constraints |
 |---|---|---|
 | `id` | `uuid` | PRIMARY KEY, `defaultRandom()` |
 | `timestamp` | `timestamptz` | NOT NULL, DEFAULT `now()` |
-| `event_type` | `text` | NOT NULL — e.g. `'campaign.published'`, `'donation.recorded'`, `'user.login'` |
+| `event_type` | `text` | NOT NULL â€” e.g. `'campaign.published'`, `'donation.recorded'`, `'user.login'` |
 | `actor_id` | `uuid` | nullable (null for system events) |
 | `actor_role` | `user_role` | nullable |
 | `actor_ip` | `text` | nullable |
-| `target_type` | `text` | nullable — `'campaign'`, `'donation'`, `'user'`, `'blog_post'` |
+| `target_type` | `text` | nullable â€” `'campaign'`, `'donation'`, `'user'`, `'blog_post'` |
 | `target_id` | `uuid` | nullable |
 | `details` | `jsonb` | DEFAULT `'{}'` |
 | `severity` | `audit_severity` | NOT NULL, DEFAULT `'info'` |
@@ -619,9 +619,9 @@ The Drizzle adapter for NextAuth v5 requires `accounts`, `sessions`, and `verifi
 ```typescript
 import { pgTable, text, timestamp, primaryKey, integer } from 'drizzle-orm/pg-core';
 
-// accounts — OAuth provider links
-// sessions — active sessions  
-// verification_tokens — email verification + password reset
+// accounts â€” OAuth provider links
+// sessions â€” active sessions  
+// verification_tokens â€” email verification + password reset
 ```
 
 Follow the `@auth/drizzle-adapter` documentation for exact column definitions. The adapter auto-manages these tables.
@@ -689,7 +689,7 @@ CREATE POLICY admin_full ON campaigns FOR ALL
 
 **Note**: Because API routes use Drizzle ORM with the `DATABASE_URL` connection (not Supabase client), RLS is bypassed in API routes. Authorization is enforced in middleware/route handlers. RLS is a defense-in-depth layer for any direct Supabase client access (e.g., Realtime subscriptions on the frontend).
 
-### 1.6 — Database Connection & Client
+### 1.6 â€” Database Connection & Client
 
 **File: `src/db/index.ts`**
 
@@ -705,7 +705,7 @@ export const db = drizzle(client, { schema });
 
 `prepare: false` is required for Supabase connection pooling (PgBouncer in transaction mode).
 
-### 1.7 — Run Initial Migration
+### 1.7 â€” Run Initial Migration
 
 ```bash
 npm run db:generate
@@ -714,16 +714,16 @@ npm run db:migrate
 
 Verify all 10 tables created in Supabase Dashboard: `campaigns`, `donations`, `users`, `campaign_updates`, `blog_posts`, `newsletter_subscribers`, `news_items`, `campaign_seed_messages`, `audit_logs`, plus NextAuth tables (`accounts`, `sessions`, `verification_tokens`).
 
-### 1.8 — Authentication (NextAuth v5)
+### 1.8 â€” Authentication (NextAuth v5)
 
 **File: `src/lib/auth.ts`**
 
 Configure NextAuth with:
 
-1. **Drizzle Adapter** — Connects to Supabase PostgreSQL
-2. **Credentials Provider** — Email + password with bcrypt (cost factor 12)
-3. **Google Provider** — OAuth via `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
-4. **Session Strategy** — `"jwt"` (stateless JWT in HTTP-only cookie)
+1. **Drizzle Adapter** â€” Connects to Supabase PostgreSQL
+2. **Credentials Provider** â€” Email + password with bcrypt (cost factor 12)
+3. **Google Provider** â€” OAuth via `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
+4. **Session Strategy** â€” `"jwt"` (stateless JWT in HTTP-only cookie)
 5. **Callbacks**:
    - `jwt`: Add `role` to JWT token from database
    - `session`: Expose `role` and `id` in session object
@@ -745,7 +745,7 @@ Configure NextAuth with:
 | `editor` | 24 hours (86400 seconds) |
 | `admin` | 8 hours (28800 seconds) |
 
-**Account lockout**: Track failed login attempts. After 5 failures for the same email within 15 minutes → lock account for 15 minutes. Send lockout notification email via Resend.
+**Account lockout**: Track failed login attempts. After 5 failures for the same email within 15 minutes â†’ lock account for 15 minutes. Send lockout notification email via Resend.
 
 **File: `src/middleware.ts`**
 
@@ -777,7 +777,7 @@ export async function requireRole(allowedRoles: UserRole[]) {
 }
 ```
 
-### 1.9 — Core Utility Functions
+### 1.9 â€” Core Utility Functions
 
 **File: `src/lib/utils/currency.ts`**
 
@@ -886,7 +886,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 ```
 
-### 1.10 — Zod Validation Schemas
+### 1.10 â€” Zod Validation Schemas
 
 **File: `src/lib/validators/donation.ts`**
 
@@ -969,7 +969,7 @@ export const subscribeSchema = z.object({
 });
 ```
 
-### 1.11 — TypeScript Type Definitions
+### 1.11 â€” TypeScript Type Definitions
 
 **File: `src/types/index.ts`**
 
@@ -1019,7 +1019,7 @@ export interface ApiError {
 }
 ```
 
-### 1.12 — Stripe Client Configuration
+### 1.12 â€” Stripe Client Configuration
 
 **File: `src/lib/stripe.ts`**
 
@@ -1034,7 +1034,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 Only imported in server-side code (API routes). Never imported in client components.
 
-### 1.13 — Resend Email Client
+### 1.13 â€” Resend Email Client
 
 **File: `src/lib/resend.ts`**
 
@@ -1044,7 +1044,7 @@ import { Resend } from 'resend';
 export const resend = new Resend(process.env.RESEND_API_KEY);
 ```
 
-### 1.14 — OpenRouter AI Client
+### 1.14 â€” OpenRouter AI Client
 
 **File: `src/lib/ai/openrouter.ts`**
 
@@ -1064,7 +1064,7 @@ export const PRIMARY_MODEL = 'openai/gpt-4o-mini';
 export const FALLBACK_MODEL = 'anthropic/claude-3.5-haiku';
 ```
 
-### 1.15 — Security Headers Update
+### 1.15 â€” Security Headers Update
 
 **Update `next.config.ts`** to add CSP header and `payment=(self)` to Permissions-Policy:
 
@@ -1094,7 +1094,7 @@ Update Permissions-Policy to include `payment=(self)`:
 },
 ```
 
-### 1.16 — Root Layout
+### 1.16 â€” Root Layout
 
 **File: `src/app/layout.tsx`**
 
@@ -1112,7 +1112,7 @@ Metadata configuration:
 export const metadata: Metadata = {
   title: {
     template: '%s | LastDonor.org',
-    default: 'LastDonor.org — Donate to Real People in Need | 100% Transparent Charity',
+    default: 'LastDonor.org â€” Donate to Real People in Need | 100% Transparent Charity',
   },
   description: 'Verified fundraising campaigns for military families, veterans, first responders, disaster victims, and people in crisis. 100% transparent. You're the reason it's done.',
   metadataBase: new URL('https://lastdonor.org'),
@@ -1131,7 +1131,7 @@ export const metadata: Metadata = {
 };
 ```
 
-### 1.17 — Layout Components
+### 1.17 â€” Layout Components
 
 **`src/components/layout/SkipToContent.tsx`**
 
@@ -1143,7 +1143,7 @@ Renders `<a href="#main-content" className="sr-only focus:not-sr-only ...">Skip 
 - Navigation items: Campaigns, About, Blog, Transparency
 - Dark mode toggle
 - Login/Register buttons (or user menu if authenticated)
-- Mobile: hamburger menu → Sheet (shadcn/ui) slide-out
+- Mobile: hamburger menu â†’ Sheet (shadcn/ui) slide-out
 - Responsive: collapses at `md:` breakpoint
 
 **`src/components/layout/Footer.tsx`**
@@ -1161,7 +1161,7 @@ Renders `<a href="#main-content" className="sr-only focus:not-sr-only ...">Skip 
 - Used on campaign pages and blog posts
 - JSON-LD `BreadcrumbList` structured data
 
-### 1.18 — Dark Mode Toggle
+### 1.18 â€” Dark Mode Toggle
 
 **File: `src/components/DarkModeToggle.tsx`**
 
@@ -1173,21 +1173,21 @@ Renders `<a href="#main-content" className="sr-only focus:not-sr-only ...">Skip 
 
 ---
 
-## PHASE 2 — Campaign System & Donations
+## PHASE 2 â€” Campaign System & Donations
 
-### 2.1 — Campaign Listing Page
+### 2.1 â€” Campaign Listing Page
 
 **File: `src/app/campaigns/page.tsx`**
 
 - **Data**: Fetch active + LDZ campaigns from DB via server component
-- **Filters**: Category tabs (all 8 categories + "All") — URL param `?category=military`
-- **Sort**: Dropdown — newest, most_funded, least_funded, closing_soon
+- **Filters**: Category tabs (all 8 categories + "All") â€” URL param `?category=military`
+- **Sort**: Dropdown â€” newest, most_funded, least_funded, closing_soon
 - **Pagination**: Cursor-based, "Load More" button
-- **Layout**: Responsive grid — 3 columns desktop, 2 tablet, 1 mobile
+- **Layout**: Responsive grid â€” 3 columns desktop, 2 tablet, 1 mobile
 - **SEO**: `<title>Active Campaigns | LastDonor.org</title>`, description, canonical
 - **Components used**: `<CampaignCard>`, filter tabs (shadcn Tabs), sort Select
 
-### 2.2 — CampaignCard Component
+### 2.2 â€” CampaignCard Component
 
 **File: `src/components/campaign/CampaignCard.tsx`**
 
@@ -1201,7 +1201,7 @@ Renders `<a href="#main-content" className="sr-only focus:not-sr-only ...">Skip 
 - Location text
 - `<PhaseBadge>` component
 
-### 2.3 — ProgressBar Component
+### 2.3 â€” ProgressBar Component
 
 **File: `src/components/campaign/ProgressBar.tsx`**
 
@@ -1213,15 +1213,15 @@ Renders `<a href="#main-content" className="sr-only focus:not-sr-only ...">Skip 
   - `last_donor_zone`: `bg-brand-red` (pulsing animation)
 - ARIA: `role="progressbar"`, `aria-valuenow={raised}`, `aria-valuemin={0}`, `aria-valuemax={goal}`, `aria-label="Campaign progress: {percent}% funded"`
 
-### 2.4 — PhaseBadge Component
+### 2.4 â€” PhaseBadge Component
 
 **File: `src/components/campaign/PhaseBadge.tsx`**
 
 - Displays phase label: "First Believers" / "The Push" / "Closing In" / "Last Donor Zone"
 - Color matches phase
-- `aria-label` with full description: "Campaign phase: First Believers — 0 to 25% funded"
+- `aria-label` with full description: "Campaign phase: First Believers â€” 0 to 25% funded"
 
-### 2.5 — Individual Campaign Page
+### 2.5 â€” Individual Campaign Page
 
 **File: `src/app/campaigns/[slug]/page.tsx`**
 
@@ -1243,11 +1243,11 @@ Renders `<a href="#main-content" className="sr-only focus:not-sr-only ...">Skip 
   13. "Report Inaccuracy" button
   14. Related campaigns (same category, up to 3)
 
-- **SEO**: Dynamic title `Help {Name} — {Situation} | LastDonor.org`, dynamic description, dynamic OG image (`/api/v1/og/campaign/{slug}`), `DonateAction` + `Article` + `BreadcrumbList` JSON-LD
+- **SEO**: Dynamic title `Help {Name} â€” {Situation} | LastDonor.org`, dynamic description, dynamic OG image (`/api/v1/og/campaign/{slug}`), `DonateAction` + `Article` + `BreadcrumbList` JSON-LD
 
 - **ISR**: `revalidate = 60` (revalidated on demand after donations via `revalidatePath`)
 
-### 2.6 — DonationForm Component
+### 2.6 â€” DonationForm Component
 
 **File: `src/components/campaign/DonationForm.tsx`**
 
@@ -1260,23 +1260,23 @@ Renders `<a href="#main-content" className="sr-only focus:not-sr-only ...">Skip 
   5. Donor location (optional text input, city/state)
   6. Message (optional textarea, max 500 chars, character counter)
   7. Anonymous toggle (Switch from shadcn/ui)
-  8. Recurring toggle (Switch) — "Make this a monthly donation"
+  8. Recurring toggle (Switch) â€” "Make this a monthly donation"
   9. Stripe Elements card input (loaded dynamically when form is in viewport)
   10. Submit button: "Donate {amount}" (Warm Amber background, white text)
 
 - **Stripe flow**:
-  1. On submit → call `POST /api/v1/donations/create-intent` with form data
+  1. On submit â†’ call `POST /api/v1/donations/create-intent` with form data
   2. Receive `clientSecret`
   3. Call `stripe.confirmPayment()` with Stripe Elements
-  4. On success → redirect to confirmation page or show Sonner toast
-  5. On failure → show error via Sonner toast
+  4. On success â†’ redirect to confirmation page or show Sonner toast
+  5. On failure â†’ show error via Sonner toast
 
 - **Loading state**: Disable form during API call, show spinner on button
 - **Validation**: All client-side validation mirrors server-side Zod schema
 - **Accessibility**: All inputs have associated `<label>`, error messages linked via `aria-describedby`
 - **Stripe.js loading**: Load `@stripe/stripe-js` only when campaign page renders, using `loadStripe()` with `NEXT_PUBLIC_STRIPE_PUBLIC_KEY`
 
-### 2.7 — Stripe Integration API Routes
+### 2.7 â€” Stripe Integration API Routes
 
 **File: `src/app/api/v1/donations/create-intent/route.ts`**
 
@@ -1297,10 +1297,10 @@ POST handler:
 
 ```
 POST handler:
-1. Read raw request body (NOT parsed JSON — Stripe needs raw body for signature)
+1. Read raw request body (NOT parsed JSON â€” Stripe needs raw body for signature)
 2. Verify Stripe webhook signature using stripe.webhooks.constructEvent()
-3. If invalid signature → return 400
-4. Check if event.id already processed (idempotency) → skip if duplicate
+3. If invalid signature â†’ return 400
+4. Check if event.id already processed (idempotency) â†’ skip if duplicate
 5. Switch on event.type:
 
    case 'payment_intent.succeeded':
@@ -1343,19 +1343,19 @@ POST handler:
 6. Return 200 OK (always, to prevent Stripe retries)
 ```
 
-### 2.8 — DonorFeed Component (Real-Time)
+### 2.8 â€” DonorFeed Component (Real-Time)
 
 **File: `src/components/campaign/DonorFeed.tsx`**
 
 - Client component (`'use client'`)
 - Initial data: server-fetched recent 10 donors passed as prop
 - Real-time updates: Subscribe to Supabase Realtime channel `donations:campaign_id=eq.{campaignId}`
-- On new donation received → prepend to list with Framer Motion `AnimatePresence` slide-in animation
+- On new donation received â†’ prepend to list with Framer Motion `AnimatePresence` slide-in animation
 - Display: donor name (or "Anonymous"), location, amount (DM Mono), relative time, message (if present)
-- `aria-live="polite"`, `aria-atomic="false"` — screen readers announce new donations
+- `aria-live="polite"`, `aria-atomic="false"` â€” screen readers announce new donations
 - Anonymous donations: Show "Anonymous" as name, hide location
 
-### 2.9 — ImpactTiers Component
+### 2.9 â€” ImpactTiers Component
 
 **File: `src/components/campaign/ImpactTiers.tsx`**
 
@@ -1364,7 +1364,7 @@ POST handler:
 - Clicking an impact tier pre-selects that amount in the DonationForm
 - Styled as cards with Warm Amber accent
 
-### 2.10 — CampaignUpdates Component
+### 2.10 â€” CampaignUpdates Component
 
 **File: `src/components/campaign/CampaignUpdates.tsx`**
 
@@ -1373,7 +1373,7 @@ POST handler:
 - Sorted newest first
 - Collapsible if more than 3 updates (show first 3, "Show all" button)
 
-### 2.11 — ShareButtons Component
+### 2.11 â€” ShareButtons Component
 
 **File: `src/components/campaign/ShareButtons.tsx`**
 
@@ -1383,7 +1383,7 @@ POST handler:
 - Email share (opens `mailto:?subject={title}&body={url}`)
 - Accessible: each button has `aria-label`
 
-### 2.12 — StickyMobileDonateBar Component
+### 2.12 â€” StickyMobileDonateBar Component
 
 **File: `src/components/campaign/StickyMobileDonateBar.tsx`**
 
@@ -1392,7 +1392,7 @@ POST handler:
 - Clicking scrolls to / opens DonationForm
 - Z-index above page content
 
-### 2.13 — Campaign API Routes
+### 2.13 â€” Campaign API Routes
 
 **File: `src/app/api/v1/campaigns/route.ts`**
 
@@ -1419,7 +1419,7 @@ POST handler (editor/admin):
 ```
 GET handler (public):
 1. Fetch campaign by slug
-2. If not found or status = 'draft' → return 404
+2. If not found or status = 'draft' â†’ return 404
 3. Include recentDonors (last 10), updates, impactTiers
 4. Return full campaign object
 ```
@@ -1450,15 +1450,15 @@ DELETE handler (admin only):
 GET handler (public):
 1. Parse query: limit (default 20, max 50), cursor
 2. Fetch donations for campaign WHERE campaign_id = (SELECT id FROM campaigns WHERE slug = params.slug)
-3. Map anonymous donations: name → "Anonymous", location → null
+3. Map anonymous donations: name â†’ "Anonymous", location â†’ null
 4. Return donor list with pagination
 ```
 
-### 2.14 — OG Image Generation
+### 2.14 â€” OG Image Generation
 
 **File: `src/app/api/v1/og/campaign/[slug]/route.ts`**
 
-Uses `@vercel/og` (Satori) to generate 1200×630 PNG:
+Uses `@vercel/og` (Satori) to generate 1200Ã-630 PNG:
 
 - Campaign hero image (background, cropped)
 - Dark gradient overlay (bottom 50%)
@@ -1472,9 +1472,9 @@ Response: `Content-Type: image/png`, cache: `Cache-Control: public, max-age=8640
 
 ---
 
-## PHASE 3 — Content, User & Admin Systems
+## PHASE 3 â€” Content, User & Admin Systems
 
-### 3.1 — Homepage
+### 3.1 â€” Homepage
 
 **File: `src/app/page.tsx`**
 
@@ -1482,30 +1482,30 @@ Server component. Fetches featured campaign (most recently published active), ac
 
 **Sections in order**:
 
-1. **HeroSection** — Full-width featured campaign photo, headline ("Every Dollar Has a Name Behind It"), tagline, primary CTA "See Current Campaigns", secondary CTA "How It Works"
-2. **TrustBar** — "501(c)(3) · 100% transparent · {totalDonors} donors and counting"
-3. **CategoryShowcase** — 8 category cards linking to filtered campaign listings
-4. **Active Campaigns** — Grid of 3-5 `<CampaignCard>` components, "View All Campaigns" link
-5. **ImpactCounter** — Total raised (DM Mono), total donors, campaigns completed, people supported — animated counters (Framer Motion `useSpring`)
-6. **WhereYourMoneyGoes** — Visual breakdown (90% to causes, 10% max operations, 0% platform fee)
-7. **BlogPreview** — Latest 3 `<BlogCard>` components, "Read More Stories" link
-8. **NewsletterSignup** — Email input + "One story a week. See your impact." CTA
+1. **HeroSection** â€” Full-width featured campaign photo, headline ("Every Dollar Has a Name Behind It"), tagline, primary CTA "See Current Campaigns", secondary CTA "How It Works"
+2. **TrustBar** â€” "501(c)(3) Â· 100% transparent Â· {totalDonors} donors and counting"
+3. **CategoryShowcase** â€” 8 category cards linking to filtered campaign listings
+4. **Active Campaigns** â€” Grid of 3-5 `<CampaignCard>` components, "View All Campaigns" link
+5. **ImpactCounter** â€” Total raised (DM Mono), total donors, campaigns completed, people supported â€” animated counters (Framer Motion `useSpring`)
+6. **WhereYourMoneyGoes** â€” Visual breakdown (90% to causes, 10% max operations, 0% platform fee)
+7. **BlogPreview** â€” Latest 3 `<BlogCard>` components, "Read More Stories" link
+8. **NewsletterSignup** â€” Email input + "One story a week. See your impact." CTA
 
-**SEO**: Title "LastDonor.org — Donate to Real People in Need | 100% Transparent Charity", JSON-LD `Organization` + `WebSite` + `SearchAction`
+**SEO**: Title "LastDonor.org â€” Donate to Real People in Need | 100% Transparent Charity", JSON-LD `Organization` + `WebSite` + `SearchAction`
 
-### 3.2 — Homepage Components
+### 3.2 â€” Homepage Components
 
-**`src/components/homepage/HeroSection.tsx`** — Full-width hero with featured campaign image, headline, CTA buttons. Uses Next.js `<Image>` with `priority` for LCP.
+**`src/components/homepage/HeroSection.tsx`** â€” Full-width hero with featured campaign image, headline, CTA buttons. Uses Next.js `<Image>` with `priority` for LCP.
 
-**`src/components/homepage/TrustBar.tsx`** — Inline text bar. Stats fetched server-side.
+**`src/components/homepage/TrustBar.tsx`** â€” Inline text bar. Stats fetched server-side.
 
-**`src/components/homepage/ImpactCounter.tsx`** — Client component. Animated number counters using Framer Motion `useSpring`. Numbers displayed in DM Mono. `aria-label` with full text for screen readers.
+**`src/components/homepage/ImpactCounter.tsx`** â€” Client component. Animated number counters using Framer Motion `useSpring`. Numbers displayed in DM Mono. `aria-label` with full text for screen readers.
 
-**`src/components/homepage/WhereYourMoneyGoes.tsx`** — Three bars or pie segments. Static data (90/10/0 split). Clean visual, no Recharts (too heavy for public page).
+**`src/components/homepage/WhereYourMoneyGoes.tsx`** â€” Three bars or pie segments. Static data (90/10/0 split). Clean visual, no Recharts (too heavy for public page).
 
-**`src/components/homepage/CategoryShowcase.tsx`** — Grid of 8 cards, each linking to `/campaigns?category={slug}`. Icon per category (Heroicons). Category name, brief description.
+**`src/components/homepage/CategoryShowcase.tsx`** â€” Grid of 8 cards, each linking to `/campaigns?category={slug}`. Icon per category (Heroicons). Category name, brief description.
 
-### 3.3 — Blog System
+### 3.3 â€” Blog System
 
 **File: `src/app/blog/page.tsx`**
 
@@ -1524,13 +1524,13 @@ Server component. Fetches featured campaign (most recently published active), ac
 - Breadcrumbs
 - SEO: Dynamic title, description from excerpt, OG image from cover image, `Article` + `Author` + `BreadcrumbList` JSON-LD
 
-**`src/components/blog/BlogCard.tsx`** — Cover image (16:9), title, excerpt (2 lines), author name, date, category badge.
+**`src/components/blog/BlogCard.tsx`** â€” Cover image (16:9), title, excerpt (2 lines), author name, date, category badge.
 
-**`src/components/blog/ArticleRenderer.tsx`** — Renders sanitized HTML with styled prose classes (Tailwind typography-like styling).
+**`src/components/blog/ArticleRenderer.tsx`** â€” Renders sanitized HTML with styled prose classes (Tailwind typography-like styling).
 
-**`src/components/blog/AuthorBio.tsx`** — Author avatar (96×96), name, bio text.
+**`src/components/blog/AuthorBio.tsx`** â€” Author avatar (96Ã-96), name, bio text.
 
-### 3.4 — Blog API Routes
+### 3.4 â€” Blog API Routes
 
 **File: `src/app/api/v1/blog/route.ts`**
 
@@ -1546,35 +1546,35 @@ GET handler (public):
 ```
 GET handler (public):
 1. Fetch blog post by slug
-2. If not found or not published → 404
+2. If not found or not published â†’ 404
 3. Return full blog post including bodyHtml, authorBio
 ```
 
-### 3.5 — Static Pages
+### 3.5 â€” Static Pages
 
 Each static page is a server component with hardcoded content.
 
-**`src/app/about/page.tsx`** — Mission statement, team, advisory board (placeholder names), JSON-LD `Organization` + `Person`.
+**`src/app/about/page.tsx`** â€” Mission statement, team, advisory board (placeholder names), JSON-LD `Organization` + `Person`.
 
-**`src/app/how-it-works/page.tsx`** — 3-step explainer: (1) We find stories, (2) You donate, (3) We show you the impact. Visual icons per step.
+**`src/app/how-it-works/page.tsx`** â€” 3-step explainer: (1) We find stories, (2) You donate, (3) We show you the impact. Visual icons per step.
 
-**`src/app/transparency/page.tsx`** — Dynamic: monthly/annual financial data (fetched from DB or static JSON initially). Pie chart breakdown. Monthly reports. IRS Form 990 link (when available). JSON-LD `Organization`.
+**`src/app/transparency/page.tsx`** â€” Dynamic: monthly/annual financial data (fetched from DB or static JSON initially). Pie chart breakdown. Monthly reports. IRS Form 990 link (when available). JSON-LD `Organization`.
 
-**`src/app/editorial-standards/page.tsx`** — How we verify stories, source requirements, corrections policy.
+**`src/app/editorial-standards/page.tsx`** â€” How we verify stories, source requirements, corrections policy.
 
-**`src/app/last-donor-wall/page.tsx`** — Query completed campaigns with Last Donor info. Display as list: campaign title, Last Donor name, amount, date. JSON-LD `ItemList`.
+**`src/app/last-donor-wall/page.tsx`** â€” Query completed campaigns with Last Donor info. Display as list: campaign title, Last Donor name, amount, date. JSON-LD `ItemList`.
 
-**`src/app/share-your-story/page.tsx`** — Form with fields: name, email, story description (textarea), category selector, source links (optional). Submits to an email or internal system (MVP: sends email to admin via Resend).
+**`src/app/share-your-story/page.tsx`** â€” Form with fields: name, email, story description (textarea), category selector, source links (optional). Submits to an email or internal system (MVP: sends email to admin via Resend).
 
-**`src/app/donate/page.tsx`** — General fund donation form (not tied to a specific campaign). Uses modified `<DonationForm>` without campaign context. Stripe PaymentIntent with metadata `{ type: 'general_fund' }`.
+**`src/app/donate/page.tsx`** â€” General fund donation form (not tied to a specific campaign). Uses modified `<DonationForm>` without campaign context. Stripe PaymentIntent with metadata `{ type: 'general_fund' }`.
 
-**`src/app/privacy/page.tsx`** — Full privacy policy text. Cookie policy, data handling, CCPA rights, deletion requests.
+**`src/app/privacy/page.tsx`** â€” Full privacy policy text. Cookie policy, data handling, CCPA rights, deletion requests.
 
-**`src/app/terms/page.tsx`** — Terms of service. Donation terms, refund policy, minimum age 18, content policies.
+**`src/app/terms/page.tsx`** â€” Terms of service. Donation terms, refund policy, minimum age 18, content policies.
 
-**`src/app/not-found.tsx`** — Custom 404 page. Styled with brand colors. "Page not found" message. Search bar or popular campaign links. Link back to homepage.
+**`src/app/not-found.tsx`** â€” Custom 404 page. Styled with brand colors. "Page not found" message. Search bar or popular campaign links. Link back to homepage.
 
-### 3.6 — User Authentication Pages
+### 3.6 â€” User Authentication Pages
 
 **File: `src/app/login/page.tsx`**
 
@@ -1591,9 +1591,9 @@ Each static page is a server component with hardcoded content.
 - HaveIBeenPwned check on submit (k-anonymity: hash password, send first 5 chars, check response)
 - "Or continue with Google" button
 - "Already have an account? Login" link
-- On success → redirect to dashboard
+- On success â†’ redirect to dashboard
 
-### 3.7 — User Dashboard
+### 3.7 â€” User Dashboard
 
 **File: `src/app/dashboard/page.tsx`**
 
@@ -1603,10 +1603,10 @@ Protected route (donor/editor/admin).
 - Total donated (DM Mono, large)
 - Campaigns supported count
 - Last Donor count (how many campaigns they were the Last Donor for)
-- `<BadgeDisplay>` — earned badges with icons
+- `<BadgeDisplay>` â€” earned badges with icons
 - Recent campaign updates for campaigns they've donated to
 
-### 3.8 — User Profile
+### 3.8 â€” User Profile
 
 **File: `src/app/profile/page.tsx`**
 
@@ -1616,7 +1616,7 @@ Protected route (donor/editor/admin).
 - Notification preferences (future: toggles for email types)
 - "Delete my account" button (requires confirmation dialog, calls `DELETE /api/v1/users/me`)
 
-### 3.9 — User Profile API
+### 3.9 â€” User Profile API
 
 **File: `src/app/api/v1/users/me/route.ts`**
 
@@ -1640,9 +1640,9 @@ DELETE handler (authenticated):
 6. Log to audit_logs
 ```
 
-### 3.10 — Newsletter System
+### 3.10 â€” Newsletter System
 
-**`src/components/NewsletterSignup.tsx`** — Reusable component used in homepage, footer, campaign pages.
+**`src/components/NewsletterSignup.tsx`** â€” Reusable component used in homepage, footer, campaign pages.
 - Email input + submit button
 - Source tracking (homepage, campaign, blog, footer prop)
 - Sonner toast on success
@@ -1654,8 +1654,8 @@ DELETE handler (authenticated):
 POST handler (public):
 1. Validate with subscribeSchema
 2. Check if email already subscribed (and not unsubscribed)
-3. If duplicate and active → return 200 (no error, idempotent)
-4. If duplicate and unsubscribed → re-subscribe (clear unsubscribed_at)
+3. If duplicate and active â†’ return 200 (no error, idempotent)
+4. If duplicate and unsubscribed â†’ re-subscribe (clear unsubscribed_at)
 5. INSERT INTO newsletter_subscribers
 6. Send welcome email (first of 3-email sequence) via Resend
 7. Rate limit: 5/min/IP
@@ -1666,12 +1666,12 @@ POST handler (public):
 ```
 POST handler:
 1. Verify signed unsubscribe token (contains subscriber ID)
-2. If invalid → return 400
+2. If invalid â†’ return 400
 3. UPDATE newsletter_subscribers SET unsubscribed_at = NOW()
 4. Return 200
 ```
 
-### 3.11 — Admin Dashboard
+### 3.11 â€” Admin Dashboard
 
 **File: `src/app/admin/layout.tsx`**
 
@@ -1690,9 +1690,9 @@ POST handler:
 
 - For admin only: Recharts bar chart (daily donations last 30 days), user management link
 
-**`src/components/admin/AdminDashboard.tsx`** — Stats cards (shadcn Card), recent donations table, Recharts chart (admin only, lazy loaded).
+**`src/components/admin/AdminDashboard.tsx`** â€” Stats cards (shadcn Card), recent donations table, Recharts chart (admin only, lazy loaded).
 
-### 3.12 — Campaign Editor (Admin)
+### 3.12 â€” Campaign Editor (Admin)
 
 **File: `src/app/admin/campaigns/new/page.tsx`**
 
@@ -1711,7 +1711,7 @@ Both use the same `<CampaignEditor>` component:
   6. Subject Name (text input)
   7. Subject Hometown (text input)
   8. Goal Amount (number input, in dollars, converted to cents)
-  9. Story HTML (rich text editor — use a simple `<textarea>` with preview toggle for MVP, or integrate a lightweight editor like Tiptap in Phase 2)
+  9. Story HTML (rich text editor â€” use a simple `<textarea>` with preview toggle for MVP, or integrate a lightweight editor like Tiptap in Phase 2)
   10. Impact Tiers (dynamic form array: add/remove rows of {amount, label})
   11. Status selector (Draft / Active)
   12. Submit button: "Create Campaign" or "Update Campaign"
@@ -1720,7 +1720,7 @@ Both use the same `<CampaignEditor>` component:
 - On submit (edit): `PUT /api/v1/campaigns/{id}`
 - Preview panel: renders campaign story HTML with sanitization
 
-### 3.13 — News Feed Monitor
+### 3.13 â€” News Feed Monitor
 
 **File: `src/app/admin/news-feed/page.tsx`**
 
@@ -1730,9 +1730,9 @@ Both use the same `<CampaignEditor>` component:
 - Filterable by source
 - Each item shows: title, source, published date, summary, link to original
 - Flag indicating if campaign was already created from this item
-- "Create Campaign From This" button → pre-fills CampaignEditor with extracted data (if available) or navigates to `/admin/campaigns/new?newsItemId={id}`
+- "Create Campaign From This" button â†’ pre-fills CampaignEditor with extracted data (if available) or navigates to `/admin/campaigns/new?newsItemId={id}`
 
-### 3.14 — Audit Log Viewer
+### 3.14 â€” Audit Log Viewer
 
 **File: `src/app/admin/audit-log/page.tsx`**
 
@@ -1744,7 +1744,7 @@ Both use the same `<CampaignEditor>` component:
 - Columns: timestamp, event type, actor (name + role), target, severity, details (expandable JSON)
 - Paginated (cursor-based)
 
-### 3.15 — Admin API Routes
+### 3.15 â€” Admin API Routes
 
 **File: `src/app/api/v1/admin/dashboard/route.ts`**
 
@@ -1777,7 +1777,7 @@ GET handler (admin only):
 5. Return audit log entries
 ```
 
-### 3.16 — Platform Stats API
+### 3.16 â€” Platform Stats API
 
 **File: `src/app/api/v1/stats/route.ts`**
 
@@ -1793,7 +1793,7 @@ GET handler (public):
 3. Return stats object
 ```
 
-### 3.17 — Health Check API
+### 3.17 â€” Health Check API
 
 **File: `src/app/api/v1/health/route.ts`**
 
@@ -1806,7 +1806,7 @@ GET handler (public):
 5. Return 200 if all checks pass, 503 if any fail
 ```
 
-### 3.18 — SEO Files
+### 3.18 â€” SEO Files
 
 **File: `src/app/sitemap.ts`**
 
@@ -1835,9 +1835,9 @@ export default function robots() {
 
 ---
 
-## PHASE 4 — Automation Engine
+## PHASE 4 â€” Automation Engine
 
-### 4.1 — AI Prompt Files
+### 4.1 â€” AI Prompt Files
 
 Each prompt file exports a function that takes structured input and returns the formatted system/user prompt for the OpenRouter API call.
 
@@ -1847,7 +1847,7 @@ Each prompt file exports a function that takes structured input and returns the 
 - System prompt: "You are a news classifier for a nonprofit fundraising platform..."
 - Scoring criteria: identifiable person/family, clear actionable financial need, current (within 30 days), NOT celebrity/politician, NOT military operation without casualty
 - Output schema: `{ score: number (0-100), category: CampaignCategory, reason: string }`
-- Threshold: score ≥ 70 passes to entity extraction
+- Threshold: score â‰¥ 70 passes to entity extraction
 
 **File: `src/lib/ai/prompts/extract-entities.ts`**
 
@@ -1883,7 +1883,7 @@ Each prompt file exports a function that takes structured input and returns the 
 - Input: hottest campaign + recent impact data + context piece
 - Output: 3-section newsletter (~300 words): featured campaign (50%), impact update (30%), one thing to know (20%)
 
-### 4.2 — News Source Clients
+### 4.2 â€” News Source Clients
 
 **File: `src/lib/news/gnews-client.ts`**
 
@@ -1915,22 +1915,22 @@ Each prompt file exports a function that takes structured input and returns the 
 **File: `src/lib/news/news-pipeline.ts`**
 
 - Full ingestion orchestrator
-- Coordinates: GNews fetch → RSS fetch → classify all → extract entities → deduplicate → generate campaigns → generate messages → publish
+- Coordinates: GNews fetch â†’ RSS fetch â†’ classify all â†’ extract entities â†’ deduplicate â†’ generate campaigns â†’ generate messages â†’ publish
 - Called by the ingest-news cron route
 
-### 4.3 — Seed Donation Engine
+### 4.3 â€” Seed Donation Engine
 
 **File: `src/lib/seed/amount-generator.ts`**
 
 - Log-normal distribution: `Math.floor(Math.exp(Math.random() * 2.5 + 3))`
 - Clamped to $20-$2000
-- Rounded to human amounts: <$100 → nearest $5, $100-$500 → nearest $25, >$500 → nearest $50/$100
+- Rounded to human amounts: <$100 â†’ nearest $5, $100-$500 â†’ nearest $25, >$500 â†’ nearest $50/$100
 
 **File: `src/lib/seed/name-generator.ts`**
 
 - Static pool of ~500 name + location entries
 - Diverse demographics: Anglo, Hispanic, African American, Asian American, military-adjacent, generational
-- Location format varies randomly: "Ken from Michigan", "Maria, Houston TX", "DeShawn — Brooklyn"
+- Location format varies randomly: "Ken from Michigan", "Maria, Houston TX", "DeShawn â€” Brooklyn"
 - 5% chance of "Anonymous"
 
 **File: `src/lib/seed/message-generator.ts`**
@@ -1952,15 +1952,15 @@ Each prompt file exports a function that takes structured input and returns the 
   6. Check phase transitions
   7. Check completion
 
-### 4.4 — Cron Job Routes
+### 4.4 â€” Cron Job Routes
 
 All cron endpoints verify `Authorization: Bearer {CRON_SECRET}`.
 
 **File: `src/app/api/v1/cron/ingest-news/route.ts`**
 
 - Schedule: every 30 minutes (Vercel Cron)
-- Calls `newsPipeline.ingest()` — GNews API + RSS feeds
-- AI classify → extract → deduplicate → generate → publish
+- Calls `newsPipeline.ingest()` â€” GNews API + RSS feeds
+- AI classify â†’ extract â†’ deduplicate â†’ generate â†’ publish
 - Logs results to audit_logs
 
 **File: `src/app/api/v1/cron/simulate-donations/route.ts`**
@@ -2005,7 +2005,7 @@ All cron endpoints verify `Authorization: Bearer {CRON_SECRET}`.
 - Generates OG image
 - Triggers ISR revalidation of campaigns list
 
-### 4.5 — Seed Admin API Routes
+### 4.5 â€” Seed Admin API Routes
 
 **File: `src/app/api/v1/admin/seed/generate-messages/route.ts`**
 
@@ -2039,7 +2039,7 @@ GET handler (admin only):
 3. Return { seed: { count, totalAmount }, real: { count, totalAmount } }
 ```
 
-### 4.6 — Vercel Cron Configuration
+### 4.6 â€” Vercel Cron Configuration
 
 **Add to `vercel.json`** (create file):
 
@@ -2057,14 +2057,14 @@ GET handler (admin only):
 }
 ```
 
-### 4.7 — Image Pipeline
+### 4.7 â€” Image Pipeline
 
 **Weekly cron** (can be added to reconcile route or its own route):
 
 1. Query DVIDS API for photos published in last 14 days (high-res, top-rated)
 2. Query FEMA Media Library for recent disaster photos
 3. AI score each for emotional impact, brand fit, technical quality
-4. Top photo per category → apply brand treatment:
+4. Top photo per category â†’ apply brand treatment:
    - Desaturate to 60% (Sharp)
    - Teal wash overlay at 15% opacity
    - Dark gradient overlay (bottom 40%)
@@ -2074,9 +2074,9 @@ GET handler (admin only):
 
 ---
 
-## PHASE 5 — Testing, Performance & Launch Prep
+## PHASE 5 â€” Testing, Performance & Launch Prep
 
-### 5.1 — Test Setup
+### 5.1 â€” Test Setup
 
 **File: `vitest.config.ts`** (unit tests):
 
@@ -2118,7 +2118,7 @@ export default defineConfig({
 });
 ```
 
-**File: `test/setup.ts`** — Import `@testing-library/jest-dom`.
+**File: `test/setup.ts`** â€” Import `@testing-library/jest-dom`.
 
 **File: `playwright.config.ts`**:
 
@@ -2149,15 +2149,15 @@ export default defineConfig({
 });
 ```
 
-### 5.2 — Unit Tests (Target: 200+, < 15s)
+### 5.2 â€” Unit Tests (Target: 200+, < 15s)
 
 **Business Logic Tests:**
 
 | File | Tests |
 |---|---|
-| `src/lib/utils/phase.test.ts` | `getCampaignPhase()`: 0% → first_believers, 25% → first_believers, 26% → the_push, 60% → the_push, 61% → closing_in, 90% → closing_in, 91% → last_donor_zone, 100% → last_donor_zone, edge cases (negative, >100%, 0 goal) |
-| `src/lib/utils/currency.test.ts` | `centsToDollars()`: 0 → "$0.00", 500 → "$5.00", 1050 → "$10.50", 100000 → "$1,000.00". `dollarsToCents()`: 5 → 500, 10.50 → 1050, 0.01 → 1 |
-| `src/lib/utils/slug.test.ts` | Normal title → slug, special characters stripped, multiple spaces → single hyphen, max 100 chars, empty string handling |
+| `src/lib/utils/phase.test.ts` | `getCampaignPhase()`: 0% â†’ first_believers, 25% â†’ first_believers, 26% â†’ the_push, 60% â†’ the_push, 61% â†’ closing_in, 90% â†’ closing_in, 91% â†’ last_donor_zone, 100% â†’ last_donor_zone, edge cases (negative, >100%, 0 goal) |
+| `src/lib/utils/currency.test.ts` | `centsToDollars()`: 0 â†’ "$0.00", 500 â†’ "$5.00", 1050 â†’ "$10.50", 100000 â†’ "$1,000.00". `dollarsToCents()`: 5 â†’ 500, 10.50 â†’ 1050, 0.01 â†’ 1 |
+| `src/lib/utils/slug.test.ts` | Normal title â†’ slug, special characters stripped, multiple spaces â†’ single hyphen, max 100 chars, empty string handling |
 | `src/lib/utils/dates.test.ts` | `formatDate()` output format, `formatRelativeTime()`: just now, minutes, hours, days, weeks |
 | `src/lib/utils/sanitize.test.ts` | Allowed tags preserved, script tags stripped, event handlers stripped, safe attributes kept, unsafe attributes stripped |
 | `src/lib/validators/donation.test.ts` | Valid donation passes, amount < 500 fails, amount > 10M fails, missing email fails, message > 500 chars fails, invalid UUID fails |
@@ -2182,47 +2182,47 @@ export default defineConfig({
 | `src/lib/seed/amount-generator.test.ts` | Generated amounts between $20-$2000. Distribution is skewed low. Rounding rules applied. |
 | `src/lib/seed/name-generator.test.ts` | Returns name + location object. Pool size ~500. 5% anonymous rate. |
 
-### 5.3 — Integration Tests (Target: 50+, < 2 min)
+### 5.3 â€” Integration Tests (Target: 50+, < 2 min)
 
 | Test Suite | Key Tests |
 |---|---|
-| **Campaign API** | GET list with filters/sorts/pagination; GET by slug (active, draft → 404, completed); POST create (auth, validation, sanitization); PUT update (partial, auth); DELETE (admin only, draft/completed only) |
-| **Donation API** | POST create-intent (valid, campaign not found, campaign not active, amount too low, rate limit); Webhook (valid signature, invalid signature, duplicate event, payment succeeded → donation created + campaign updated + receipt sent, payment failed → no record, refund → decrement) |
-| **Newsletter API** | Subscribe (new email, duplicate email → idempotent, re-subscribe after unsubscribe); Unsubscribe (valid token, invalid token) |
-| **Blog API** | GET list with category filter/pagination; GET by slug (published, unpublished → 404) |
-| **User API** | GET me (authenticated, unauthenticated → 401); PUT me (update name, invalid data); DELETE me (anonymize donations, delete user) |
+| **Campaign API** | GET list with filters/sorts/pagination; GET by slug (active, draft â†’ 404, completed); POST create (auth, validation, sanitization); PUT update (partial, auth); DELETE (admin only, draft/completed only) |
+| **Donation API** | POST create-intent (valid, campaign not found, campaign not active, amount too low, rate limit); Webhook (valid signature, invalid signature, duplicate event, payment succeeded â†’ donation created + campaign updated + receipt sent, payment failed â†’ no record, refund â†’ decrement) |
+| **Newsletter API** | Subscribe (new email, duplicate email â†’ idempotent, re-subscribe after unsubscribe); Unsubscribe (valid token, invalid token) |
+| **Blog API** | GET list with category filter/pagination; GET by slug (published, unpublished â†’ 404) |
+| **User API** | GET me (authenticated, unauthenticated â†’ 401); PUT me (update name, invalid data); DELETE me (anonymize donations, delete user) |
 | **Stats API** | Returns correct aggregates; Excludes seed donations; Excludes refunded donations |
-| **Auth** | Register (valid, weak password, breached password, duplicate email); Login (valid, wrong password, locked account); Role enforcement (donor → admin route → 403) |
-| **Critical path: Donation completes campaign** | Create donation that meets goal → campaign status=completed, completedAt set, lastDonorId set, badge awarded, email sent, ISR revalidated, audit logged. 10 assertions minimum. |
+| **Auth** | Register (valid, weak password, breached password, duplicate email); Login (valid, wrong password, locked account); Role enforcement (donor â†’ admin route â†’ 403) |
+| **Critical path: Donation completes campaign** | Create donation that meets goal â†’ campaign status=completed, completedAt set, lastDonorId set, badge awarded, email sent, ISR revalidated, audit logged. 10 assertions minimum. |
 | **Concurrency: Two final donations** | Two simultaneous donations when campaign is $10 from goal. Both donations for $10. Both recorded. Total correct. Only ONE lastDonorId. Uses `raised_amount = raised_amount + $amount` (atomic). |
 | **Financial invariants** | After any donation: `campaign.raisedAmount == SUM(donations.amount) WHERE NOT refunded`. `campaign.donorCount == COUNT(donations) WHERE NOT refunded`. No `donation.amount < 500`. |
 
-### 5.4 — E2E Tests (Playwright, Target: 15, < 5 min)
+### 5.4 â€” E2E Tests (Playwright, Target: 15, < 5 min)
 
 | ID | Test | Priority |
 |---|---|---|
-| E2E-01 | Homepage → campaigns → campaign → read story → donate $50 → confirmation toast | P0 |
-| E2E-02 | Campaign → guest donate (no login) → receipt email triggered | P0 |
-| E2E-03 | LDZ campaign → donate exact remaining → campaign shows completed → Last Donor celebrated | P0 |
-| E2E-04 | Register → login → profile → view donation history → see badges | P1 |
-| E2E-05 | Homepage → newsletter subscribe → confirmation toast | P1 |
-| E2E-06 | Admin login → create campaign → publish → appears on campaigns page | P1 |
-| E2E-07 | Admin → post campaign update → appears on campaign page timeline | P1 |
-| E2E-08 | Mobile viewport (iPhone 14) → homepage → campaign → sticky donate bar → donate | P0 |
-| E2E-09 | Dark mode toggle → verify key pages render correctly | P2 |
-| E2E-10 | Blog listing → read post → back → pagination works | P2 |
-| E2E-11 | Campaign page → check OG meta tags present in HTML | P2 |
+| E2E-01 | Homepage â†’ campaigns â†’ campaign â†’ read story â†’ donate $50 â†’ confirmation toast | P0 |
+| E2E-02 | Campaign â†’ guest donate (no login) â†’ receipt email triggered | P0 |
+| E2E-03 | LDZ campaign â†’ donate exact remaining â†’ campaign shows completed â†’ Last Donor celebrated | P0 |
+| E2E-04 | Register â†’ login â†’ profile â†’ view donation history â†’ see badges | P1 |
+| E2E-05 | Homepage â†’ newsletter subscribe â†’ confirmation toast | P1 |
+| E2E-06 | Admin login â†’ create campaign â†’ publish â†’ appears on campaigns page | P1 |
+| E2E-07 | Admin â†’ post campaign update â†’ appears on campaign page timeline | P1 |
+| E2E-08 | Mobile viewport (iPhone 14) â†’ homepage â†’ campaign â†’ sticky donate bar â†’ donate | P0 |
+| E2E-09 | Dark mode toggle â†’ verify key pages render correctly | P2 |
+| E2E-10 | Blog listing â†’ read post â†’ back â†’ pagination works | P2 |
+| E2E-11 | Campaign page â†’ check OG meta tags present in HTML | P2 |
 | E2E-12 | Keyboard-only navigation: Tab through entire donation flow, submit with Enter | P1 |
-| E2E-13 | Admin → news feed → "Create Campaign From This" → pre-fills editor | P2 |
-| E2E-14 | Donor profile → Last Donor Wall → completed campaign with donor info | P2 |
-| E2E-15 | Campaign → donate → progress bar updates (poll or Realtime) | P1 |
+| E2E-13 | Admin â†’ news feed â†’ "Create Campaign From This" â†’ pre-fills editor | P2 |
+| E2E-14 | Donor profile â†’ Last Donor Wall â†’ completed campaign with donor info | P2 |
+| E2E-15 | Campaign â†’ donate â†’ progress bar updates (poll or Realtime) | P1 |
 
 **Stripe test cards for E2E:**
-- `4242424242424242` — success
-- `4000000000000002` — declined
-- `4000000000009995` — insufficient funds
+- `4242424242424242` â€” success
+- `4000000000000002` â€” declined
+- `4000000000009995` â€” insufficient funds
 
-### 5.5 — CI/CD Pipeline
+### 5.5 â€” CI/CD Pipeline
 
 **File: `.github/workflows/ci.yml`**
 
@@ -2293,9 +2293,9 @@ jobs:
       - run: npm run test:e2e
 ```
 
-Stage 1-2 fail → blocks 3+. Stage 3 fail → merge blocker. E2E P0 fail → merge blocker.
+Stage 1-2 fail â†’ blocks 3+. Stage 3 fail â†’ merge blocker. E2E P0 fail â†’ merge blocker.
 
-### 5.6 — Performance Optimization
+### 5.6 â€” Performance Optimization
 
 **Bundle budgets** (enforced via `@next/bundle-analyzer`):
 
@@ -2331,7 +2331,7 @@ Stage 1-2 fail → blocks 3+. Stage 3 fail → merge blocker. E2E P0 fail → me
 | FCP | < 1.0s |
 | TTFB | < 200ms |
 
-### 5.7 — Caching Strategy
+### 5.7 â€” Caching Strategy
 
 | Resource | Cache-Control |
 |---|---|
@@ -2343,7 +2343,7 @@ Stage 1-2 fail → blocks 3+. Stage 3 fail → merge blocker. E2E P0 fail → me
 | Donation API | `no-store` |
 | OG images | `public, max-age=86400, s-maxage=86400` |
 
-### 5.8 — Sentry Integration
+### 5.8 â€” Sentry Integration
 
 **Setup:**
 
@@ -2359,7 +2359,7 @@ Configure in `sentry.client.config.ts` and `sentry.server.config.ts`:
 - Tree-shake to ~15KB gzipped
 - Environment: `production` / `staging` / `preview`
 
-### 5.9 — Security Hardening Checklist
+### 5.9 â€” Security Hardening Checklist
 
 Before launch, verify every item:
 
@@ -2381,13 +2381,13 @@ Before launch, verify every item:
 - [ ] Cloudflare WAF rules active
 - [ ] HTTPS enforced (HSTS preload)
 
-### 5.10 — Accessibility Audit
+### 5.10 â€” Accessibility Audit
 
 Target: WCAG 2.1 AA, Lighthouse Accessibility 95+.
 
 - [ ] All images have alt text
 - [ ] All form inputs have labels
-- [ ] Color contrast ≥ 4.5:1 (normal text), ≥ 3:1 (large text)
+- [ ] Color contrast â‰¥ 4.5:1 (normal text), â‰¥ 3:1 (large text)
 - [ ] Keyboard navigation works for entire donation flow
 - [ ] Skip-to-content link on every page
 - [ ] Focus indicators visible (3px Warm Amber / Yellow Dark)
@@ -2397,7 +2397,7 @@ Target: WCAG 2.1 AA, Lighthouse Accessibility 95+.
 - [ ] Dark mode contrast ratios verified
 - [ ] Screen reader tested (NVDA or VoiceOver) on key flows
 
-### 5.11 — Pre-Launch Content
+### 5.11 â€” Pre-Launch Content
 
 - [ ] 3 campaign stories written, reviewed, and ready to publish
 - [ ] "About Us" page content (mission, team bios, advisory board)
@@ -2407,14 +2407,14 @@ Target: WCAG 2.1 AA, Lighthouse Accessibility 95+.
 - [ ] "Why We Built LastDonor" launch blog post
 - [ ] Privacy policy finalized (with lawyer review)
 - [ ] Terms of service finalized (with lawyer review)
-- [ ] Newsletter welcome sequence (3 emails — content TBD)
+- [ ] Newsletter welcome sequence (3 emails â€” content TBD)
 
-### 5.12 — DNS & Deployment
+### 5.12 â€” DNS & Deployment
 
-1. **Cloudflare DNS**: A record `@` → `76.76.21.21` (Vercel), CNAME `www` → `cname.vercel-dns.com`
+1. **Cloudflare DNS**: A record `@` â†’ `76.76.21.21` (Vercel), CNAME `www` â†’ `cname.vercel-dns.com`
 2. **Vercel**: Connect GitHub repo, set production branch to `main`
 3. **Vercel Environment Variables**: Copy all from `.env.local` to Vercel project settings (Production + Preview)
-4. **Vercel Domain**: Add `lastdonor.org` and `www.lastdonor.org` (redirect www → root)
+4. **Vercel Domain**: Add `lastdonor.org` and `www.lastdonor.org` (redirect www â†’ root)
 5. **Cloudflare Settings**: SSL Full (Strict), HSTS on, Brotli on, WAF managed rules on, Bot Fight Mode on
 6. **Resend**: Verify domain `lastdonor.org`, add SPF + DKIM DNS records
 7. **Stripe**: Switch from test keys to live keys in production env vars
@@ -2428,14 +2428,14 @@ These items are referenced in docs but not yet resolved. Implementation can proc
 
 | # | Item | Blocking? | Notes |
 |---|---|---|---|
-| 1 | **Logo design** | No (use text logo for MVP) | Favicon also needed (16×16, 32×32) |
-| 2 | **MFA implementation** | Partial | Required for editor/admin per doc 06. Implement TOTP (authenticator app) — not SMS. Use a library like `otpauth`. Blocking for editor/admin accounts in production. |
+| 1 | **Logo design** | No (use text logo for MVP) | Favicon also needed (16Ã-16, 32Ã-32) |
+| 2 | **MFA implementation** | Partial | Required for editor/admin per doc 06. Implement TOTP (authenticator app) â€” not SMS. Use a library like `otpauth`. Blocking for editor/admin accounts in production. |
 | 3 | **50+ local TV RSS feeds** | No | Doc 11 mentions. Start with GNews API coverage. Curate RSS list incrementally. |
 | 4 | **Welcome email sequence content** | No | 3 emails needed. Write content before newsletter signup goes live. Timing: Day 0, Day 3, Day 7. |
-| 5 | **Share Your Story form fields** | No | Implement as simple form → email to admin. Fields: name, email, story, category, source links. |
+| 5 | **Share Your Story form fields** | No | Implement as simple form â†’ email to admin. Fields: name, email, story, category, source links. |
 | 6 | **General fund /donate flow** | No | Use DonationForm without campaign context. Stripe metadata: `{type: 'general_fund'}`. No campaign association. |
 | 7 | **Disbursement tracking** | No (post-launch) | No `disbursements` table yet. Track manually initially. Add table when first campaign completes. |
-| 8 | **Badge type enum** | No | Currently `badges JSONB` with `{type, campaignSlug, earnedAt}`. Badge types: `first_believer`, `momentum_builder`, `closer`, `last_donor`. No formal enum table needed — JSONB is sufficient for MVP. |
+| 8 | **Badge type enum** | No | Currently `badges JSONB` with `{type, campaignSlug, earnedAt}`. Badge types: `first_believer`, `momentum_builder`, `closer`, `last_donor`. No formal enum table needed â€” JSONB is sufficient for MVP. |
 | 9 | **Kling AI API integration** | No (fallback works) | API endpoint, auth, SDK details not fully specified. Use category fallback (branded gradient + icon) until Kling integration is built. |
 | 10 | **Contact form** | No | Doc 06 mentions in attack surface. Add as simple email form if needed. Not in MVP page list. |
 
@@ -2444,12 +2444,12 @@ These items are referenced in docs but not yet resolved. Implementation can proc
 ## Execution Order Summary
 
 ```
-PHASE 1 — Foundation
+PHASE 1 â€” Foundation
   1.1  Install missing packages + shadcn/ui init
   1.2  Create directory structure
   1.3  Tailwind CSS 4 brand configuration (globals.css)
   1.4  Font loading (next/font/google)
-  1.5  Database schema (Drizzle ORM — all 10 tables)
+  1.5  Database schema (Drizzle ORM â€” all 10 tables)
   1.6  Database connection client
   1.7  Run initial migration
   1.8  Authentication (NextAuth v5 + middleware)
@@ -2464,7 +2464,7 @@ PHASE 1 — Foundation
   1.17 Layout components (Navbar, Footer, SkipToContent, Breadcrumbs)
   1.18 Dark mode toggle
 
-PHASE 2 — Campaigns & Donations
+PHASE 2 â€” Campaigns & Donations
   2.1  Campaign listing page
   2.2  CampaignCard component
   2.3  ProgressBar component (Framer Motion + ARIA)
@@ -2480,7 +2480,7 @@ PHASE 2 — Campaigns & Donations
   2.13 Campaign API routes (CRUD)
   2.14 OG image generation
 
-PHASE 3 — Content, Users & Admin
+PHASE 3 â€” Content, Users & Admin
   3.1  Homepage
   3.2  Homepage components (Hero, TrustBar, ImpactCounter, etc.)
   3.3  Blog system (listing + detail pages)
@@ -2500,7 +2500,7 @@ PHASE 3 — Content, Users & Admin
   3.17 Health check API
   3.18 SEO files (sitemap, robots)
 
-PHASE 4 — Automation
+PHASE 4 â€” Automation
   4.1  AI prompt files (7 prompts)
   4.2  News source clients (GNews, RSS, FEMA, NWS)
   4.3  Seed donation engine (amount, name, message, simulation)
@@ -2509,7 +2509,7 @@ PHASE 4 — Automation
   4.6  Vercel Cron configuration (vercel.json)
   4.7  Image pipeline
 
-PHASE 5 — Testing & Launch
+PHASE 5 â€” Testing & Launch
   5.1  Test setup (Vitest + Playwright config)
   5.2  Unit tests (200+ tests)
   5.3  Integration tests (50+ tests)

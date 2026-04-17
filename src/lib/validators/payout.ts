@@ -21,4 +21,5 @@ export const withdrawalRequestSchema = z.object({
     .number()
     .int('Amount must be a whole number (cents)')
     .positive('Amount must be greater than zero'),
+  idempotencyKey: z.string().uuid('idempotencyKey must be a valid UUID'),
 });

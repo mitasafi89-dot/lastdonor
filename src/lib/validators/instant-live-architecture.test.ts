@@ -1,14 +1,13 @@
 /**
- * Instant-Live Architecture — Comprehensive Tests
+ * Instant-Live Architecture - Comprehensive Tests
  *
  * Tests the complete instant-live campaign lifecycle:
  *  1. Document requirements (per-category, per-relationship)
  *  2. Email templates (first donation, completion, verification reminders)
  *  3. Notification functions (new functions + updated existing)
  *  4. Campaign instant-live creation (status: active, publishedAt, welcome email)
- *  5. Webhook triggers (first donation, campaign completion, milestone auto-reach)
- *  6. Evidence post-completion gate (409 if campaign not completed)
- *  7. Congratulations page (post-creation redirect target)
+ *  5. Webhook triggers (first donation, campaign completion)
+ *  6. Congratulations page (post-creation redirect target)
  *
  * @vitest-environment node
  */
@@ -24,8 +23,6 @@ import {
   campaignCompletedCreatorEmail,
   verificationReminderEmail,
   welcomeCampaignerEmail,
-  milestoneReachedCreatorEmail,
-  milestoneReachedAdminEmail,
   campaignSubmittedEmail,
 } from '@/lib/email-templates';
 
@@ -104,7 +101,7 @@ describe('Document requirements', () => {
       const { combined } = getDocumentRequirements('charity', 'organization');
       // 'organization' relationship has an "Organization registration" doc
       // 'charity' category also has an "Organization registration" doc
-      // type is 'official_letter' for both — should deduplicate
+      // type is 'official_letter' for both - should deduplicate
       const orgRegDocs = combined.filter(d => d.label === 'Organization registration');
       expect(orgRegDocs).toHaveLength(1);
     });
@@ -201,10 +198,10 @@ describe('Document requirements', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 2. EMAIL TEMPLATES — NEW TEMPLATES
+// 2. EMAIL TEMPLATES - NEW TEMPLATES
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe('Email templates — new lifecycle templates', () => {
+describe('Email templates - new lifecycle templates', () => {
   describe('firstDonationCelebrationEmail', () => {
     const email = firstDonationCelebrationEmail({
       campaignerName: 'Alice',
@@ -278,9 +275,11 @@ describe('Email templates — new lifecycle templates', () => {
       expect(email.html).toContain('Start Verification Now');
     });
 
-    it('explains the fund release process', () => {
-      expect(email.html).toContain('Phase 1');
-      expect(email.html).toContain('Phases 2 and 3');
+    it('explains the verification and withdrawal process', () => {
+      expect(email.html).toContain('Verify your identity');
+      expect(email.html).toContain('Upload supporting documents');
+      expect(email.html).toContain('Admin review');
+      expect(email.html).toContain('Withdraw your funds');
     });
 
     it('mentions 14-day deadline', () => {
@@ -324,20 +323,20 @@ describe('Email templates — new lifecycle templates', () => {
     it('firm urgency mentions days left', () => {
       const email = verificationReminderEmail({ ...baseParams, urgencyLevel: 'firm' });
       expect(email.subject).toContain('11 Days Left');
-      expect(email.html).toContain('Verification Required');
+      expect(email.html).toContain('Verification Reminder');
     });
 
     it('warning urgency turns orange', () => {
       const email = verificationReminderEmail({ ...baseParams, deadlineDays: 5, urgencyLevel: 'warning' });
-      expect(email.subject).toContain('Urgent');
+      expect(email.subject).toContain('Important');
       expect(email.html).toContain('#EA580C');
     });
 
-    it('final urgency turns red', () => {
+    it('final urgency turns orange', () => {
       const email = verificationReminderEmail({ ...baseParams, deadlineDays: 2, urgencyLevel: 'final' });
-      expect(email.subject).toContain('Final Notice');
-      expect(email.html).toContain('#DC2626');
-      expect(email.html).toContain('refunded');
+      expect(email.subject).toContain('Last Reminder');
+      expect(email.html).toContain('#EA580C');
+      expect(email.html).toContain('return');
     });
 
     it('all urgency levels link to verification page', () => {
@@ -363,11 +362,11 @@ describe('Email templates — new lifecycle templates', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 3. EMAIL TEMPLATES — UPDATED TEMPLATES
+// 3. EMAIL TEMPLATES - UPDATED TEMPLATES
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe('Email templates — updated for instant-live', () => {
-  describe('welcomeCampaignerEmail — sharing focus', () => {
+describe('Email templates - updated for instant-live', () => {
+  describe('welcomeCampaignerEmail - sharing focus', () => {
     const email = welcomeCampaignerEmail({
       campaignerName: 'Alice',
       campaignTitle: 'Help Alice',
@@ -398,59 +397,7 @@ describe('Email templates — updated for instant-live', () => {
     });
   });
 
-  describe('milestoneReachedCreatorEmail — celebration only', () => {
-    const email = milestoneReachedCreatorEmail({
-      campaignerName: 'Alice',
-      campaignTitle: 'Help Alice',
-      campaignSlug: 'help-alice-123',
-      milestoneTitle: 'Phase 1',
-      phaseNumber: 1,
-      fundAmount: 30000,
-    });
-
-    it('celebrates the milestone', () => {
-      expect(email.subject).toContain('Phase 1');
-      expect(email.subject).toContain('Funded');
-    });
-
-    it('links to campaign page for continued sharing', () => {
-      expect(email.html).toContain('/campaigns/help-alice-123');
-    });
-
-    it('does NOT request evidence during campaign', () => {
-      expect(email.html).not.toContain('Submit Evidence');
-      expect(email.html).not.toContain('evidence');
-    });
-
-    it('mentions fund release after full funding', () => {
-      expect(email.html).toContain('fully funded');
-    });
-  });
-
-  describe('milestoneReachedAdminEmail — FYI only', () => {
-    const email = milestoneReachedAdminEmail({
-      campaignTitle: 'Help Alice',
-      campaignSlug: 'help-alice-123',
-      milestoneTitle: 'Phase 1',
-      phaseNumber: 1,
-      fundAmount: 30000,
-      creatorName: 'Alice',
-    });
-
-    it('is informational, no action required', () => {
-      expect(email.html).toContain('No action required');
-    });
-
-    it('links to admin campaigns page', () => {
-      expect(email.html).toContain('/admin/campaigns');
-    });
-
-    it('mentions fund release after completion', () => {
-      expect(email.html).toContain('completion');
-    });
-  });
-
-  describe('campaignSubmittedEmail — live confirmation', () => {
+  describe('campaignSubmittedEmail - live confirmation', () => {
     const email = campaignSubmittedEmail({
       campaignTitle: 'Help Alice',
       creatorName: 'Alice',
@@ -472,10 +419,10 @@ describe('Email templates — updated for instant-live', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 4. NOTIFICATION FUNCTIONS — STATIC ANALYSIS
+// 4. NOTIFICATION FUNCTIONS - STATIC ANALYSIS
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe('Notification functions — new lifecycle notifications', () => {
+describe('Notification functions - new lifecycle notifications', () => {
   const notifSource = readFileSync(resolve(ROOT, 'src/lib/notifications.ts'), 'utf-8');
 
   describe('notifyCreatorFirstDonation', () => {
@@ -511,11 +458,11 @@ describe('Notification functions — new lifecycle notifications', () => {
       expect(fn![1]).toBe('campaign_completed');
     });
 
-    it('links to campaign milestones page', () => {
+    it('links to campaign impact-update page', () => {
       const fn = notifSource.match(/notifyCreatorCampaignCompleted[\s\S]*?link:\s*`([^`]+)`/);
       expect(fn).not.toBeNull();
       expect(fn![1]).toContain('/dashboard/campaigns/');
-      expect(fn![1]).toContain('/milestones');
+      expect(fn![1]).toContain('/impact-update');
     });
 
     it('passes documentRequirementsHtml to email template', () => {
@@ -542,7 +489,7 @@ describe('Notification functions — new lifecycle notifications', () => {
 
     it('has different title for final urgency', () => {
       expect(notifSource).toContain("p.urgencyLevel === 'final'");
-      expect(notifSource).toContain('Final Notice');
+      expect(notifSource).toContain('Last Reminder');
     });
   });
 
@@ -578,10 +525,10 @@ describe('Notification functions — new lifecycle notifications', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 5. CAMPAIGN CREATION — INSTANT-LIVE
+// 5. CAMPAIGN CREATION - INSTANT-LIVE
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe('Campaign creation — instant-live', () => {
+describe('Campaign creation - instant-live', () => {
   const routeSource = readFileSync(resolve(ROOT, 'src/app/api/v1/user-campaigns/route.ts'), 'utf-8');
 
   it('sets status to active (not draft)', () => {
@@ -623,15 +570,15 @@ describe('Campaign creation — instant-live', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 6. DONATION WEBHOOK — FIRST DONATION + COMPLETION TRIGGERS
+// 6. DONATION WEBHOOK - FIRST DONATION + COMPLETION TRIGGERS
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe('Donation webhook — lifecycle triggers', () => {
-  const webhookSource = readFileSync(resolve(ROOT, 'src/app/api/v1/donations/webhook/route.ts'), 'utf-8');
+describe('Donation webhook - lifecycle triggers', () => {
+  const webhookSource = readFileSync(resolve(ROOT, 'src/lib/services/payment-service.ts'), 'utf-8');
 
   describe('transaction return values', () => {
     it('returns newRaised, goalAmount, justCompleted from transaction', () => {
-      expect(webhookSource).toContain('return { newRaised, goalAmount, justCompleted }');
+      expect(webhookSource).toContain('return { newRaised, goalAmount, justCompleted, donationId }');
     });
 
     it('checks for duplicate (null txResult)', () => {
@@ -672,7 +619,7 @@ describe('Donation webhook — lifecycle triggers', () => {
     });
 
     it('triggers completion notification when justCompleted', () => {
-      expect(webhookSource).toContain('if (justCompleted && campaign.creatorId)');
+      expect(webhookSource).toContain('if (justCompleted && creator)');
     });
 
     it('calls notifyCreatorCampaignCompleted', () => {
@@ -693,66 +640,6 @@ describe('Donation webhook — lifecycle triggers', () => {
     });
   });
 
-  describe('milestone auto-reach on completion', () => {
-    it('marks all pending milestones as reached on completion', () => {
-      // Inside the completion block (justCompleted = true), it bulk-updates milestones
-      expect(webhookSource).toContain("status: 'reached'");
-    });
-
-    it('only updates pending milestones (not already reached ones)', () => {
-      // Should have a where clause filtering by status = 'pending'
-      expect(webhookSource).toContain("eq(campaignMilestones.status, 'pending')");
-    });
-
-    it('only applies milestone auto-reach when milestoneFundRelease is enabled', () => {
-      expect(webhookSource).toContain('campaign.milestoneFundRelease');
-    });
-  });
-
-  describe('milestone detection is celebration-only', () => {
-    it('comments indicate celebration only, no evidence request', () => {
-      expect(webhookSource).toContain('celebration only');
-    });
-  });
-});
-
-// ═══════════════════════════════════════════════════════════════════════════
-// 7. EVIDENCE POST-COMPLETION GATE
-// ═══════════════════════════════════════════════════════════════════════════
-
-describe('Evidence submission — post-completion gate', () => {
-  const evidenceSource = readFileSync(
-    resolve(ROOT, 'src/app/api/v1/campaigns/[slug]/milestones/[milestoneId]/evidence/route.ts'),
-    'utf-8',
-  );
-
-  it('selects campaign status', () => {
-    expect(evidenceSource).toContain('status: campaigns.status');
-  });
-
-  it('blocks evidence submission when campaign is not completed', () => {
-    expect(evidenceSource).toContain("campaign.status !== 'completed'");
-  });
-
-  it('returns 409 Conflict for non-completed campaigns', () => {
-    // Check for 409 status near the completion check
-    const completionCheck = evidenceSource.indexOf("campaign.status !== 'completed'");
-    const conflictResponse = evidenceSource.indexOf('409', completionCheck);
-    expect(conflictResponse).toBeGreaterThan(completionCheck);
-    expect(conflictResponse - completionCheck).toBeLessThan(500); // Within reasonable distance
-  });
-
-  it('uses CONFLICT error code', () => {
-    expect(evidenceSource).toContain("code: 'CONFLICT'");
-  });
-
-  it('provides user-friendly error message', () => {
-    expect(evidenceSource).toContain('Evidence can only be submitted after the campaign is fully funded');
-  });
-
-  it('encourages continued sharing', () => {
-    expect(evidenceSource).toContain('Keep sharing your campaign');
-  });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -802,8 +689,9 @@ describe('Congratulations page', () => {
       expect(clientSource).toContain('setCopied');
     });
 
-    it('uses ShareButtons component', () => {
-      expect(clientSource).toContain('ShareButtons');
+    it('has social sharing platform buttons', () => {
+      expect(clientSource).toContain('facebook');
+      expect(clientSource).toContain('whatsapp');
     });
 
     it('uses CampaignHeroImage component', () => {
@@ -833,22 +721,22 @@ describe('Congratulations page', () => {
 // 9. FORM REDIRECT
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe('ShareYourStoryForm — congratulations redirect', () => {
+describe('ShareYourStoryForm - post-publish redirect', () => {
   const formSource = readFileSync(
     resolve(ROOT, 'src/app/share-your-story/ShareYourStoryForm.tsx'),
     'utf-8',
   );
 
-  it('redirects to congratulations page after submission', () => {
-    expect(formSource).toContain('/congratulations');
+  it('redirects to campaign page after submission', () => {
+    expect(formSource).toContain('router.push(');
+    expect(formSource).toContain('?launched=true');
   });
 
-  it('uses campaign slug in redirect URL', () => {
-    expect(formSource).toMatch(/campaigns\/\$\{.*slug.*\}\/congratulations/);
+  it('does not redirect to congratulations page', () => {
+    expect(formSource).not.toContain('/congratulations');
   });
 
-  it('says "Your Campaign Is Live!" not "Submitted for Review"', () => {
-    expect(formSource).toContain('Your Campaign Is Live!');
+  it('does not say "Submitted for Review"', () => {
     expect(formSource).not.toContain('Submitted for Review');
   });
 });
@@ -857,33 +745,36 @@ describe('ShareYourStoryForm — congratulations redirect', () => {
 // 10. CROSS-CUTTING ARCHITECTURAL INVARIANTS
 // ═══════════════════════════════════════════════════════════════════════════
 
+describe('Open redirect protection', () => {
+  const loginSource = readFileSync(resolve(ROOT, 'src/app/login/page.tsx'), 'utf-8');
+  const registerSource = readFileSync(resolve(ROOT, 'src/app/register/page.tsx'), 'utf-8');
+
+  it('login page uses safeCallbackUrl to sanitize redirect', () => {
+    expect(loginSource).toContain('safeCallbackUrl');
+  });
+
+  it('register page uses safeCallbackUrl to sanitize redirect', () => {
+    expect(registerSource).toContain('safeCallbackUrl');
+  });
+
+  it('safeCallbackUrl blocks absolute URLs', () => {
+    expect(loginSource).toMatch(/startsWith\(['"]\/['"]\)/);
+  });
+
+  it('safeCallbackUrl blocks protocol-relative URLs (//evil.com)', () => {
+    expect(loginSource).toMatch(/startsWith\(['"]\/\/['"]\)/);
+  });
+});
+
 describe('Architectural invariants', () => {
-  const webhookSource = readFileSync(resolve(ROOT, 'src/app/api/v1/donations/webhook/route.ts'), 'utf-8');
   const notifSource = readFileSync(resolve(ROOT, 'src/lib/notifications.ts'), 'utf-8');
   const templateSource = readFileSync(resolve(ROOT, 'src/lib/email-templates.ts'), 'utf-8');
-
-  it('milestones are celebration-only during campaign (no evidence request in webhook)', () => {
-    // The milestone detection section should NOT call notifyAdminEvidenceSubmitted
-    // or reference evidence submission CTA
-    const milestoneSection = webhookSource.slice(
-      webhookSource.indexOf('Milestone threshold detection'),
-    );
-    expect(milestoneSection).not.toContain('notifyAdminEvidenceSubmitted');
-    expect(milestoneSection).not.toContain('Submit Evidence');
-  });
 
   it('welcome email focuses on sharing, not verification', () => {
     const fnMatch = templateSource.match(/function welcomeCampaignerEmail[\s\S]*?^}/m);
     expect(fnMatch).not.toBeNull();
     const fnBody = fnMatch![0];
     expect(fnBody).not.toContain('/verification');
-  });
-
-  it('milestone creator notification links to campaign, not verification', () => {
-    const fnMatch = notifSource.match(/notifyCreatorMilestoneReached[\s\S]*?link:\s*`([^`]+)`/);
-    expect(fnMatch).not.toBeNull();
-    expect(fnMatch![1]).toContain('/campaigns/');
-    expect(fnMatch![1]).not.toContain('/verification');
   });
 
   it('verification requests only happen post-completion (campaignCompletedCreatorEmail)', () => {
@@ -900,17 +791,12 @@ describe('Architectural invariants', () => {
     expect(reminderFnBody).toContain('/verification');
   });
 
-  it('fund release flow: campaign → completion → verification → evidence → review → release', () => {
-    // This is a logical test: verify the right notifications reference the right endpoints
-    // 1. During campaign: milestone reached → celebration (campaign page link)
-    const milestoneCreatorFn = notifSource.match(/notifyCreatorMilestoneReached[\s\S]*?link:\s*`([^`]+)`/);
-    expect(milestoneCreatorFn![1]).toContain('/campaigns/');
-
-    // 2. On completion: → milestones page link
+  it('payout flow: campaign completion → verification → review → withdrawal', () => {
+    // 1. On completion: → impact-update page link
     const completionFn = notifSource.match(/notifyCreatorCampaignCompleted[\s\S]*?link:\s*`([^`]+)`/);
-    expect(completionFn![1]).toContain('/milestones');
+    expect(completionFn![1]).toContain('/impact-update');
 
-    // 3. Reminder: → verification page
+    // 2. Reminder: → verification page
     const reminderFn = notifSource.match(/notifyVerificationReminder[\s\S]*?link:\s*`([^`]+)`/);
     expect(reminderFn![1]).toContain('/verification');
   });

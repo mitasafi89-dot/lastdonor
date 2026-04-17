@@ -9,13 +9,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { EnvelopeIcon } from '@heroicons/react/24/outline';
+import { cn } from '@/lib/utils';
+
+type NewsletterVariant = 'inline' | 'hero' | 'footer';
 
 interface NewsletterSignupProps {
   source: 'homepage' | 'campaign' | 'blog' | 'footer';
+  /** Visual variant: inline (default), hero (homepage section), footer (dark bg). */
+  variant?: NewsletterVariant;
   className?: string;
 }
 
-export function NewsletterSignup({ source, className }: NewsletterSignupProps) {
+export function NewsletterSignup({ source, variant = 'inline', className }: NewsletterSignupProps) {
   const [subscribed, setSubscribed] = useState(false);
   const {
     register,
@@ -35,8 +40,12 @@ export function NewsletterSignup({ source, className }: NewsletterSignupProps) {
     });
 
     if (!res.ok) {
-      const body = await res.json();
-      toast.error(body.error?.message ?? 'Subscription failed');
+      if (res.status === 409) {
+        setSubscribed(true);
+        return;
+      }
+      const body = await res.json().catch(() => null);
+      toast.error(body?.error?.message ?? 'Subscription failed. Please try again.');
       return;
     }
 
@@ -46,29 +55,96 @@ export function NewsletterSignup({ source, className }: NewsletterSignupProps) {
   }
 
   if (subscribed) {
+    const successClass = variant === 'footer'
+      ? 'text-sm font-medium text-brand-amber'
+      : 'flex items-center gap-2 text-brand-teal font-medium';
+
     return (
-      <div className={className}>
-        <div className="flex items-center gap-2 text-brand-teal">
-          <EnvelopeIcon className="h-5 w-5" />
-          <p className="font-medium">You&apos;re subscribed! Check your inbox.</p>
-        </div>
+      <div className={cn(successClass, className)}>
+        {variant !== 'footer' && <EnvelopeIcon className="h-5 w-5" />}
+        <p>You&apos;re subscribed! Check your inbox.</p>
       </div>
     );
   }
 
+  if (variant === 'footer') {
+    return (
+      <form onSubmit={handleSubmit(onSubmit)} className={cn('flex w-full max-w-sm flex-col gap-2 sm:flex-row', className)}>
+        <label htmlFor="footer-newsletter-email" className="sr-only">Email address</label>
+        <input
+          id="footer-newsletter-email"
+          type="email"
+          required
+          placeholder="Your email"
+          {...register('email')}
+          className="flex-1 rounded-full border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-gray-400 transition-colors focus:border-brand-amber focus:outline-none focus:ring-2 focus:ring-brand-amber/30"
+        />
+        <input type="hidden" {...register('source')} />
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="whitespace-nowrap rounded-full bg-brand-amber px-6 py-2.5 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brand-amber/20 disabled:opacity-60 disabled:hover:translate-y-0"
+        >
+          {isSubmitting ? 'Subscribing...' : 'Subscribe'}
+        </button>
+        {errors.email && (
+          <p className="text-xs text-red-400 sm:absolute sm:bottom-0 sm:translate-y-full sm:pt-1">
+            {errors.email.message}
+          </p>
+        )}
+      </form>
+    );
+  }
+
+  if (variant === 'hero') {
+    return (
+      <div className={cn('relative mx-auto max-w-2xl overflow-hidden rounded-2xl border border-border bg-card p-8 sm:p-12', className)}>
+        <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          Stay in the Loop
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Campaign updates, impact stories, and ways to help. Weekly. No spam.
+        </p>
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <label htmlFor="newsletter-hero-email" className="sr-only">Email address</label>
+          <input
+            id="newsletter-hero-email"
+            type="email"
+            required
+            placeholder="you@example.com"
+            {...register('email')}
+            className="flex-1 rounded-full border border-border bg-background px-5 py-3 text-sm text-foreground placeholder:text-muted-foreground transition-colors duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+          <input type="hidden" {...register('source')} />
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="btn-press rounded-full bg-brand-amber px-8 py-3 text-sm font-bold text-white transition-colors duration-200 hover:bg-brand-amber/90 disabled:opacity-60"
+          >
+            {isSubmitting ? 'Subscribing...' : 'Subscribe'}
+          </button>
+        </form>
+        {errors.email && (
+          <p className="mt-3 text-sm text-destructive">{errors.email.message}</p>
+        )}
+      </div>
+    );
+  }
+
+  // Default inline variant
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={className}>
       <div className="flex gap-2">
         <Input
           type="email"
-          placeholder="your@email.com"
+          placeholder="you@example.com"
           aria-label="Email address"
           {...register('email')}
           className="max-w-xs"
         />
         <input type="hidden" {...register('source')} />
         <Button type="submit" disabled={isSubmitting} size="sm">
-          {isSubmitting ? 'Subscribing…' : 'Subscribe'}
+          {isSubmitting ? 'Subscribing...' : 'Subscribe'}
         </Button>
       </div>
       {errors.email && (

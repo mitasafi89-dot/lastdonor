@@ -467,7 +467,7 @@ export function CampaignFilters({
           </div>
         )}
 
-        {/* Active filter chips — clearable */}
+        {/* Active filter chips - clearable */}
         {searchQuery && (
           <button
             type="button"

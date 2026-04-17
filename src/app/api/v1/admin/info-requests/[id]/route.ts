@@ -7,6 +7,7 @@ import { createAndEmail } from '@/lib/notifications';
 import { infoRequestReminderEmail } from '@/lib/email-templates';
 import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
+import { infoRequestActionSchema } from '@/lib/validators/admin';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -39,14 +40,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { action } = body as { action: string };
-
-    if (!['close', 'extend_deadline', 'send_reminder'].includes(action)) {
+    const parsed = infoRequestActionSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { ok: false, error: { code: 'VALIDATION_ERROR', message: 'Action must be close, extend_deadline, or send_reminder', requestId } } satisfies ApiError,
+        { ok: false, error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0]?.message ?? 'Invalid input', requestId } } satisfies ApiError,
         { status: 400 },
       );
     }
+
+    const { action } = parsed.data;
 
     // Fetch the info request with campaign + target user info
     const [infoReq] = await db

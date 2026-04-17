@@ -11,11 +11,11 @@ import type { CampaignCategory } from '@/types';
 export const revalidate = 300; // 5 minutes
 
 export const metadata: Metadata = {
-  title: 'Rejected Campaigns | LastDonor.org',
+  title: 'Removed Campaigns | LastDonor.org',
   description:
     'Transparency report: campaigns that were reviewed and removed from the platform, with reasons. We take donor trust seriously.',
   openGraph: {
-    title: 'Rejected Campaigns | LastDonor.org',
+    title: 'Removed Campaigns | LastDonor.org',
     description:
       'See why certain campaigns were removed. Our commitment to donor protection in action.',
   },
@@ -50,7 +50,7 @@ export default async function CancelledCampaignsPage() {
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="flex flex-wrap items-baseline justify-between gap-4">
-        <h1 className="font-display text-2xl font-bold text-foreground">Rejected Campaigns</h1>
+        <h1 className="font-display text-2xl font-bold text-foreground">Removed Campaigns</h1>
         <Link
           href="/campaigns"
           className="text-sm font-medium text-primary hover:text-primary/80"

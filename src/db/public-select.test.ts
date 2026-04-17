@@ -11,7 +11,7 @@ import {
  * through public select objects.
  *
  * If any of these assertions fail, it means a sensitive column was
- * added to a public-facing query — which is a data-leak vulnerability.
+ * added to a public-facing query - which is a data-leak vulnerability.
  */
 
 const FORBIDDEN_CAMPAIGN_KEYS = [

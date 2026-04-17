@@ -1,10 +1,10 @@
-# 15 — Dual Campaign System: Simulated & Real Campaign Coexistence
+﻿# 15 â€” Dual Campaign System: Simulated & Real Campaign Coexistence
 
 > **Document ID**: LD-DUAL-001  
 > **Purpose**: Exhaustive architecture, implementation plan, and milestone breakdown for running simulated (system-generated) and real (user-created) campaigns simultaneously on the platform, with complete indistinguishability guarantees.  
 > **Status**: Draft  
-> **Prerequisite Docs**: 01–14 (all read and reconciled)  
-> **Depends On**: Phases 1–4 complete, Milestones 1–6 complete
+> **Prerequisite Docs**: 01â€“14 (all read and reconciled)  
+> **Depends On**: Phases 1â€“4 complete, Milestones 1â€“6 complete
 
 ---
 
@@ -37,29 +37,29 @@ LastDonor.org needs to bootstrap platform activity and credibility while real us
 ### 1.2 Core Principles
 
 1. **Total Indistinguishability**: No user, system, API consumer, browser developer tools, or network inspector can differentiate between simulated and real campaigns under any circumstances.
-2. **Full Functional Parity**: Real users interact with both campaign types identically — donating, messaging, viewing progress, receiving updates.
-3. **Approach A — Fund Pooling**: Real donations to simulated campaigns are processed through Stripe normally. The platform will locate the actual person/entity referenced in the simulated campaign and deliver funds; otherwise, donations are redistributed to real campaigns via a general fund.
-4. **Admin Control**: Simulated campaigns are controlled via an admin panel — enable/disable, volume scaling, category controls, per-campaign management.
+2. **Full Functional Parity**: Real users interact with both campaign types identically â€” donating, messaging, viewing progress, receiving updates.
+3. **Approach A â€” Fund Pooling**: Real donations to simulated campaigns are processed through Stripe normally. The platform will locate the actual person/entity referenced in the simulated campaign and deliver funds; otherwise, donations are redistributed to real campaigns via a general fund.
+4. **Admin Control**: Simulated campaigns are controlled via an admin panel â€” enable/disable, volume scaling, category controls, per-campaign management.
 5. **Graceful Phase-Out**: As real user activity increases, simulation volume decreases automatically based on configurable metric thresholds, ultimately reaching zero.
 
 ### 1.3 What Already Exists
 
-The platform has **extensive simulation infrastructure** built in Phases 1–4 and Milestones 1–6:
+The platform has **extensive simulation infrastructure** built in Phases 1â€“4 and Milestones 1â€“6:
 
 | Component | Current State | Gap |
 |-----------|---------------|-----|
-| Campaign `source` field | `'automated'` vs `'manual'` on `campaigns` table | Exposed in `db.select()` — **leaks via API** |
-| Donation `source` field | `'real'` vs `'seed'` on `donations` table | Exposed in full `select()` — **leaks via API** |
-| Seed simulation engine | Full engine: trajectory profiles, surge events, cohorts, jittered timestamps, donor selector, message pool | Runs on ALL active campaigns — **no per-campaign control** |
+| Campaign `source` field | `'automated'` vs `'manual'` on `campaigns` table | Exposed in `db.select()` â€” **leaks via API** |
+| Donation `source` field | `'real'` vs `'seed'` on `donations` table | Exposed in full `select()` â€” **leaks via API** |
+| Seed simulation engine | Full engine: trajectory profiles, surge events, cohorts, jittered timestamps, donor selector, message pool | Runs on ALL active campaigns â€” **no per-campaign control** |
 | `SEED_MODE_ENABLED` env var | Single global toggle for simulate-donations cron | Not admin-configurable at runtime; no granularity |
 | Fake Stripe IDs | `seed_${uuid}` prefix on seed donations | **Distinguishable** if inspected via API or DB |
 | Seed donor emails | `seed-${uuid}@lastdonor.internal` | **Distinguishable** domain |
-| News pipeline | Fully automated: news → classify → entities → story → campaign | Always sets `source: 'automated'` |
-| Admin seed stats | `/api/v1/admin/seed/stats` endpoint | Exposes seed vs real breakdown — correct (admin-only) |
+| News pipeline | Fully automated: news â†’ classify â†’ entities â†’ story â†’ campaign | Always sets `source: 'automated'` |
+| Admin seed stats | `/api/v1/admin/seed/stats` endpoint | Exposes seed vs real breakdown â€” correct (admin-only) |
 | Admin seed purge | `/api/v1/admin/seed/purge` endpoint | Correct admin-only tool |
 | Campaign page SSR | `db.select()` returns all columns including `source` | `source` field must be stripped |
 | Campaign slug API | `GET /api/v1/campaigns/[slug]` returns ALL campaign columns | `source` field must be stripped |
-| Donation feed | Donor feed returns `id, donorName, donorLocation, amount, message, isAnonymous, createdAt` | Does NOT return `source` — **safe** |
+| Donation feed | Donor feed returns `id, donorName, donorLocation, amount, message, isAnonymous, createdAt` | Does NOT return `source` â€” **safe** |
 | Messaging system | Does not exist | New feature required |
 
 ### 1.4 Decisions Made
@@ -76,7 +76,7 @@ The platform has **extensive simulation infrastructure** built in Phases 1–4 a
 
 ## 2. Current System State Analysis
 
-### 2.1 Database Schema — Fields That Leak Campaign Type
+### 2.1 Database Schema â€” Fields That Leak Campaign Type
 
 #### `campaigns` table (22 columns)
 
@@ -85,10 +85,10 @@ source: text('source').default('manual')  // Values: 'manual' | 'automated'
 ```
 
 **Leak vector**: The `source` column directly reveals whether a campaign was auto-generated from the news pipeline (`'automated'`) or manually created by an editor (`'manual'`). Currently returned in:
-- `GET /api/v1/campaigns/[slug]` — uses `db.select()` which returns all columns
-- Campaign detail SSR page (`src/app/campaigns/[slug]/page.tsx`) — `getCampaign()` uses `db.select()` (all columns)
-- Related campaigns query — uses explicit column selection (does NOT include `source` — safe)
-- Campaign list API (`GET /api/v1/campaigns`) — uses explicit column selection (does NOT include `source` — safe)
+- `GET /api/v1/campaigns/[slug]` â€” uses `db.select()` which returns all columns
+- Campaign detail SSR page (`src/app/campaigns/[slug]/page.tsx`) â€” `getCampaign()` uses `db.select()` (all columns)
+- Related campaigns query â€” uses explicit column selection (does NOT include `source` â€” safe)
+- Campaign list API (`GET /api/v1/campaigns`) â€” uses explicit column selection (does NOT include `source` â€” safe)
 
 #### `donations` table (16 columns)
 
@@ -99,69 +99,69 @@ donorEmail: text('donor_email').notNull()                        // Seed: 'seed-
 ```
 
 **Leak vectors**:
-1. `source` column — directly reveals seed vs real
-2. `stripePaymentId` — `seed_` prefix is distinguishable from Stripe's `pi_` prefix
-3. `donorEmail` — `@lastdonor.internal` domain is distinguishable from real emails
+1. `source` column â€” directly reveals seed vs real
+2. `stripePaymentId` â€” `seed_` prefix is distinguishable from Stripe's `pi_` prefix
+3. `donorEmail` â€” `@lastdonor.internal` domain is distinguishable from real emails
 
-**Current exposure**: The donor feed query in `src/app/campaigns/[slug]/page.tsx` → `getRecentDonors()` does NOT select `source`, `stripePaymentId`, or `donorEmail`. It only selects: `id, donorName, donorLocation, amount, message, isAnonymous, createdAt`. **This is safe.**
+**Current exposure**: The donor feed query in `src/app/campaigns/[slug]/page.tsx` â†’ `getRecentDonors()` does NOT select `source`, `stripePaymentId`, or `donorEmail`. It only selects: `id, donorName, donorLocation, amount, message, isAnonymous, createdAt`. **This is safe.**
 
 However, the following ARE exposed:
-- `GET /api/v1/campaigns/[slug]` API route → donor query selects the same safe fields. **Safe.**
-- Admin donation list (`/api/v1/admin/donations`) — selects all fields. **Correct** (admin-only, intentionally exposed).
-- Stripe webhook handler — inserts with `source: 'real'`. **Correct** (server-side only).
-- Reconciliation cron — queries by `source` to separate totals. **Correct** (server-side only).
+- `GET /api/v1/campaigns/[slug]` API route â†’ donor query selects the same safe fields. **Safe.**
+- Admin donation list (`/api/v1/admin/donations`) â€” selects all fields. **Correct** (admin-only, intentionally exposed).
+- Stripe webhook handler â€” inserts with `source: 'real'`. **Correct** (server-side only).
+- Reconciliation cron â€” queries by `source` to separate totals. **Correct** (server-side only).
 
-### 2.2 Simulation Engine — Current Flow
+### 2.2 Simulation Engine â€” Current Flow
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ CRON: /api/v1/cron/simulate-donations (every 15 min)        │
-│ Guard: SEED_MODE_ENABLED === 'true' (env var)               │
-│                                                              │
-│ 1. Query ALL active + last_donor_zone campaigns              │
-│ 2. For each campaign:                                        │
-│    a. Get trajectory profile (JSONB on campaign)             │
-│    b. shouldDonateThisCycle() → probabilistic                │
-│    c. donationCountThisCycle() → 1–5 based on profile        │
-│    d. For each donation:                                     │
-│       - seedAmountCents() → psychological pricing            │
-│       - selectSimulatedDonor() → from 3000+ donor pool       │
-│       - pickSeedMessage() → from campaign_seed_messages       │
-│       - Generate fake Stripe ID: 'seed_${uuid}'              │
-│       - Generate fake email: 'seed-xxx@lastdonor.internal'   │
-│       - INSERT into donations (source='seed')                │
-│       - UPDATE campaign raisedAmount + donorCount atomically  │
-│    e. maybeBuildCohort() → 12% chance of group donation       │
-│    f. Check phase transition → generate AI update            │
-│    g. Check completion → celebration + impact report          │
-│ 3. Audit log result                                          │
-└─────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ CRON: /api/v1/cron/simulate-donations (every 15 min)        â”‚
+â”‚ Guard: SEED_MODE_ENABLED === 'true' (env var)               â”‚
+â”‚                                                              â”‚
+â”‚ 1. Query ALL active + last_donor_zone campaigns              â”‚
+â”‚ 2. For each campaign:                                        â”‚
+â”‚    a. Get trajectory profile (JSONB on campaign)             â”‚
+â”‚    b. shouldDonateThisCycle() â†’ probabilistic                â”‚
+â”‚    c. donationCountThisCycle() â†’ 1â€“5 based on profile        â”‚
+â”‚    d. For each donation:                                     â”‚
+â”‚       - seedAmountCents() â†’ psychological pricing            â”‚
+â”‚       - selectSimulatedDonor() â†’ from 3000+ donor pool       â”‚
+â”‚       - pickSeedMessage() â†’ from campaign_seed_messages       â”‚
+â”‚       - Generate fake Stripe ID: 'seed_${uuid}'              â”‚
+â”‚       - Generate fake email: 'seed-xxx@lastdonor.internal'   â”‚
+â”‚       - INSERT into donations (source='seed')                â”‚
+â”‚       - UPDATE campaign raisedAmount + donorCount atomically  â”‚
+â”‚    e. maybeBuildCohort() â†’ 12% chance of group donation       â”‚
+â”‚    f. Check phase transition â†’ generate AI update            â”‚
+â”‚    g. Check completion â†’ celebration + impact report          â”‚
+â”‚ 3. Audit log result                                          â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 **Key observations**:
 - The simulation engine runs on ALL campaigns indiscriminately. There is no per-campaign flag to control whether it receives seed donations.
-- The `SEED_MODE_ENABLED` env var is a hard binary toggle — no volume control, no category filtering, no per-campaign control.
-- Simulated campaigns and real campaigns are not distinguished at the engine level — the engine would seed real user campaigns too.
+- The `SEED_MODE_ENABLED` env var is a hard binary toggle â€” no volume control, no category filtering, no per-campaign control.
+- Simulated campaigns and real campaigns are not distinguished at the engine level â€” the engine would seed real user campaigns too.
 
-### 2.3 News Pipeline — Campaign Creation Flow
+### 2.3 News Pipeline â€” Campaign Creation Flow
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ news-pipeline.ts → Step 8: Insert campaign                  │
-│                                                              │
-│ INSERT INTO campaigns:                                       │
-│   source: 'automated'          ← LEAK VECTOR                │
-│   campaignProfile: TrajectoryProfile (JSONB)                 │
-│   campaignOrganizer: CampaignOrganizer (JSONB)              │
-│   status: 'active'                                           │
-│   publishedAt: NOW()                                         │
-│                                                              │
-│ → Also generates 30 seed messages for first_believers phase  │
-│ → Sets trajectory profile for simulation engine              │
-└─────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ news-pipeline.ts â†’ Step 8: Insert campaign                  â”‚
+â”‚                                                              â”‚
+â”‚ INSERT INTO campaigns:                                       â”‚
+â”‚   source: 'automated'          â† LEAK VECTOR                â”‚
+â”‚   campaignProfile: TrajectoryProfile (JSONB)                 â”‚
+â”‚   campaignOrganizer: CampaignOrganizer (JSONB)              â”‚
+â”‚   status: 'active'                                           â”‚
+â”‚   publishedAt: NOW()                                         â”‚
+â”‚                                                              â”‚
+â”‚ â†’ Also generates 30 seed messages for first_believers phase  â”‚
+â”‚ â†’ Sets trajectory profile for simulation engine              â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
-### 2.4 Frontend Campaign Page — What's Rendered
+### 2.4 Frontend Campaign Page â€” What's Rendered
 
 The campaign detail page (`src/app/campaigns/[slug]/page.tsx`) fetches campaign data via `getCampaign()` which currently uses `db.select()` (selects ALL columns). This returns the full `Campaign` type including `source`, `campaignProfile`, and `campaignOrganizer`.
 
@@ -172,14 +172,14 @@ However, examining what's actually **rendered**:
 - impactTiers, publishedAt, updatedAt
 - lastDonorName, lastDonorAmount
 - campaignOrganizer (organizer name shown on page)
-- `source` — **NOT rendered in JSX** but available in the component's props. A motivated developer using React DevTools could inspect this.
+- `source` â€” **NOT rendered in JSX** but available in the component's props. A motivated developer using React DevTools could inspect this.
 
 ### 2.5 Settings Infrastructure
 
-The platform has a `siteSettings` table (key → JSONB value) and a settings system:
+The platform has a `siteSettings` table (key â†’ JSONB value) and a settings system:
 
 ```typescript
-// src/lib/settings.ts — client-safe types
+// src/lib/settings.ts â€” client-safe types
 interface SettingsMap {
   'donation.min_amount': number;
   'campaign.auto_publish_threshold': number;
@@ -187,7 +187,7 @@ interface SettingsMap {
   // ... etc
 }
 
-// src/lib/settings.server.ts — server-side DB reads
+// src/lib/settings.server.ts â€” server-side DB reads
 getSetting<K extends SettingKey>(key: K): Promise<SettingsMap[K]>
 ```
 
@@ -197,7 +197,7 @@ This system can be extended for simulation control settings without adding new i
 
 ## 3. Indistinguishability Attack Surface Audit
 
-### 3.1 Attack Vectors — Complete Enumeration
+### 3.1 Attack Vectors â€” Complete Enumeration
 
 Every possible way a non-admin person or system could detect simulation, and the mitigation for each:
 
@@ -207,7 +207,7 @@ Every possible way a non-admin person or system could detect simulation, and the
 |--------|-------------|------|------------|
 | Campaign `source` field in `GET /api/v1/campaigns/[slug]` | **CRITICAL** | `src/app/api/v1/campaigns/[slug]/route.ts` line 26: `db.select()` returns all columns | Replace with explicit column selection via `publicCampaignSelect()` |
 | Campaign `source` field in SSR `getCampaign()` | **CRITICAL** | `src/app/campaigns/[slug]/page.tsx` line 33: `db.select()` returns all columns | Replace with explicit column selection via `publicCampaignSelect()` |
-| Campaign `campaignProfile` in API/SSR | **HIGH** | Same files — `campaignProfile` contains `TrajectoryProfile` with simulation params | Exclude from public select; only used internally by simulation engine |
+| Campaign `campaignProfile` in API/SSR | **HIGH** | Same files â€” `campaignProfile` contains `TrajectoryProfile` with simulation params | Exclude from public select; only used internally by simulation engine |
 | Campaign `simulation_flag` (new field) | **CRITICAL** | N/A (to be added) | Never include in any public select; create `publicCampaignSelect()` that excludes it |
 | Donation `source` field | **SAFE** | Donor feed queries explicitly select only safe columns | Maintain current safe selection |
 | Donation `stripePaymentId` | **SAFE** | Never returned in donor feed queries | Maintain current safe selection |
@@ -217,41 +217,41 @@ Every possible way a non-admin person or system could detect simulation, and the
 
 | Vector | Current Risk | Mitigation |
 |--------|-------------|------------|
-| Seed Stripe IDs start with `seed_` | **MEDIUM** — only visible in admin/DB | Change prefix to `pi_sim_${uuid}` — closer to real Stripe `pi_` prefix. Or use fully realistic format: `pi_${base62(32)}` |
-| Seed donor emails use `@lastdonor.internal` | **MEDIUM** — only visible in admin/DB | Change to realistic-looking emails: generate from donor name + common domains (gmail, yahoo, outlook) |
-| Donation timestamps cluster at 15-min cron intervals | **LOW** — jitter already implemented | Current jitter spreads across full 15-min window. Adequate. |
-| Donor names repeat across campaigns | **LOW** — 3000+ donor pool with repeat chance | 8% repeat donor rate is realistic. Pool size is adequate. |
-| All automated campaigns set `source: 'automated'` | **CRITICAL** — visible in DB | Add `simulation_flag` column; keep `source` for backward compat; sanitize from public queries |
-| Campaign `campaignProfile` JSONB contains simulation parameters | **HIGH** — visible in API response if `select()` returns all columns | Exclude from public select |
-| Campaign `campaignOrganizer` is AI-generated for simulated campaigns | **NONE** — also used for real campaigns | No action needed |
+| Seed Stripe IDs start with `seed_` | **MEDIUM** â€” only visible in admin/DB | Change prefix to `pi_sim_${uuid}` â€” closer to real Stripe `pi_` prefix. Or use fully realistic format: `pi_${base62(32)}` |
+| Seed donor emails use `@lastdonor.internal` | **MEDIUM** â€” only visible in admin/DB | Change to realistic-looking emails: generate from donor name + common domains (gmail, yahoo, outlook) |
+| Donation timestamps cluster at 15-min cron intervals | **LOW** â€” jitter already implemented | Current jitter spreads across full 15-min window. Adequate. |
+| Donor names repeat across campaigns | **LOW** â€” 3000+ donor pool with repeat chance | 8% repeat donor rate is realistic. Pool size is adequate. |
+| All automated campaigns set `source: 'automated'` | **CRITICAL** â€” visible in DB | Add `simulation_flag` column; keep `source` for backward compat; sanitize from public queries |
+| Campaign `campaignProfile` JSONB contains simulation parameters | **HIGH** â€” visible in API response if `select()` returns all columns | Exclude from public select |
+| Campaign `campaignOrganizer` is AI-generated for simulated campaigns | **NONE** â€” also used for real campaigns | No action needed |
 
 #### 3.1.3 Behavioral Pattern Leaks
 
 | Vector | Current Risk | Mitigation |
 |--------|-------------|------------|
 | Simulated campaigns all originate from news articles | **LOW** | Real manual campaigns also exist; mix is natural |
-| No real user has ever posted an update on a simulated campaign | **MEDIUM** | Organizer updates are AI-generated. Consistent within simulated campaigns. Real campaigns will have real organizer updates — pattern difference is subtle |
+| No real user has ever posted an update on a simulated campaign | **MEDIUM** | Organizer updates are AI-generated. Consistent within simulated campaigns. Real campaigns will have real organizer updates â€” pattern difference is subtle |
 | Simulated campaigns never have recurring donations | **LOW** | Add simulated recurring donation patterns in seed engine |
-| Seed donations never have a `userId` (always null) | **MEDIUM** — visible in admin DB queries | By design: seed donors aren't real users. Admin knows this. No public exposure. |
+| Seed donations never have a `userId` (always null) | **MEDIUM** â€” visible in admin DB queries | By design: seed donors aren't real users. Admin knows this. No public exposure. |
 | All seed donation messages come from `campaign_seed_messages` pool | **NONE** | Messages are AI-generated, varied, campaign-specific. Indistinguishable from real messages. |
 
 #### 3.1.4 Infrastructure Leaks
 
 | Vector | Current Risk | Mitigation |
 |--------|-------------|------------|
-| `SEED_MODE_ENABLED` env var | **NONE** — server-side only | Move to `siteSettings` DB for runtime control |
-| `campaign_creation_daily_limit` setting | **NONE** — controls news pipeline only | No action needed |
+| `SEED_MODE_ENABLED` env var | **NONE** â€” server-side only | Move to `siteSettings` DB for runtime control |
+| `campaign_creation_daily_limit` setting | **NONE** â€” controls news pipeline only | No action needed |
 | React DevTools inspection of campaign props | **MEDIUM** | Ensure `source`, `simulation_flag`, `campaignProfile` are never passed to client components |
 | Network tab shows no Stripe API calls for seed donations | **NONE** | Seed donations are server-side cron. No browser involvement. |
-| Supabase dashboard direct DB access | **LOW** — admin insider risk only | Document access control policy; consider PostgreSQL RLS |
+| Supabase dashboard direct DB access | **LOW** â€” admin insider risk only | Document access control policy; consider PostgreSQL RLS |
 
 #### 3.1.5 Receipt & Email Leaks
 
 | Vector | Current Risk | Mitigation |
 |--------|-------------|------------|
-| Real donations to simulated campaigns get real Stripe receipts | **NONE** — this is by design (Approach A) | Receipts are legitimate since payment is real |
-| Seed donations don't generate receipt emails | **NONE** — no email is sent; no one expects one | N/A |
-| Seed donor emails are fake | **NONE** — never used for outbound email | N/A |
+| Real donations to simulated campaigns get real Stripe receipts | **NONE** â€” this is by design (Approach A) | Receipts are legitimate since payment is real |
+| Seed donations don't generate receipt emails | **NONE** â€” no email is sent; no one expects one | N/A |
+| Seed donor emails are fake | **NONE** â€” never used for outbound email | N/A |
 
 ### 3.2 Severity Summary
 
@@ -270,96 +270,96 @@ Every possible way a non-admin person or system could detect simulation, and the
 ### 4.1 High-Level Architecture
 
 ```
-┌───────────────────────────────────────────────────────────────────────────┐
-│                            ADMIN LAYER                                     │
-│  ┌─────────────────────────────────────────────────────────────────────┐  │
-│  │ Simulation Control Panel                                            │  │
-│  │  • Global enable/disable toggle                                     │  │
-│  │  • Volume slider (0% – 100%)                                        │  │
-│  │  • Per-category enable/disable                                      │  │
-│  │  • Per-campaign pause/resume/convert                                │  │
-│  │  • Fund pool dashboard                                              │  │
-│  │  • Phase-out threshold configuration                                │  │
-│  └─────────────────────────────────────────────────────────────────────┘  │
-│                                    │ reads/writes                          │
-│                                    ▼                                       │
-│  ┌─────────────────────────────────────────────────────────────────────┐  │
-│  │ siteSettings table                                                  │  │
-│  │  • simulation.enabled: boolean                                      │  │
-│  │  • simulation.volume: number (0.0–1.0)                              │  │
-│  │  • simulation.categories: string[]                                  │  │
-│  │  • simulation.max_concurrent: number                                │  │
-│  │  • simulation.phase_out_thresholds: object                          │  │
-│  └─────────────────────────────────────────────────────────────────────┘  │
-└───────────────────────────────────────────────────────────────────────────┘
-                                     │
-                                     ▼
-┌───────────────────────────────────────────────────────────────────────────┐
-│                          BACKEND LAYER                                     │
-│                                                                            │
-│  ┌──────────────────────┐    ┌──────────────────────┐                     │
-│  │ News Pipeline         │    │ Real Campaign         │                    │
-│  │ (creates simulated)   │    │ Creation              │                    │
-│  │                       │    │ (user/editor submit)   │                    │
-│  │ simulation_flag=TRUE  │    │ simulation_flag=FALSE  │                    │
-│  └──────────┬────────────┘    └──────────┬────────────┘                    │
-│             │                            │                                  │
-│             ▼                            ▼                                  │
-│  ┌─────────────────────────────────────────────────────────────────────┐  │
-│  │                    campaigns table                                   │  │
-│  │  simulation_flag: boolean (INTERNAL ONLY — never in public queries) │  │
-│  │  source: text ('manual' | 'automated') — backward compat            │  │
-│  └─────────────────────────────────────────────────────────────────────┘  │
-│             │                                                              │
-│             ▼                                                              │
-│  ┌─────────────────────────────────────────────────────────────────────┐  │
-│  │ QUERY SANITIZATION LAYER (publicCampaignSelect)                     │  │
-│  │                                                                      │  │
-│  │ Every public-facing query goes through this function.                │  │
-│  │ Strips: simulation_flag, source, campaignProfile, simulation_config │  │
-│  │ Returns: ONLY the fields needed for rendering.                      │  │
-│  └─────────────────────────────────────────────────────────────────────┘  │
-│             │                                                              │
-│             ▼                                                              │
-│  ┌─────────────────────────────────────────────────────────────────────┐  │
-│  │ Donation Router                                                      │  │
-│  │                                                                      │  │
-│  │ POST /api/v1/donations/create-intent                                │  │
-│  │  → Fetch campaign (WITH simulation_flag — internal query)            │  │
-│  │  → If simulation_flag=true: create real Stripe intent, tag metadata │  │
-│  │     as fund_pool, insert to fund_pool_allocations table             │  │
-│  │  → If simulation_flag=false: create real Stripe intent (normal)     │  │
-│  │  → Response is IDENTICAL in both cases                              │  │
-│  └─────────────────────────────────────────────────────────────────────┘  │
-│             │                                                              │
-│             ▼                                                              │
-│  ┌─────────────────────────────────────────────────────────────────────┐  │
-│  │ Simulation Engine (modified)                                         │  │
-│  │                                                                      │  │
-│  │ 1. Check siteSettings → simulation.enabled                          │  │
-│  │ 2. Query only campaigns WHERE simulation_flag = true                │  │
-│  │ 3. Apply volume scaling factor                                      │  │
-│  │ 4. Apply category filter                                             │  │
-│  │ 5. Run existing seed donation logic                                  │  │
-│  └─────────────────────────────────────────────────────────────────────┘  │
-└───────────────────────────────────────────────────────────────────────────┘
-                                     │
-                                     ▼
-┌───────────────────────────────────────────────────────────────────────────┐
-│                          FRONTEND LAYER                                    │
-│                                                                            │
-│  ┌─────────────────────────────────────────────────────────────────────┐  │
-│  │ Campaign pages, donation forms, donor feed, updates                 │  │
-│  │                                                                      │  │
-│  │ RECEIVES ONLY: sanitized campaign data (no simulation_flag,         │  │
-│  │ no source, no campaignProfile)                                      │  │
-│  │                                                                      │  │
-│  │ RENDERING: Identical for all campaigns. No conditional logic.       │  │
-│  │ INTERACTION: Donate, message, share — all identical.                │  │
-│  │                                                                      │  │
-│  │ → ARCHITECTURALLY INCAPABLE OF KNOWING CAMPAIGN TYPE               │  │
-│  └─────────────────────────────────────────────────────────────────────┘  │
-└───────────────────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                            ADMIN LAYER                                     â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚ Simulation Control Panel                                            â”‚  â”‚
+â”‚  â”‚  â€¢ Global enable/disable toggle                                     â”‚  â”‚
+â”‚  â”‚  â€¢ Volume slider (0% â€“ 100%)                                        â”‚  â”‚
+â”‚  â”‚  â€¢ Per-category enable/disable                                      â”‚  â”‚
+â”‚  â”‚  â€¢ Per-campaign pause/resume/convert                                â”‚  â”‚
+â”‚  â”‚  â€¢ Fund pool dashboard                                              â”‚  â”‚
+â”‚  â”‚  â€¢ Phase-out threshold configuration                                â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â”‚                                    â”‚ reads/writes                          â”‚
+â”‚                                    â–¼                                       â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚ siteSettings table                                                  â”‚  â”‚
+â”‚  â”‚  â€¢ simulation.enabled: boolean                                      â”‚  â”‚
+â”‚  â”‚  â€¢ simulation.volume: number (0.0â€“1.0)                              â”‚  â”‚
+â”‚  â”‚  â€¢ simulation.categories: string[]                                  â”‚  â”‚
+â”‚  â”‚  â€¢ simulation.max_concurrent: number                                â”‚  â”‚
+â”‚  â”‚  â€¢ simulation.phase_out_thresholds: object                          â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                                     â”‚
+                                     â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                          BACKEND LAYER                                     â”‚
+â”‚                                                                            â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                     â”‚
+â”‚  â”‚ News Pipeline         â”‚    â”‚ Real Campaign         â”‚                    â”‚
+â”‚  â”‚ (creates simulated)   â”‚    â”‚ Creation              â”‚                    â”‚
+â”‚  â”‚                       â”‚    â”‚ (user/editor submit)   â”‚                    â”‚
+â”‚  â”‚ simulation_flag=TRUE  â”‚    â”‚ simulation_flag=FALSE  â”‚                    â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                    â”‚
+â”‚             â”‚                            â”‚                                  â”‚
+â”‚             â–¼                            â–¼                                  â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚                    campaigns table                                   â”‚  â”‚
+â”‚  â”‚  simulation_flag: boolean (INTERNAL ONLY â€” never in public queries) â”‚  â”‚
+â”‚  â”‚  source: text ('manual' | 'automated') â€” backward compat            â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â”‚             â”‚                                                              â”‚
+â”‚             â–¼                                                              â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚ QUERY SANITIZATION LAYER (publicCampaignSelect)                     â”‚  â”‚
+â”‚  â”‚                                                                      â”‚  â”‚
+â”‚  â”‚ Every public-facing query goes through this function.                â”‚  â”‚
+â”‚  â”‚ Strips: simulation_flag, source, campaignProfile, simulation_config â”‚  â”‚
+â”‚  â”‚ Returns: ONLY the fields needed for rendering.                      â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â”‚             â”‚                                                              â”‚
+â”‚             â–¼                                                              â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚ Donation Router                                                      â”‚  â”‚
+â”‚  â”‚                                                                      â”‚  â”‚
+â”‚  â”‚ POST /api/v1/donations/create-intent                                â”‚  â”‚
+â”‚  â”‚  â†’ Fetch campaign (WITH simulation_flag â€” internal query)            â”‚  â”‚
+â”‚  â”‚  â†’ If simulation_flag=true: create real Stripe intent, tag metadata â”‚  â”‚
+â”‚  â”‚     as fund_pool, insert to fund_pool_allocations table             â”‚  â”‚
+â”‚  â”‚  â†’ If simulation_flag=false: create real Stripe intent (normal)     â”‚  â”‚
+â”‚  â”‚  â†’ Response is IDENTICAL in both cases                              â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â”‚             â”‚                                                              â”‚
+â”‚             â–¼                                                              â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚ Simulation Engine (modified)                                         â”‚  â”‚
+â”‚  â”‚                                                                      â”‚  â”‚
+â”‚  â”‚ 1. Check siteSettings â†’ simulation.enabled                          â”‚  â”‚
+â”‚  â”‚ 2. Query only campaigns WHERE simulation_flag = true                â”‚  â”‚
+â”‚  â”‚ 3. Apply volume scaling factor                                      â”‚  â”‚
+â”‚  â”‚ 4. Apply category filter                                             â”‚  â”‚
+â”‚  â”‚ 5. Run existing seed donation logic                                  â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                                     â”‚
+                                     â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                          FRONTEND LAYER                                    â”‚
+â”‚                                                                            â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚ Campaign pages, donation forms, donor feed, updates                 â”‚  â”‚
+â”‚  â”‚                                                                      â”‚  â”‚
+â”‚  â”‚ RECEIVES ONLY: sanitized campaign data (no simulation_flag,         â”‚  â”‚
+â”‚  â”‚ no source, no campaignProfile)                                      â”‚  â”‚
+â”‚  â”‚                                                                      â”‚  â”‚
+â”‚  â”‚ RENDERING: Identical for all campaigns. No conditional logic.       â”‚  â”‚
+â”‚  â”‚ INTERACTION: Donate, message, share â€” all identical.                â”‚  â”‚
+â”‚  â”‚                                                                      â”‚  â”‚
+â”‚  â”‚ â†’ ARCHITECTURALLY INCAPABLE OF KNOWING CAMPAIGN TYPE               â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### 4.2 Data Flow Summary
@@ -367,22 +367,22 @@ Every possible way a non-admin person or system could detect simulation, and the
 ```
 Real User Journey (on any campaign type):
   User visits /campaigns/some-slug
-    → SSR getCampaign() → publicCampaignSelect() → stripped data
-    → User sees campaign, donor feed, updates
-    → User clicks Donate → DonationForm
-    → POST /create-intent → backend checks simulation_flag internally
-    → Stripe PaymentIntent created (real, with fund_pool metadata if simulated)
-    → User completes payment → Stripe webhook fires
-    → Donation recorded (source='real') → campaign tallies updated
-    → Receipt email sent → notification created
+    â†’ SSR getCampaign() â†’ publicCampaignSelect() â†’ stripped data
+    â†’ User sees campaign, donor feed, updates
+    â†’ User clicks Donate â†’ DonationForm
+    â†’ POST /create-intent â†’ backend checks simulation_flag internally
+    â†’ Stripe PaymentIntent created (real, with fund_pool metadata if simulated)
+    â†’ User completes payment â†’ Stripe webhook fires
+    â†’ Donation recorded (source='real') â†’ campaign tallies updated
+    â†’ Receipt email sent â†’ notification created
 
 Simulation Engine (on simulated campaigns only):
   Cron fires every 15 min
-    → Check siteSettings → simulation.enabled
-    → Query campaigns WHERE simulation_flag = true AND status IN ('active','last_donor_zone')
-    → Apply volume scaling
-    → For each campaign: seed donations, phase transitions, updates
-    → All seed donations tagged source='seed'
+    â†’ Check siteSettings â†’ simulation.enabled
+    â†’ Query campaigns WHERE simulation_flag = true AND status IN ('active','last_donor_zone')
+    â†’ Apply volume scaling
+    â†’ For each campaign: seed donations, phase transitions, updates
+    â†’ All seed donations tagged source='seed'
 ```
 
 ---
@@ -431,7 +431,7 @@ ALTER TABLE campaigns ADD COLUMN simulation_config JSONB DEFAULT NULL;
 type SimulationConfig = {
   /** Whether seed donations are paused for this specific campaign */
   paused: boolean;
-  /** Override volume multiplier for this campaign (0.0–2.0) */
+  /** Override volume multiplier for this campaign (0.0â€“2.0) */
   volumeOverride?: number;
   /** Whether this campaign's funds should go to pool or to located beneficiary */
   fundAllocation: 'pool' | 'located_beneficiary';
@@ -511,9 +511,9 @@ ALTER TYPE notification_type ADD VALUE 'message_flagged';
 | `simulation.categories` | string[] | `['medical','disaster','military','veterans','memorial','first-responders','community','essential-needs']` | Categories that receive simulated campaigns |
 | `simulation.max_concurrent` | number | `20` | Max simulated campaigns active at once |
 | `simulation.phase_out.enabled` | boolean | `false` | Auto phase-out based on real campaign count |
-| `simulation.phase_out.threshold_low` | number | `10` | Real campaigns count → reduce volume to 0.7 |
-| `simulation.phase_out.threshold_mid` | number | `25` | Real campaigns count → reduce volume to 0.3 |
-| `simulation.phase_out.threshold_high` | number | `50` | Real campaigns count → disable new simulations |
+| `simulation.phase_out.threshold_low` | number | `10` | Real campaigns count â†’ reduce volume to 0.7 |
+| `simulation.phase_out.threshold_mid` | number | `25` | Real campaigns count â†’ reduce volume to 0.3 |
+| `simulation.phase_out.threshold_high` | number | `50` | Real campaigns count â†’ disable new simulations |
 | `simulation.fund_pool.auto_allocate` | boolean | `false` | Auto-allocate pooled funds to real campaigns |
 
 ### 5.2 Migration File
@@ -671,7 +671,7 @@ export const publicDonationSelect = {
 
 /**
  * Campaign message columns safe for public display.
- * NEVER include flagged or hidden — filter in WHERE clause.
+ * NEVER include flagged or hidden â€” filter in WHERE clause.
  */
 export const publicMessageSelect = {
   id: campaignMessages.id,
@@ -687,13 +687,13 @@ export const publicMessageSelect = {
 
 | File | Current Query | Required Change |
 |------|---------------|-----------------|
-| `src/app/campaigns/[slug]/page.tsx` → `getCampaign()` | `db.select().from(campaigns)` | `db.select(publicCampaignSelect).from(campaigns)` |
-| `src/app/api/v1/campaigns/[slug]/route.ts` → `GET` | `db.select().from(campaigns)` | `db.select(publicCampaignSelect).from(campaigns)` |
-| `src/app/api/v1/campaigns/route.ts` → `GET` | Explicit select (already safe) | Verify against `publicCampaignCardSelect` |
-| `src/app/campaigns/[slug]/page.tsx` → `getRelatedCampaigns()` | Explicit select (already safe) | Verify against `publicCampaignCardSelect` |
+| `src/app/campaigns/[slug]/page.tsx` â†’ `getCampaign()` | `db.select().from(campaigns)` | `db.select(publicCampaignSelect).from(campaigns)` |
+| `src/app/api/v1/campaigns/[slug]/route.ts` â†’ `GET` | `db.select().from(campaigns)` | `db.select(publicCampaignSelect).from(campaigns)` |
+| `src/app/api/v1/campaigns/route.ts` â†’ `GET` | Explicit select (already safe) | Verify against `publicCampaignCardSelect` |
+| `src/app/campaigns/[slug]/page.tsx` â†’ `getRelatedCampaigns()` | Explicit select (already safe) | Verify against `publicCampaignCardSelect` |
 | `src/app/api/v1/og/campaign/[slug]/route.ts` | Check for `db.select()` | Update if needed |
-| `src/app/page.tsx` → homepage featured campaigns | Check query | Update if needed |
-| Any new API routes or pages | — | Must use `publicCampaignSelect` |
+| `src/app/page.tsx` â†’ homepage featured campaigns | Check query | Update if needed |
+| Any new API routes or pages | â€” | Must use `publicCampaignSelect` |
 
 ### 6.4 TypeScript Type Enforcement
 
@@ -703,7 +703,7 @@ Create a public-facing campaign type that EXCLUDES internal fields:
 
 ```typescript
 /**
- * Public campaign type — this is what the frontend sees.
+ * Public campaign type â€” this is what the frontend sees.
  * NEVER includes simulation_flag, source, campaignProfile, or simulation_config.
  */
 export type PublicCampaign = {
@@ -733,7 +733,7 @@ export type PublicCampaign = {
 };
 
 /**
- * Public donation type — what the donor feed shows.
+ * Public donation type â€” what the donor feed shows.
  */
 export type PublicDonation = {
   id: string;
@@ -746,7 +746,7 @@ export type PublicDonation = {
 };
 
 /**
- * Public message type — what the message wall shows.
+ * Public message type â€” what the message wall shows.
  */
 export type PublicMessage = {
   id: string;
@@ -799,7 +799,7 @@ if (!simulationEnabled) {
 
 #### 7.1.2 Query Only Simulated Campaigns
 
-**Current** (in `simulation-engine.ts` → `runSimulation()`):
+**Current** (in `simulation-engine.ts` â†’ `runSimulation()`):
 ```typescript
 const activeCampaigns = await db
   .select()
@@ -820,7 +820,7 @@ const activeCampaigns = await db
   );
 ```
 
-**Why**: The simulation engine must ONLY seed donations on simulated campaigns. Previously it ran on all campaigns — including manually created ones. This was acceptable when all campaigns were simulated, but with real user campaigns it would create seed donations on real campaigns, which is wrong.
+**Why**: The simulation engine must ONLY seed donations on simulated campaigns. Previously it ran on all campaigns â€” including manually created ones. This was acceptable when all campaigns were simulated, but with real user campaigns it would create seed donations on real campaigns, which is wrong.
 
 #### 7.1.3 Apply Volume Scaling
 
@@ -945,7 +945,7 @@ if (currentSimulated.count >= maxConcurrent) {
 
 ### 7.3 Seed Data Sanitization
 
-#### 7.3.1 Fake Stripe IDs — Make Indistinguishable
+#### 7.3.1 Fake Stripe IDs â€” Make Indistinguishable
 
 **Current**: `seed_${crypto.randomUUID()}`
 
@@ -964,13 +964,13 @@ function generateRealisticPaymentId(): string {
 }
 ```
 
-**Where to change**: `src/lib/seed/simulation-engine.ts` — replace all `seed_${crypto.randomUUID()}` with `generateRealisticPaymentId()`.
+**Where to change**: `src/lib/seed/simulation-engine.ts` â€” replace all `seed_${crypto.randomUUID()}` with `generateRealisticPaymentId()`.
 
 **Impact on reconciliation**: The reconciliation cron (`/api/v1/cron/reconcile`) queries donations by `source` column (`'seed'` vs `'real'`), NOT by `stripePaymentId` prefix. So this change is safe.
 
 **Impact on Stripe API**: The fake IDs will never be sent to Stripe's API. They're only stored in our DB. Stripe webhook handler matches by `paymentIntent.id` from Stripe events, which are always real.
 
-#### 7.3.2 Fake Donor Emails — Make Indistinguishable
+#### 7.3.2 Fake Donor Emails â€” Make Indistinguishable
 
 **Current**: `seed-${crypto.randomUUID().slice(0, 8)}@lastdonor.internal`
 
@@ -996,9 +996,9 @@ function generateRealisticEmail(donorName: string): string {
 }
 ```
 
-**Where to change**: `src/lib/seed/simulation-engine.ts` — replace the `seed-xxx@lastdonor.internal` pattern.
+**Where to change**: `src/lib/seed/simulation-engine.ts` â€” replace the `seed-xxx@lastdonor.internal` pattern.
 
-**IMPORTANT**: These emails must NEVER be used for outbound email. The Stripe webhook handler sends receipt emails to `donorEmail` — but only for `source='real'` donations. Seed donations never trigger the webhook (they bypass Stripe). So this is safe.
+**IMPORTANT**: These emails must NEVER be used for outbound email. The Stripe webhook handler sends receipt emails to `donorEmail` â€” but only for `source='real'` donations. Seed donations never trigger the webhook (they bypass Stripe). So this is safe.
 
 #### 7.3.3 Existing Seed Data Migration
 
@@ -1010,23 +1010,23 @@ SET stripe_payment_id = 'pi_' || encode(gen_random_bytes(18), 'hex')
 WHERE source = 'seed' AND stripe_payment_id LIKE 'seed_%';
 
 -- Update existing seed emails to realistic format
--- (Complex — do this in application code during migration)
+-- (Complex â€” do this in application code during migration)
 ```
 
 ---
 
 ## 8. Donation Routing & Fund Pooling
 
-### 8.1 Approach A — Fund Pooling Implementation
+### 8.1 Approach A â€” Fund Pooling Implementation
 
 When a real user donates to a simulated campaign:
-1. The Stripe PaymentIntent is created **normally** — real money moves.
-2. The donation is recorded with `source: 'real'` — it's a real donation.
-3. A `fund_pool_allocations` record is created — tracking that this money entered via a simulated campaign.
+1. The Stripe PaymentIntent is created **normally** â€” real money moves.
+2. The donation is recorded with `source: 'real'` â€” it's a real donation.
+3. A `fund_pool_allocations` record is created â€” tracking that this money entered via a simulated campaign.
 4. The platform will attempt to locate the real person/entity (from the news article) and deliver funds.
 5. If undeliverable, funds are redistributed to real campaigns.
 
-### 8.2 Donation Router — Modified `create-intent`
+### 8.2 Donation Router â€” Modified `create-intent`
 
 **File**: `src/app/api/v1/donations/create-intent/route.ts`
 
@@ -1034,7 +1034,7 @@ When a real user donates to a simulated campaign:
 
 **New flow**:
 ```typescript
-// Fetch campaign with simulation_flag (INTERNAL query — not public)
+// Fetch campaign with simulation_flag (INTERNAL query â€” not public)
 const [campaign] = await db
   .select({
     id: campaigns.id,
@@ -1056,7 +1056,7 @@ const [campaign] = await db
 
 // ... validate campaign exists ...
 
-// Create Stripe PaymentIntent — IDENTICAL regardless of campaign type
+// Create Stripe PaymentIntent â€” IDENTICAL regardless of campaign type
 const paymentIntent = await stripe.paymentIntents.create(
   {
     amount: data.amount,
@@ -1069,7 +1069,7 @@ const paymentIntent = await stripe.paymentIntents.create(
       message: data.message ?? '',
       isAnonymous: String(data.isAnonymous),
       isRecurring: String(data.isRecurring),
-      fundPool: campaign.simulationFlag ? 'true' : 'false',  // INTERNAL tag — stored in Stripe metadata
+      fundPool: campaign.simulationFlag ? 'true' : 'false',  // INTERNAL tag â€” stored in Stripe metadata
     },
   },
   data.idempotencyKey ? { idempotencyKey: data.idempotencyKey } : undefined,
@@ -1092,7 +1092,7 @@ const response: ApiResponse<{
 };
 ```
 
-### 8.3 Webhook Handler — Fund Pool Tracking
+### 8.3 Webhook Handler â€” Fund Pool Tracking
 
 **File**: `src/app/api/v1/donations/webhook/route.ts`
 
@@ -1144,7 +1144,7 @@ The daily reconciliation cron should also reconcile fund pool allocations:
 
 ### 9.1 System Design
 
-The messaging system enables donors to "leave a message" on a campaign. It is a **public wall** — anyone who visits the campaign can see messages. Only donors can post messages (either at donation time or independently if authenticated). Campaign runners can post updates (existing `campaign_updates` system) but do NOT respond to individual messages.
+The messaging system enables donors to "leave a message" on a campaign. It is a **public wall** â€” anyone who visits the campaign can see messages. Only donors can post messages (either at donation time or independently if authenticated). Campaign runners can post updates (existing `campaign_updates` system) but do NOT respond to individual messages.
 
 ### 9.2 Message Types
 
@@ -1200,7 +1200,7 @@ Allows authenticated users to post a standalone message.
 
 **Validation**:
 - User must be authenticated
-- Message: 1–500 characters, sanitized (strip HTML)
+- Message: 1â€“500 characters, sanitized (strip HTML)
 - Rate limit: 5 messages per campaign per user per day
 - Campaign must be active or last_donor_zone or completed (allow messages on completed campaigns)
 
@@ -1362,38 +1362,38 @@ Admin panel section for reviewing flagged messages:
 
 The frontend must be **architecturally incapable** of knowing whether a campaign is simulated. This means:
 
-1. **No TypeScript type in `src/types/` that includes `simulation_flag` is imported in any `src/app/` or `src/components/` file** — the `PublicCampaign` type is used instead.
+1. **No TypeScript type in `src/types/` that includes `simulation_flag` is imported in any `src/app/` or `src/components/` file** â€” the `PublicCampaign` type is used instead.
 2. **No API response or SSR data includes `simulation_flag`, `source`, `campaignProfile`, or `simulation_config`**.
 3. **No conditional rendering** based on campaign type.
 4. **No feature flags** in frontend code that toggle simulation behavior.
-5. **Campaign detail page, donation form, donor feed, message wall, progress bar, phase badge, impact tiers, updates timeline — all treat every campaign identically**.
+5. **Campaign detail page, donation form, donor feed, message wall, progress bar, phase badge, impact tiers, updates timeline â€” all treat every campaign identically**.
 
-### 10.2 Component Audit — No Changes Needed
+### 10.2 Component Audit â€” No Changes Needed
 
 | Component | File | Simulation-Aware? | Action |
 |-----------|------|--------------------|--------|
-| `CampaignCard` | `src/components/campaign/CampaignCard.tsx` | No — uses safe props | None |
+| `CampaignCard` | `src/components/campaign/CampaignCard.tsx` | No â€” uses safe props | None |
 | `CampaignGrid` | `src/components/campaign/CampaignGrid.tsx` | No | None |
 | `CampaignHeroImage` | `src/components/campaign/CampaignHeroImage.tsx` | No | None |
 | `CampaignUpdates` | `src/components/campaign/CampaignUpdates.tsx` | No | None |
-| `DonationForm` | `src/components/campaign/DonationForm.tsx` | No — calls `/create-intent` identically | None |
-| `DonorFeed` | `src/components/campaign/DonorFeed.tsx` | No — polls safe donor data | None |
+| `DonationForm` | `src/components/campaign/DonationForm.tsx` | No â€” calls `/create-intent` identically | None |
+| `DonorFeed` | `src/components/campaign/DonorFeed.tsx` | No â€” polls safe donor data | None |
 | `ImpactTiers` | `src/components/campaign/ImpactTiers.tsx` | No | None |
 | `PhaseBadge` | `src/components/campaign/PhaseBadge.tsx` | No | None |
 | `ProgressBar` | `src/components/campaign/ProgressBar.tsx` | No | None |
 | `ShareButtons` | `src/components/campaign/ShareButtons.tsx` | No | None |
 | `StickyMobileDonateBar` | `src/components/campaign/StickyMobileDonateBar.tsx` | No | None |
 
-### 10.3 Data Flow — Frontend Perspective
+### 10.3 Data Flow â€” Frontend Perspective
 
 ```
 Server Component (page.tsx):
-  → getCampaign(slug) → db.select(publicCampaignSelect) → PublicCampaign
-  → getRecentDonors(id) → db.select(publicDonationSelect) → PublicDonation[]
-  → getMessages(id) → db.select(publicMessageSelect) → PublicMessage[]
-  → getUpdates(id) → safe select → CampaignUpdate[]
+  â†’ getCampaign(slug) â†’ db.select(publicCampaignSelect) â†’ PublicCampaign
+  â†’ getRecentDonors(id) â†’ db.select(publicDonationSelect) â†’ PublicDonation[]
+  â†’ getMessages(id) â†’ db.select(publicMessageSelect) â†’ PublicMessage[]
+  â†’ getUpdates(id) â†’ safe select â†’ CampaignUpdate[]
 
-  → Render:
+  â†’ Render:
     <CampaignHeroImage src={campaign.heroImageUrl} />
     <ProgressBar raisedAmount={campaign.raisedAmount} goalAmount={campaign.goalAmount} />
     <DonationForm campaignId={campaign.id} campaignTitle={campaign.title} />
@@ -1401,7 +1401,7 @@ Server Component (page.tsx):
     <MessageWall campaignSlug={slug} initialMessages={messages} />
     <CampaignUpdates updates={formattedUpdates} />
 
-  → NO campaign.source, NO campaign.simulationFlag anywhere in the component tree
+  â†’ NO campaign.source, NO campaign.simulationFlag anywhere in the component tree
 ```
 
 ---
@@ -1417,76 +1417,76 @@ Server Component (page.tsx):
 ### 11.2 Control Panel Layout
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│ Simulation Control                                  [Admin Only]│
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  ┌──── Global Controls ────────────────────────────────────────┐ │
-│  │                                                              │ │
-│  │  Simulation Active:  [ON/OFF toggle]                        │ │
-│  │  Volume:             [======●=========] 70%                  │ │
-│  │  Max Concurrent:     [20] campaigns                         │ │
-│  │                                                              │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-│                                                                  │
-│  ┌──── Category Controls ──────────────────────────────────────┐ │
-│  │                                                              │ │
-│  │  ☑ Medical         ☑ Disaster        ☑ Military              │ │
-│  │  ☑ Veterans        ☑ Memorial        ☑ First-Responders      │ │
-│  │  ☑ Community       ☑ Essential-Needs ☐ Emergency              │ │
-│  │  ☐ Education       ☐ Animal          ☐ Faith                  │ │
-│  │                                                              │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-│                                                                  │
-│  ┌──── Phase-Out Configuration ────────────────────────────────┐ │
-│  │                                                              │ │
-│  │  Auto Phase-Out:    [ON/OFF toggle]                         │ │
-│  │  Current Real Active Campaigns: 12                          │ │
-│  │                                                              │ │
-│  │  Threshold Low   (→ 70% volume):  [10] campaigns            │ │
-│  │  Threshold Mid   (→ 30% volume):  [25] campaigns            │ │
-│  │  Threshold High  (→ stop new):    [50] campaigns            │ │
-│  │                                                              │ │
-│  │  Current Auto-Volume: 70% (12 real > threshold_low)          │ │
-│  │                                                              │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-│                                                                  │
-│  ┌──── Fund Pool ──────────────────────────────────────────────┐ │
-│  │                                                              │ │
-│  │  Pending Allocations:  $2,450.00 (14 donations)             │ │
-│  │  Allocated:            $1,200.00 (8 donations)              │ │
-│  │  Disbursed:            $800.00 (5 donations)                │ │
-│  │                                                              │ │
-│  │  [View All] [Auto-Allocate] [Export Report]                 │ │
-│  │                                                              │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-│                                                                  │
-│  ┌──── Active Simulated Campaigns ─────────────────────────────┐ │
-│  │                                                              │ │
-│  │  Campaign                    Progress  Status   Actions      │ │
-│  │  ─────────────────────────── ──────── ──────── ─────────     │ │
-│  │  Help for Sarah's Family     72%      active   [Pause][Conv] │ │
-│  │  Disaster Relief: TX Flood   45%      active   [Pause][Conv] │ │
-│  │  Memorial: Officer Davis     91%      LDZ      [Pause][Conv] │ │
-│  │  [...]                                                       │ │
-│  │                                                              │ │
-│  │  Total: 18 active    2 paused    5 completed this month     │ │
-│  │                                                              │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-│                                                                  │
-│  ┌──── Analytics ──────────────────────────────────────────────┐ │
-│  │                                                              │ │
-│  │  Simulated Campaigns: 18 active / 45 all-time               │ │
-│  │  Real Campaigns:      12 active / 8 all-time                │ │
-│  │  Seed Donations:      2,340 ($47,800.00)                    │ │
-│  │  Real Donations:      89 ($4,250.00)                        │ │
-│  │  Seed-to-Real Ratio:  26.3:1 (declining ↓)                 │ │
-│  │                                                              │ │
-│  │  [Detailed Report] [Export CSV]                              │ │
-│  │                                                              │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Simulation Control                                  [Admin Only]â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚                                                                  â”‚
+â”‚  â”Œâ”€â”€â”€â”€ Global Controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â”‚  Simulation Active:  [ON/OFF toggle]                        â”‚ â”‚
+â”‚  â”‚  Volume:             [======â-=========] 70%                  â”‚ â”‚
+â”‚  â”‚  Max Concurrent:     [20] campaigns                         â”‚ â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
+â”‚                                                                  â”‚
+â”‚  â”Œâ”€â”€â”€â”€ Category Controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â”‚  â˜‘ Medical         â˜‘ Disaster        â˜‘ Military              â”‚ â”‚
+â”‚  â”‚  â˜‘ Veterans        â˜‘ Memorial        â˜‘ First-Responders      â”‚ â”‚
+â”‚  â”‚  â˜‘ Community       â˜‘ Essential-Needs â˜ Emergency              â”‚ â”‚
+â”‚  â”‚  â˜ Education       â˜ Animal          â˜ Faith                  â”‚ â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
+â”‚                                                                  â”‚
+â”‚  â”Œâ”€â”€â”€â”€ Phase-Out Configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â”‚  Auto Phase-Out:    [ON/OFF toggle]                         â”‚ â”‚
+â”‚  â”‚  Current Real Active Campaigns: 12                          â”‚ â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â”‚  Threshold Low   (â†’ 70% volume):  [10] campaigns            â”‚ â”‚
+â”‚  â”‚  Threshold Mid   (â†’ 30% volume):  [25] campaigns            â”‚ â”‚
+â”‚  â”‚  Threshold High  (â†’ stop new):    [50] campaigns            â”‚ â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â”‚  Current Auto-Volume: 70% (12 real > threshold_low)          â”‚ â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
+â”‚                                                                  â”‚
+â”‚  â”Œâ”€â”€â”€â”€ Fund Pool â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â”‚  Pending Allocations:  $2,450.00 (14 donations)             â”‚ â”‚
+â”‚  â”‚  Allocated:            $1,200.00 (8 donations)              â”‚ â”‚
+â”‚  â”‚  Disbursed:            $800.00 (5 donations)                â”‚ â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â”‚  [View All] [Auto-Allocate] [Export Report]                 â”‚ â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
+â”‚                                                                  â”‚
+â”‚  â”Œâ”€â”€â”€â”€ Active Simulated Campaigns â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â”‚  Campaign                    Progress  Status   Actions      â”‚ â”‚
+â”‚  â”‚  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ â”€â”€â”€â”€â”€â”€â”€â”€ â”€â”€â”€â”€â”€â”€â”€â”€ â”€â”€â”€â”€â”€â”€â”€â”€â”€     â”‚ â”‚
+â”‚  â”‚  Help for Sarah's Family     72%      active   [Pause][Conv] â”‚ â”‚
+â”‚  â”‚  Disaster Relief: TX Flood   45%      active   [Pause][Conv] â”‚ â”‚
+â”‚  â”‚  Memorial: Officer Davis     91%      LDZ      [Pause][Conv] â”‚ â”‚
+â”‚  â”‚  [...]                                                       â”‚ â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â”‚  Total: 18 active    2 paused    5 completed this month     â”‚ â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
+â”‚                                                                  â”‚
+â”‚  â”Œâ”€â”€â”€â”€ Analytics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â”‚  Simulated Campaigns: 18 active / 45 all-time               â”‚ â”‚
+â”‚  â”‚  Real Campaigns:      12 active / 8 all-time                â”‚ â”‚
+â”‚  â”‚  Seed Donations:      2,340 ($47,800.00)                    â”‚ â”‚
+â”‚  â”‚  Real Donations:      89 ($4,250.00)                        â”‚ â”‚
+â”‚  â”‚  Seed-to-Real Ratio:  26.3:1 (declining â†“)                 â”‚ â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â”‚  [Detailed Report] [Export CSV]                              â”‚ â”‚
+â”‚  â”‚                                                              â”‚ â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
+â”‚                                                                  â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### 11.3 Campaign Conversion
@@ -1509,7 +1509,7 @@ The "Convert" action on a simulated campaign transitions it to a real campaign:
 | `/api/v1/admin/simulation/campaigns` | GET | List active simulated campaigns with stats |
 | `/api/v1/admin/simulation/campaigns/[id]/pause` | POST | Pause seed activity for a campaign |
 | `/api/v1/admin/simulation/campaigns/[id]/resume` | POST | Resume seed activity for a campaign |
-| `/api/v1/admin/simulation/campaigns/[id]/convert` | POST | Convert simulated → real campaign |
+| `/api/v1/admin/simulation/campaigns/[id]/convert` | POST | Convert simulated â†’ real campaign |
 | `/api/v1/admin/simulation/analytics` | GET | Simulation vs real analytics |
 | `/api/v1/admin/fund-pool` | GET | List fund pool allocations |
 | `/api/v1/admin/fund-pool/allocate` | POST | Allocate pooled funds to real campaign |
@@ -1576,9 +1576,9 @@ async function calculateAutoVolume(): Promise<number> {
 | Stage | Trigger | Actions |
 |-------|---------|---------|
 | **Full Simulation** | < 10 real campaigns | Volume = 1.0, all categories active |
-| **Reduced** | ≥ 10 real campaigns | Volume = 0.7, slower progression |
-| **Minimal** | ≥ 25 real campaigns | Volume = 0.3, only low-activity categories |
-| **New Simulations Stopped** | ≥ 50 real campaigns | No new simulated campaigns; existing ones complete naturally |
+| **Reduced** | â‰¥ 10 real campaigns | Volume = 0.7, slower progression |
+| **Minimal** | â‰¥ 25 real campaigns | Volume = 0.3, only low-activity categories |
+| **New Simulations Stopped** | â‰¥ 50 real campaigns | No new simulated campaigns; existing ones complete naturally |
 | **Full Phase-Out** | All simulated campaigns completed/archived | `simulation.enabled` = false |
 
 ### 12.3 Graceful Completion
@@ -1588,7 +1588,7 @@ When new simulations are stopped, existing simulated campaigns continue their li
 - Phase transitions complete normally
 - Campaigns reach goal and complete
 - After completion, auto-archive after 90 days (existing reconciliation cron)
-- Eventually all simulated campaigns are archived → full phase-out
+- Eventually all simulated campaigns are archived â†’ full phase-out
 
 ### 12.4 Cleanup
 
@@ -1622,7 +1622,7 @@ Once all simulated campaigns are archived and no longer publicly visible:
 
 ### 13.2 Compliance & Legal Requirements
 
-1. **Terms of Service**: Must include language about fund allocation — "donations support verified campaigns and beneficiaries; in some cases, funds may be allocated to campaigns with the greatest need"
+1. **Terms of Service**: Must include language about fund allocation â€” "donations support verified campaigns and beneficiaries; in some cases, funds may be allocated to campaigns with the greatest need"
 2. **Tax receipts**: All real donations (even to simulated campaigns) generate valid 501(c)(3) tax receipts. The receipt references the platform, not the specific campaign beneficiary.
 3. **Privacy**: Simulated donor data is not real PII. No privacy concern.
 4. **Financial reporting**: Fund pool allocations must be tracked for nonprofit financial reporting. The `fund_pool_allocations` table provides the audit trail.
@@ -1654,15 +1654,15 @@ Once all simulated campaigns are archived and no longer publicly visible:
 | `GET /api/v1/campaigns/[slug]/messages` returns messages correctly | Messaging API | `src/app/api/v1/campaigns/messages.integration.test.ts` |
 | `POST /api/v1/campaigns/[slug]/messages` rate limits correctly | Anti-spam | Same file |
 | Admin simulation settings CRUD | Admin controls | `src/app/api/v1/admin/simulation.integration.test.ts` |
-| Campaign conversion (simulated → real) | Conversion flow | Same file |
+| Campaign conversion (simulated â†’ real) | Conversion flow | Same file |
 
 ### 14.3 Adversarial Tests
 
 | Test | Purpose |
 |------|---------|
 | **API response audit** | Automated scanner checks every public API response body for strings: `simulation`, `seed`, `simulated`, `automated` (in field names) |
-| **Statistical donation analysis** | Analyze generated donation timestamps for cron-aligned clustering — expect uniform distribution within 15-min windows |
-| **Donor name uniqueness** | Verify that across 1000 simulated donations, no more than expected rate of name repetition (≤10%) |
+| **Statistical donation analysis** | Analyze generated donation timestamps for cron-aligned clustering â€” expect uniform distribution within 15-min windows |
+| **Donor name uniqueness** | Verify that across 1000 simulated donations, no more than expected rate of name repetition (â‰¤10%) |
 | **Stripe ID format** | Verify all donation `stripePaymentId` values match `^pi_[A-Za-z0-9]{24}$` pattern |
 | **Email domain diversity** | Verify seed donor emails use diverse realistic domains |
 | **Cross-campaign pattern** | Verify no systematic difference in response shapes between campaigns with `simulation_flag=true` and `simulation_flag=false` |
@@ -1680,7 +1680,7 @@ Once all simulated campaigns are archived and no longer publicly visible:
 
 ## 15. Milestone Breakdown
 
-### Milestone 7: Dual Campaign System — Foundation
+### Milestone 7: Dual Campaign System â€” Foundation
 
 **Scope**: Schema changes, query sanitization, simulation engine hardening
 
@@ -1700,12 +1700,12 @@ Once all simulated campaigns are archived and no longer publicly visible:
 #### 7.2 Query Sanitization Layer
 - [ ] Create `src/db/public-select.ts` with `publicCampaignSelect`, `publicCampaignCardSelect`, `publicDonationSelect`, `publicMessageSelect`
 - [ ] Create `src/types/public.ts` with `PublicCampaign`, `PublicDonation`, `PublicMessage` types
-- [ ] Update `src/app/campaigns/[slug]/page.tsx` → `getCampaign()` to use `publicCampaignSelect`
-- [ ] Update `src/app/api/v1/campaigns/[slug]/route.ts` → `GET` to use `publicCampaignSelect`
-- [ ] Verify `src/app/api/v1/campaigns/route.ts` → `GET` uses safe selection (already uses explicit select — verify no `source` or `campaignProfile`)
+- [ ] Update `src/app/campaigns/[slug]/page.tsx` â†’ `getCampaign()` to use `publicCampaignSelect`
+- [ ] Update `src/app/api/v1/campaigns/[slug]/route.ts` â†’ `GET` to use `publicCampaignSelect`
+- [ ] Verify `src/app/api/v1/campaigns/route.ts` â†’ `GET` uses safe selection (already uses explicit select â€” verify no `source` or `campaignProfile`)
 - [ ] Verify `getRelatedCampaigns()` in campaign page uses safe selection
 - [ ] Audit all other files that query campaigns for public display (homepage, search, sitemap, OG image)
-- [ ] Create `test/security/query-sanitization.test.ts` — grep-based test that scans all public routes for internal field access
+- [ ] Create `test/security/query-sanitization.test.ts` â€” grep-based test that scans all public routes for internal field access
 - [ ] Write automated test: no public API response contains `simulation_flag`, `source` (campaign-level), or `campaignProfile` keys
 
 #### 7.3 Simulation Engine Hardening
@@ -1757,10 +1757,10 @@ Once all simulated campaigns are archived and no longer publicly visible:
 - [ ] Write integration test: webhook creates fund pool allocation
 
 #### 8.3 Fund Pool Admin API
-- [ ] Create `GET /api/v1/admin/fund-pool` — list allocations with pagination, filters
-- [ ] Create `POST /api/v1/admin/fund-pool/allocate` — allocate to real campaign
-- [ ] Create `POST /api/v1/admin/fund-pool/disburse` — mark as disbursed
-- [ ] Create `GET /api/v1/admin/fund-pool/export` — CSV export
+- [ ] Create `GET /api/v1/admin/fund-pool` â€” list allocations with pagination, filters
+- [ ] Create `POST /api/v1/admin/fund-pool/allocate` â€” allocate to real campaign
+- [ ] Create `POST /api/v1/admin/fund-pool/disburse` â€” mark as disbursed
+- [ ] Create `GET /api/v1/admin/fund-pool/export` â€” CSV export
 - [ ] Add fund pool summary to admin dashboard
 - [ ] Write integration tests for all fund pool endpoints
 
@@ -1776,8 +1776,8 @@ Once all simulated campaigns are archived and no longer publicly visible:
 **Scope**: Complete message wall feature
 
 #### 9.1 Message API Routes
-- [ ] Create `GET /api/v1/campaigns/[slug]/messages` — paginated messages
-- [ ] Create `POST /api/v1/campaigns/[slug]/messages` — post standalone message
+- [ ] Create `GET /api/v1/campaigns/[slug]/messages` â€” paginated messages
+- [ ] Create `POST /api/v1/campaigns/[slug]/messages` â€” post standalone message
 - [ ] Create message validation schema (`messageSchema` in `src/lib/validators/`)
 - [ ] Implement rate limiting: 5 messages per user per campaign per day
 - [ ] Write integration tests for both routes
@@ -1807,11 +1807,11 @@ Once all simulated campaigns are archived and no longer publicly visible:
 - [ ] Integrate into campaign detail page (`src/app/campaigns/[slug]/page.tsx`)
   - Add `getMessages()` data fetcher
   - Render `MessageWall` + `MessageForm` in sidebar or below story
-- [ ] Create `MessageWall.test.tsx` — render test with mock data
-- [ ] Create `MessageForm.test.tsx` — form validation, auth gate
+- [ ] Create `MessageWall.test.tsx` â€” render test with mock data
+- [ ] Create `MessageForm.test.tsx` â€” form validation, auth gate
 
 #### 9.5 Admin Moderation
-- [ ] Create `POST /api/v1/admin/campaigns/[campaignId]/messages/[messageId]/moderate` — flag/hide/unhide
+- [ ] Create `POST /api/v1/admin/campaigns/[campaignId]/messages/[messageId]/moderate` â€” flag/hide/unhide
 - [ ] Add message moderation UI in admin campaign detail page
 - [ ] Create notification for hidden messages
 - [ ] Audit log entries for moderation actions
@@ -1824,25 +1824,25 @@ Once all simulated campaigns are archived and no longer publicly visible:
 **Scope**: Admin panel UI + API for controlling simulation
 
 #### 10.1 Settings API
-- [ ] Create `GET /api/v1/admin/simulation/settings` — return all simulation settings
-- [ ] Create `PUT /api/v1/admin/simulation/settings` — update settings with validation
-- [ ] Validation: volume 0.0–1.0, max_concurrent > 0, categories must be valid, thresholds ascending
+- [ ] Create `GET /api/v1/admin/simulation/settings` â€” return all simulation settings
+- [ ] Create `PUT /api/v1/admin/simulation/settings` â€” update settings with validation
+- [ ] Validation: volume 0.0â€“1.0, max_concurrent > 0, categories must be valid, thresholds ascending
 - [ ] Audit log on every settings change
 - [ ] Write integration tests
 
 #### 10.2 Campaign Management API
-- [ ] Create `GET /api/v1/admin/simulation/campaigns` — list simulated campaigns with stats
+- [ ] Create `GET /api/v1/admin/simulation/campaigns` â€” list simulated campaigns with stats
   - Include: progress %, real donations count, seed donations count, fund pool total, status, paused
-- [ ] Create `POST /api/v1/admin/simulation/campaigns/[id]/pause` — set `simulation_config.paused = true`
-- [ ] Create `POST /api/v1/admin/simulation/campaigns/[id]/resume` — set `simulation_config.paused = false`
-- [ ] Create `POST /api/v1/admin/simulation/campaigns/[id]/convert` — simulation_flag = false, clear config
+- [ ] Create `POST /api/v1/admin/simulation/campaigns/[id]/pause` â€” set `simulation_config.paused = true`
+- [ ] Create `POST /api/v1/admin/simulation/campaigns/[id]/resume` â€” set `simulation_config.paused = false`
+- [ ] Create `POST /api/v1/admin/simulation/campaigns/[id]/convert` â€” simulation_flag = false, clear config
   - Require beneficiary info
   - Audit log
   - Transfer any pending fund pool allocations to "located_beneficiary" status
 - [ ] Write integration tests for all endpoints
 
 #### 10.3 Analytics API
-- [ ] Create `GET /api/v1/admin/simulation/analytics` — return:
+- [ ] Create `GET /api/v1/admin/simulation/analytics` â€” return:
   - Simulated campaigns: active, completed, archived counts
   - Real campaigns: active, completed, archived counts
   - Seed donations: count, total amount, avg per campaign
@@ -1853,7 +1853,7 @@ Once all simulated campaigns are archived and no longer publicly visible:
 - [ ] Write integration tests
 
 #### 10.4 Admin UI Pages
-- [ ] Create `/admin/simulation/page.tsx` — main control panel
+- [ ] Create `/admin/simulation/page.tsx` â€” main control panel
   - Global toggle (Switch component)
   - Volume slider (range input)
   - Max concurrent input
@@ -1861,12 +1861,12 @@ Once all simulated campaigns are archived and no longer publicly visible:
   - Phase-out configuration
   - Fund pool summary card
   - Active simulated campaigns table with actions
-- [ ] Create `/admin/simulation/fund-pool/page.tsx` — fund pool management
+- [ ] Create `/admin/simulation/fund-pool/page.tsx` â€” fund pool management
   - Pending allocations list
   - Allocate-to-campaign dialog
   - Disburse confirmation
   - Export button
-- [ ] Create `/admin/simulation/analytics/page.tsx` — analytics dashboard
+- [ ] Create `/admin/simulation/analytics/page.tsx` â€” analytics dashboard
   - Chart: simulated vs real campaigns over time
   - Chart: seed vs real donations over time
   - Table: per-category breakdown
@@ -1932,42 +1932,42 @@ Once all simulated campaigns are archived and no longer publicly visible:
 
 ---
 
-### Summary — Milestone Dependency Graph
+### Summary â€” Milestone Dependency Graph
 
 ```
 Milestone 7: Foundation
-  ├── 7.1 DB Migration
-  ├── 7.2 Query Sanitization ← depends on 7.1
-  ├── 7.3 Engine Hardening ← depends on 7.1
-  ├── 7.4 Seed Data Sanitization ← depends on 7.1
-  └── 7.5 Pipeline Update ← depends on 7.1
+  â”œâ”€â”€ 7.1 DB Migration
+  â”œâ”€â”€ 7.2 Query Sanitization â† depends on 7.1
+  â”œâ”€â”€ 7.3 Engine Hardening â† depends on 7.1
+  â”œâ”€â”€ 7.4 Seed Data Sanitization â† depends on 7.1
+  â””â”€â”€ 7.5 Pipeline Update â† depends on 7.1
 
-Milestone 8: Donation Routing ← depends on 7.1, 7.2
-  ├── 8.1 Donation Router
-  ├── 8.2 Webhook Handler ← depends on 8.1
-  ├── 8.3 Fund Pool Admin API ← depends on 8.2
-  └── 8.4 Reconciliation Update ← depends on 8.2
+Milestone 8: Donation Routing â† depends on 7.1, 7.2
+  â”œâ”€â”€ 8.1 Donation Router
+  â”œâ”€â”€ 8.2 Webhook Handler â† depends on 8.1
+  â”œâ”€â”€ 8.3 Fund Pool Admin API â† depends on 8.2
+  â””â”€â”€ 8.4 Reconciliation Update â† depends on 8.2
 
-Milestone 9: Messaging System ← depends on 7.1
-  ├── 9.1 Message API Routes
-  ├── 9.2 Webhook Integration ← depends on 9.1
-  ├── 9.3 Seed Engine Integration ← depends on 9.1
-  ├── 9.4 Frontend Components ← depends on 9.1
-  └── 9.5 Admin Moderation ← depends on 9.1
+Milestone 9: Messaging System â† depends on 7.1
+  â”œâ”€â”€ 9.1 Message API Routes
+  â”œâ”€â”€ 9.2 Webhook Integration â† depends on 9.1
+  â”œâ”€â”€ 9.3 Seed Engine Integration â† depends on 9.1
+  â”œâ”€â”€ 9.4 Frontend Components â† depends on 9.1
+  â””â”€â”€ 9.5 Admin Moderation â† depends on 9.1
 
-Milestone 10: Admin Controls ← depends on 7.3
-  ├── 10.1 Settings API
-  ├── 10.2 Campaign Management API ← depends on 10.1
-  ├── 10.3 Analytics API
-  ├── 10.4 Admin UI Pages ← depends on 10.1, 10.2, 10.3
-  └── 10.5 Phase-Out Automation ← depends on 10.1
+Milestone 10: Admin Controls â† depends on 7.3
+  â”œâ”€â”€ 10.1 Settings API
+  â”œâ”€â”€ 10.2 Campaign Management API â† depends on 10.1
+  â”œâ”€â”€ 10.3 Analytics API
+  â”œâ”€â”€ 10.4 Admin UI Pages â† depends on 10.1, 10.2, 10.3
+  â””â”€â”€ 10.5 Phase-Out Automation â† depends on 10.1
 
-Milestone 11: Adversarial Testing ← depends on 7, 8, 9, 10
-  ├── 11.1 API Response Audit
-  ├── 11.2 Statistical Donation Analysis
-  ├── 11.3 Cross-Campaign Indistinguishability
-  ├── 11.4 Frontend Audit
-  └── 11.5 E2E Indistinguishability
+Milestone 11: Adversarial Testing â† depends on 7, 8, 9, 10
+  â”œâ”€â”€ 11.1 API Response Audit
+  â”œâ”€â”€ 11.2 Statistical Donation Analysis
+  â”œâ”€â”€ 11.3 Cross-Campaign Indistinguishability
+  â”œâ”€â”€ 11.4 Frontend Audit
+  â””â”€â”€ 11.5 E2E Indistinguishability
 ```
 
 ### Estimated Scope
@@ -1983,7 +1983,7 @@ Milestone 11: Adversarial Testing ← depends on 7, 8, 9, 10
 
 ---
 
-## Appendix A: Files Affected — Complete List
+## Appendix A: Files Affected â€” Complete List
 
 ### New Files
 
@@ -2039,8 +2039,8 @@ Milestone 11: Adversarial Testing ← depends on 7, 8, 9, 10
 | `src/app/api/v1/cron/reconcile/route.ts` | 8.4 | Fund pool reconciliation |
 | `src/components/admin/AdminSidebar.tsx` | 10.4 | Add Simulation section |
 | `src/app/admin/page.tsx` | 10.4 | Add simulation summary to dashboard |
-| `vercel.json` | — | No change (existing crons are sufficient) |
-| `src/middleware.ts` | — | No change (existing auth covers admin routes) |
+| `vercel.json` | â€” | No change (existing crons are sufficient) |
+| `src/middleware.ts` | â€” | No change (existing auth covers admin routes) |
 
 ---
 
@@ -2055,9 +2055,9 @@ Milestone 11: Adversarial Testing ← depends on 7, 8, 9, 10
 | **Fund pool** | A tracking mechanism for real donations made to simulated campaigns. Tracked in `fund_pool_allocations` table. |
 | **Query sanitization** | The practice of using `publicCampaignSelect` to strip internal fields from all public-facing queries. |
 | **Phase-out** | The gradual reduction and eventual elimination of simulated campaigns as real user activity increases. |
-| **Campaign conversion** | The process of changing a simulated campaign to a real campaign — setting `simulation_flag=false` and assigning a real beneficiary. |
-| **Trajectory profile** | JSONB configuration on each campaign that controls simulation pacing — velocity curve, surge events, amount tier. |
-| **Volume multiplier** | A 0.0–1.0 scalar applied to donation probability, controlled via admin settings. |
+| **Campaign conversion** | The process of changing a simulated campaign to a real campaign â€” setting `simulation_flag=false` and assigning a real beneficiary. |
+| **Trajectory profile** | JSONB configuration on each campaign that controls simulation pacing â€” velocity curve, surge events, amount tier. |
+| **Volume multiplier** | A 0.0â€“1.0 scalar applied to donation probability, controlled via admin settings. |
 
 ---
 
@@ -2139,7 +2139,7 @@ createdAt	timestamp with tz	NOT NULL, DEFAULT now()
 updatedAt	timestamp with tz	NOT NULL, DEFAULT now()
 publishedAt	timestamp with tz	NULL
 completedAt	timestamp with tz	NULL
-lastDonorId	uuid	FK → users.id
+lastDonorId	uuid	FK â†’ users.id
 lastDonorName	text	NULL (for seed donors)
 lastDonorAmount	integer	NULL
 Indexes:
@@ -2151,8 +2151,8 @@ idx_campaigns_published_at
 TABLE: donations
 Column	Type	Constraints
 id	uuid	PRIMARY KEY, DEFAULT random
-campaignId	uuid	NOT NULL, FK → campaigns.id
-userId	uuid	NULL, FK → users.id
+campaignId	uuid	NOT NULL, FK â†’ campaigns.id
+userId	uuid	NULL, FK â†’ users.id
 stripePaymentId	text	NOT NULL
 amount	integer	NOT NULL, CHECK >= 500 (cents)
 donorName	text	NOT NULL, DEFAULT 'Anonymous'
@@ -2175,7 +2175,7 @@ CHECK constraint: amount >= 500
 TABLE: campaignUpdates
 Column	Type	Constraints
 id	uuid	PRIMARY KEY, DEFAULT random
-campaignId	uuid	NOT NULL, FK → campaigns.id
+campaignId	uuid	NOT NULL, FK â†’ campaigns.id
 title	text	NOT NULL
 bodyHtml	text	NOT NULL
 updateType	text	NULL
@@ -2217,7 +2217,7 @@ imageUrl	text	NULL
 category	campaign_category enum	NULL
 relevanceScore	integer	NULL
 campaignCreated	boolean	NOT NULL, DEFAULT false
-campaignId	uuid	NULL, FK → campaigns.id
+campaignId	uuid	NULL, FK â†’ campaigns.id
 adminFlagged	boolean	NOT NULL, DEFAULT false
 adminOverrideCategory	campaign_category enum	NULL
 adminNotes	text	NULL
@@ -2241,7 +2241,7 @@ Unique: (category, keyword)
 TABLE: campaignSeedMessages
 Column	Type	Constraints
 id	uuid	PRIMARY KEY, DEFAULT random
-campaignId	uuid	NOT NULL, FK → campaigns.id
+campaignId	uuid	NOT NULL, FK â†’ campaigns.id
 message	text	NOT NULL
 persona	text	NULL
 phase	donation_phase enum	NOT NULL
@@ -2270,8 +2270,8 @@ idx_audit_logs_actor_id
 TABLE: interactionLogs
 Column	Type	Constraints
 id	uuid	PRIMARY KEY, DEFAULT random
-donorId	uuid	NOT NULL, FK → users.id
-staffId	uuid	NULL, FK → users.id
+donorId	uuid	NOT NULL, FK â†’ users.id
+staffId	uuid	NULL, FK â†’ users.id
 type	interaction_type enum	NOT NULL
 subject	text	NOT NULL
 body	text	NULL
@@ -2285,8 +2285,8 @@ idx_interaction_logs_contacted_at
 TABLE: donorRelationships
 Column	Type	Constraints
 id	uuid	PRIMARY KEY, DEFAULT random
-donorId	uuid	NOT NULL, FK → users.id
-relatedDonorId	uuid	NULL, FK → users.id
+donorId	uuid	NOT NULL, FK â†’ users.id
+relatedDonorId	uuid	NULL, FK â†’ users.id
 organizationName	text	NULL
 relationshipType	text	NOT NULL
 notes	text	NULL
@@ -2297,7 +2297,7 @@ idx_donor_relationships_donor_id
 idx_donor_relationships_related_id
 TABLE: accounts (NextAuth.js)
 Column	Type	Constraints
-userId	uuid	NOT NULL, FK → users.id (CASCADE)
+userId	uuid	NOT NULL, FK â†’ users.id (CASCADE)
 type	text	NOT NULL
 provider	text	NOT NULL
 providerAccountId	text	NOT NULL
@@ -2313,7 +2313,7 @@ Primary Key: (provider, providerAccountId)
 TABLE: sessions (NextAuth.js)
 Column	Type	Constraints
 sessionToken	text	PRIMARY KEY
-userId	uuid	NOT NULL, FK → users.id (CASCADE)
+userId	uuid	NOT NULL, FK â†’ users.id (CASCADE)
 expires	timestamp	NOT NULL
 TABLE: verificationTokens (NextAuth.js)
 Column	Type	Constraints
@@ -2332,7 +2332,7 @@ outputTokens	integer	NOT NULL, DEFAULT 0
 latencyMs	integer	NOT NULL, DEFAULT 0
 success	boolean	NOT NULL, DEFAULT true
 errorMessage	text	NULL
-campaignId	uuid	NULL, FK → campaigns.id
+campaignId	uuid	NULL, FK â†’ campaigns.id
 createdAt	timestamp with tz	NOT NULL, DEFAULT now()
 Indexes:
 
@@ -2344,11 +2344,11 @@ Column	Type	Constraints
 key	text	PRIMARY KEY
 value	jsonb	NOT NULL
 updatedAt	timestamp with tz	NOT NULL, DEFAULT now()
-updatedBy	uuid	NULL, FK → users.id
+updatedBy	uuid	NULL, FK â†’ users.id
 TABLE: notifications
 Column	Type	Constraints
 id	uuid	PRIMARY KEY, DEFAULT random
-userId	uuid	NOT NULL, FK → users.id (CASCADE)
+userId	uuid	NOT NULL, FK â†’ users.id (CASCADE)
 type	notification_type enum	NOT NULL
 title	text	NOT NULL
 message	text	NOT NULL
@@ -2371,7 +2371,7 @@ Migration	Purpose	Key Changes
 0005_neat_texas_twister.sql	Site settings	Creates site_settings key-value table
 0006_sticky_tinkerer.sql	Security questions	ADD users.security_question & security_answer_hash
 0007_add_notifications.sql	Notifications system	Creates notifications table with type enum
-0008_add_categories.sql	Category expansion	Alters campaign_category enum: adds emergency, charity, education, animal, environment, business, competition, creative, event, faith, family, sports, travel, volunteer, wishes; migrates disaster→emergency, essential-needs→charity
+0008_add_categories.sql	Category expansion	Alters campaign_category enum: adds emergency, charity, education, animal, environment, business, competition, creative, event, faith, family, sports, travel, volunteer, wishes; migrates disasterâ†’emergency, essential-needsâ†’charity
 0009_campaign_profile.sql	Campaign simulation	ADD campaigns.campaign_profile JSONB
 0010_organizer_and_update_type.sql	Organizer context	ADD campaigns.campaign_organizer JSONB; ADD campaign_updates.update_type TEXT
 0011_last_donor_completion.sql	Last donor tracking	ADD campaigns.last_donor_name & last_donor_amount
@@ -2390,7 +2390,7 @@ Migration Metadata (src/db/migrations/meta/)
 _journal.json - Migration tracking ledger
 0000_snapshot.json through 0005_snapshot.json - Schema snapshots for migrations 0-5
 6. Data Access Pattern
-No separate query layer — The project uses direct Drizzle ORM queries inline in API routes. Example from API routes:
+No separate query layer â€” The project uses direct Drizzle ORM queries inline in API routes. Example from API routes:
 
 // Read: Query campaigns with filters
 db.select().from(campaigns).where(eq(campaigns.status, 'active'))
@@ -2641,14 +2641,14 @@ JSON Response:
 HTTP Status: 200 if all healthy, 503 if any degraded
 SUMMARY OF DATA EXPOSURE
 Endpoint	Public?	Sensitive Fields Exposed	Auth/Filters
-GET /campaigns	✅ Yes	donor count, fundraising progress, subject names, locations	Status filter (active/LDZ only)
-POST /campaigns	❌ Editor/Admin only	All campaign fields	Role check
-GET /campaigns/[slug]	✅ Yes	Recent donors (names, locations, amounts, messages), campaign updates	Status filter + slug lookup
-GET /campaigns/[slug]/donors	✅ Yes	Donor names, locations, amounts, messages, timestamps	Campaign lookup + anonymous mapping
-POST /donations/create-intent	✅ Yes	Campaign IDs accepted + donor PII passed to Stripe	Campaign status check
-POST /donations/webhook	✅ (Stripe-verified)	All donor PII stored in DB, audit logs expose donation details	Stripe signature verification
-GET /stats	✅ Yes	Aggregated totals only (no personal data)	source='real' + refunded=false
-GET /health	✅ Yes	Service status only	No sensitive data
+GET /campaigns	âœ… Yes	donor count, fundraising progress, subject names, locations	Status filter (active/LDZ only)
+POST /campaigns	âŒ Editor/Admin only	All campaign fields	Role check
+GET /campaigns/[slug]	âœ… Yes	Recent donors (names, locations, amounts, messages), campaign updates	Status filter + slug lookup
+GET /campaigns/[slug]/donors	âœ… Yes	Donor names, locations, amounts, messages, timestamps	Campaign lookup + anonymous mapping
+POST /donations/create-intent	âœ… Yes	Campaign IDs accepted + donor PII passed to Stripe	Campaign status check
+POST /donations/webhook	âœ… (Stripe-verified)	All donor PII stored in DB, audit logs expose donation details	Stripe signature verification
+GET /stats	âœ… Yes	Aggregated totals only (no personal data)	source='real' + refunded=false
+GET /health	âœ… Yes	Service status only	No sensitive data
 Critical Privacy Notes:
 
 Donor names and locations are publicly visible via /campaigns/[slug]/donors (unless marked anonymous)

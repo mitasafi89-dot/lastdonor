@@ -22,7 +22,7 @@ async function main() {
       'verification_notes','verification_status','paused_at','suspended_at',
       'cancelled_at','cancellation_reason','paused_reason','suspended_reason',
       'verification_reviewer_id','verification_reviewed_at',
-      'milestone_fund_release','total_released_amount','cancellation_notes'
+      'total_released_amount','cancellation_notes'
     ) ORDER BY column_name
   `;
   console.log('Existing Phase1/2 columns on campaigns:', cols.map(x => x.column_name));
@@ -32,8 +32,7 @@ async function main() {
     SELECT table_name FROM information_schema.tables 
     WHERE table_schema = 'public' 
     AND table_name IN (
-      'verification_documents','campaign_milestones','milestone_evidence',
-      'fund_releases','info_requests','donor_campaign_subscriptions',
+      'verification_documents','info_requests','donor_campaign_subscriptions',
       'refund_batches','refund_records','bulk_emails','support_conversations'
     ) ORDER BY table_name
   `;

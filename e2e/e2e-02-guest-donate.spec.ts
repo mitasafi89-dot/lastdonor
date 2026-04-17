@@ -18,7 +18,7 @@ test.describe('E2E-02: Guest Donation', () => {
     const donateSection = page.getByRole('button', { name: /donate/i }).first();
     await expect(donateSection).toBeVisible();
 
-    // No "login required" message — guests can donate
+    // No "login required" message - guests can donate
     await expect(page.getByText(/must log in|login required/i)).not.toBeVisible();
   });
 

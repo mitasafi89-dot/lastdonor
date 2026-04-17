@@ -24,7 +24,7 @@ test.describe('E2E-04: Registration & Profile', () => {
   test('profile page redirects unauthenticated user to login', async ({ page }) => {
     await page.goto('/profile');
 
-    // Should redirect to login or show unauthorized
-    await expect(page).toHaveURL(/\/(login|profile)/);
+    // /profile redirects to /dashboard/settings, which redirects unauthenticated users to login
+    await expect(page).toHaveURL(/\/(login|dashboard\/settings)/);
   });
 });

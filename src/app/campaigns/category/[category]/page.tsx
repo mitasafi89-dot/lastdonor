@@ -64,6 +64,7 @@ export default async function CategoryPage({ params }: PageProps) {
       subjectHometown: campaigns.subjectHometown,
       raisedAmount: campaigns.raisedAmount,
       goalAmount: campaigns.goalAmount,
+      donorCount: campaigns.donorCount,
     })
     .from(campaigns)
     .where(
@@ -120,6 +121,7 @@ export default async function CategoryPage({ params }: PageProps) {
               location={campaign.location || campaign.subjectHometown}
               raisedAmount={campaign.raisedAmount}
               goalAmount={campaign.goalAmount}
+              donorCount={campaign.donorCount}
             />
           ))}
         </div>

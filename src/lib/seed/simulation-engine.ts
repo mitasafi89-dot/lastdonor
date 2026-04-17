@@ -1,4 +1,4 @@
-import { db } from '@/db';
+﻿import { db } from '@/db';
 import * as schema from '@/db/schema';
 import { eq, and, sql, inArray, desc } from 'drizzle-orm';
 import { seedAmountCents } from './amount-generator';
@@ -8,7 +8,7 @@ import { getCampaignPhase } from '@/lib/utils/phase';
 import { buildGenerateUpdatePrompt, buildPhaseTransitionTitle } from '@/lib/ai/prompts/generate-update';
 import { buildGenerateImpactPrompt } from '@/lib/ai/prompts/generate-impact';
 import { callAI } from '@/lib/ai/call-ai';
-import { getActiveSurgeMultiplier } from './trajectory-profiles';
+import { getActiveSurgeMultiplier, type SurgeState } from './trajectory-profiles';
 import type { Campaign, DonationPhase, TrajectoryProfile, CampaignOrganizer, CampaignCategory, SimulationConfig } from '@/types';
 import crypto from 'crypto';
 
@@ -41,16 +41,34 @@ const HOURLY_ACTIVITY: number[] = [
   0.30, 0.30,                           // 10pm-11pm
 ];
 
+/** @internal Exported for testing. Get the current hour (0-23) in US Eastern Time, DST-aware. */
+export function getETHour(now: Date = new Date()): number {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    hour12: false,
+    timeZone: 'America/New_York',
+  }).formatToParts(now);
+  const h = Number(parts.find((p) => p.type === 'hour')?.value ?? 0);
+  return h === 24 ? 0 : h; // midnight can be 24 in some implementations
+}
+
+/** @internal Exported for testing. Get the current day-of-week (0=Sun..6=Sat) in US Eastern Time, DST-aware. */
+export function getETDay(now: Date = new Date()): number {
+  const dayStr = new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    timeZone: 'America/New_York',
+  }).formatToParts(now).find((p) => p.type === 'weekday')?.value ?? 'Mon';
+  const map: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  return map[dayStr] ?? 1;
+}
+
 function getHourlyMultiplier(): number {
   const now = new Date();
-  const etOffset = -5;
-  const utcHour = now.getUTCHours();
-  const etHour = (utcHour + etOffset + 24) % 24;
+  const etHour = getETHour(now);
   const hourlyMultiplier = HOURLY_ACTIVITY[etHour] ?? 0.5;
 
-  // Weekend bonus (120% of weekday)
-  const day = now.getUTCDay();
-  const isWeekend = day === 0 || day === 6;
+  const etDay = getETDay(now);
+  const isWeekend = etDay === 0 || etDay === 6;
   const weekendMultiplier = isWeekend ? 1.2 : 1.0;
 
   return hourlyMultiplier * weekendMultiplier;
@@ -59,7 +77,7 @@ function getHourlyMultiplier(): number {
 /**
  * Determine whether this campaign should receive donations this cycle.
  *
- * Profile-driven: `profile.baseDonateChance × phaseMultiplier × hourlyMultiplier × surgeMultiplier`.
+ * Profile-driven: `profile.baseDonateChance Ã- phaseMultiplier Ã- hourlyMultiplier Ã- surgeMultiplier`.
  * Falls back to legacy flat-probability if no profile exists (pre-Milestone-1 campaigns).
  */
 function shouldDonateThisCycle(
@@ -147,7 +165,7 @@ export function canAcceptDonation(campaign: Campaign): boolean {
   // Post-goal overfunding checks
   const completedAt = campaign.completedAt ? new Date(campaign.completedAt) : null;
   if (!completedAt) {
-    // Goal just crossed this cycle but handleCompletion hasn't run yet — allow
+    // Goal just crossed this cycle but handleCompletion hasn't run yet â€” allow
     return campaign.raisedAmount < campaign.goalAmount * OVERFUND_CAP_PERCENT;
   }
 
@@ -157,7 +175,7 @@ export function canAcceptDonation(campaign: Campaign): boolean {
   return campaign.raisedAmount < campaign.goalAmount * OVERFUND_CAP_PERCENT;
 }
 
-// ── Realistic seed-data generators ──────────────────────────────
+// â”€â”€ Realistic seed-data generators â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const ALPHANUMERIC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
@@ -190,7 +208,7 @@ export function generateRealisticEmail(donorName: string): string {
 /**
  * Run simulation for active simulated campaigns.
  *
- * @param volumeMultiplier Global volume multiplier from settings (0.0–1.0).
+ * @param volumeMultiplier Global volume multiplier from settings (0.0â€“1.0).
  */
 export async function runSimulation(volumeMultiplier = 1.0): Promise<SimulationResult> {
   const cycleStart = new Date();
@@ -214,9 +232,6 @@ export async function runSimulation(volumeMultiplier = 1.0): Promise<SimulationR
       ),
     );
 
-  // Track which surges have already been triggered (per-campaign, per-run)
-  const triggeredSurges = new Map<string, Set<number>>();
-
   for (const campaign of activeCampaigns) {
     try {
       // Per-campaign pause check
@@ -234,15 +249,12 @@ export async function runSimulation(volumeMultiplier = 1.0): Promise<SimulationR
         : 0;
       const ageCycles = campaignAgeCycles(campaign);
 
-      // Initialize triggered surges for this campaign
-      if (!triggeredSurges.has(campaign.id)) {
-        triggeredSurges.set(campaign.id, new Set());
-      }
-      const triggered = triggeredSurges.get(campaign.id)!;
+      // Load persisted surge state (survives across cron runs)
+      const surgeState: SurgeState = { ...(simConfig?.surgeState ?? {}) };
 
-      // Compute surge multiplier
+      // Compute surge multiplier using persisted state with duration tracking
       const surgeMultiplier = profile
-        ? getActiveSurgeMultiplier(profile, currentPercent, ageCycles, triggered)
+        ? getActiveSurgeMultiplier(profile, currentPercent, ageCycles, surgeState)
         : 1.0;
 
       const currentPhase = getCampaignPhase(campaign.raisedAmount, campaign.goalAmount);
@@ -337,7 +349,7 @@ export async function runSimulation(volumeMultiplier = 1.0): Promise<SimulationR
         }
       }
 
-      // ── Cohort injection ──
+      // â”€â”€ Cohort injection â”€â”€
       // Occasionally inject a group of donors that form a visible pattern
       const cohort = maybeBuildCohort(campaign);
       if (cohort && canAcceptDonation(campaign)) {
@@ -369,13 +381,15 @@ export async function runSimulation(volumeMultiplier = 1.0): Promise<SimulationR
           const cohortPhase = getCampaignPhase(campaign.raisedAmount, campaign.goalAmount);
           const cohortMessage = await pickSeedMessage(campaign.id, cohortPhase);
 
-          // For family chains, stagger timestamps; otherwise cluster within 2hrs
+          // For family chains, stagger timestamps; otherwise cluster within cron window
           let cohortTime: Date;
           if (cohort.type === 'family_chain' && cohort.staggerMs) {
-            cohortTime = new Date(cycleStart.getTime() + ci * cohort.staggerMs);
+            // Clamp family chain stagger to the cron window
+            const staggerOffset = Math.min(ci * cohort.staggerMs, CYCLE_WINDOW_MS - 1);
+            cohortTime = new Date(cycleStart.getTime() + staggerOffset);
           } else {
-            // Community/workplace: cluster within 2 hours
-            const clusterOffsetMs = Math.floor(Math.random() * 2 * 60 * 60 * 1000);
+            // Community/workplace: cluster within the 15-min cron window
+            const clusterOffsetMs = Math.floor(Math.random() * CYCLE_WINDOW_MS);
             cohortTime = new Date(cycleStart.getTime() + clusterOffsetMs);
           }
 
@@ -434,10 +448,22 @@ export async function runSimulation(volumeMultiplier = 1.0): Promise<SimulationR
         await handlePhaseTransition(campaign, newPhase);
       }
 
-      // Check completion — only trigger once when we first cross the goal this cycle
+      // Check completion - only trigger once when we first cross the goal this cycle
       if (!wasAlreadyFunded && campaign.raisedAmount >= campaign.goalAmount) {
         await handleCompletion(campaign, goalCrossingDonorName, goalCrossingDonorAmount);
         result.completions++;
+      }
+
+      // Persist updated surge state so duration tracking survives across cron runs
+      if (profile && Object.keys(surgeState).length > 0) {
+        const updatedConfig: SimulationConfig = {
+          ...(simConfig ?? { paused: false, fundAllocation: 'pool' }),
+          surgeState,
+        };
+        await db
+          .update(schema.campaigns)
+          .set({ simulationConfig: updatedConfig })
+          .where(eq(schema.campaigns.id, campaign.id));
       }
 
     } catch (error) {
@@ -566,7 +592,7 @@ async function handleCompletion(
   // Update local reference so subsequent code sees the new state
   campaign.completedAt = completedAt;
 
-  // ── 1. AI-generated celebration update ──
+  // â”€â”€ 1. AI-generated celebration update â”€â”€
   try {
     const donorMention = lastDonorName
       ? ` Thanks to ${lastDonorName}'s generous donation of $${((lastDonorAmount ?? 0) / 100).toLocaleString()}, the campaign crossed the finish line!`
@@ -599,7 +625,7 @@ Write a celebration post announcing the campaign has reached its goal.`,
 
     await db.insert(schema.campaignUpdates).values({
       campaignId: campaign.id,
-      title: `${campaign.subjectName}'s campaign is fully funded!${donorMention ? ' 🎉' : ''}`,
+      title: `${campaign.subjectName}'s campaign is fully funded!${donorMention ? ' ðŸŽ‰' : ''}`,
       bodyHtml: celebrationHtml,
       updateType: 'celebration',
     });
@@ -614,7 +640,7 @@ Write a celebration post announcing the campaign has reached its goal.`,
     });
   }
 
-  // ── 2. Organizer thank-you update ──
+  // â”€â”€ 2. Organizer thank-you update â”€â”€
   const organizer = campaign.campaignOrganizer as CampaignOrganizer | null;
   if (organizer) {
     generateOrganizerThankYou(campaign, organizer, lastDonorName).catch((err) =>
@@ -622,12 +648,12 @@ Write a celebration post announcing the campaign has reached its goal.`,
     );
   }
 
-  // ── 3. Impact report (fire-and-forget, conceptually delayed) ──
+  // â”€â”€ 3. Impact report (fire-and-forget, conceptually delayed) â”€â”€
   generateImpactReport(campaign, lastDonorName).catch((err) =>
     console.error(`Impact report generation failed for ${campaign.id}:`, err),
   );
 
-  // ── 4. Audit log ──
+  // â”€â”€ 4. Audit log â”€â”€
   await db.insert(schema.auditLogs).values({
     eventType: 'campaign.completed',
     targetType: 'campaign',

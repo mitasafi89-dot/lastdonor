@@ -7,27 +7,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import {
-  BanknotesIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  ExclamationTriangleIcon,
-  XCircleIcon,
-  ArrowRightIcon,
-  InformationCircleIcon,
-} from '@heroicons/react/24/outline';
 
 // ─── Types ───────────────────────────────────────────────────────────
-
-interface Milestone {
-  id: string;
-  phase: number;
-  title: string;
-  fundPercentage: number;
-  fundAmount: number;
-  status: string;
-  releasedAmount: number;
-}
 
 interface Campaign {
   id: string;
@@ -40,8 +21,6 @@ interface Campaign {
   totalWithdrawnAmount: number;
   inFlightAmount: number;
   availableBalance: number;
-  milestoneFundRelease: boolean;
-  milestones: Milestone[];
 }
 
 interface Withdrawal {
@@ -75,15 +54,6 @@ function formatDate(iso: string): string {
 }
 
 // ─── Status Config ───────────────────────────────────────────────────
-
-const MS_STATUS: Record<string, { label: string; className: string; dotClass: string }> = {
-  pending:             { label: 'Not Yet Reached',  className: 'text-muted-foreground',                    dotClass: 'bg-gray-300 dark:bg-gray-600' },
-  reached:             { label: 'Evidence Needed',  className: 'text-amber-600 dark:text-amber-400',      dotClass: 'bg-amber-500' },
-  evidence_submitted:  { label: 'Under Review',     className: 'text-blue-600 dark:text-blue-400',        dotClass: 'bg-blue-500' },
-  approved:            { label: 'Funds Released',   className: 'text-green-600 dark:text-green-400',      dotClass: 'bg-green-500' },
-  rejected:            { label: 'Resubmit Evidence', className: 'text-red-600 dark:text-red-400',         dotClass: 'bg-red-500' },
-  overdue:             { label: 'Overdue',           className: 'text-red-600 dark:text-red-400',         dotClass: 'bg-red-500' },
-};
 
 const WD_STATUS: Record<string, { label: string; className: string }> = {
   requested:  { label: 'Requested',  className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' },
@@ -166,30 +136,6 @@ export default function FinancesClient({
     }
   }
 
-  for (const campaign of campaigns) {
-    for (const ms of campaign.milestones) {
-      if (ms.status === 'reached') {
-        const prevPhase = campaign.milestones.find((m) => m.phase === ms.phase - 1);
-        const canSubmit = ms.phase === 1 || prevPhase?.status === 'approved';
-        if (canSubmit) {
-          actions.push({
-            type: 'evidence_needed',
-            text: `Submit evidence for Phase ${ms.phase}: "${ms.title}" to release ${fmt(ms.fundAmount)}`,
-            href: `/dashboard/campaigns/${campaign.id}/milestones`,
-            severity: 'warning',
-          });
-        }
-      } else if (ms.status === 'rejected') {
-        actions.push({
-          type: 'evidence_rejected',
-          text: `Phase ${ms.phase}: "${ms.title}" evidence was rejected. Resubmit to release ${fmt(ms.fundAmount)}.`,
-          href: `/dashboard/campaigns/${campaign.id}/milestones`,
-          severity: 'error',
-        });
-      }
-    }
-  }
-
   const filteredWithdrawals = filter === 'all' ? withdrawals : withdrawals.filter((w) => w.status === filter);
 
   const handleWithdraw = useCallback(
@@ -230,7 +176,6 @@ export default function FinancesClient({
   if (campaigns.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
-        <BanknotesIcon className="h-10 w-10 text-muted-foreground/50" />
         <p className="text-sm text-muted-foreground">
           No campaigns yet. Create a campaign to start receiving funds.
         </p>
@@ -282,7 +227,7 @@ export default function FinancesClient({
             >
               {fmt(pendingRelease)}
             </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">locked in milestones</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">awaiting verification</p>
           </CardContent>
         </Card>
 
@@ -304,43 +249,31 @@ export default function FinancesClient({
                 bg: 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30',
                 text: 'text-red-800 dark:text-red-300',
                 link: 'text-red-700 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300',
-                icon: 'text-red-600 dark:text-red-400',
               },
               warning: {
                 bg: 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30',
                 text: 'text-amber-800 dark:text-amber-300',
                 link: 'text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300',
-                icon: 'text-amber-600 dark:text-amber-400',
               },
               info: {
                 bg: 'border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30',
                 text: 'text-blue-800 dark:text-blue-300',
                 link: 'text-blue-700 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300',
-                icon: 'text-blue-600 dark:text-blue-400',
               },
             }[action.severity];
-
-            const Icon =
-              action.severity === 'error'
-                ? XCircleIcon
-                : action.severity === 'warning'
-                  ? ExclamationTriangleIcon
-                  : InformationCircleIcon;
 
             return (
               <div
                 key={`${action.type}-${i}`}
-                className={`flex items-start gap-3 rounded-lg border p-4 ${colors.bg}`}
+                className={`flex items-center gap-3 rounded-lg border p-4 ${colors.bg}`}
               >
-                <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${colors.icon}`} />
                 <p className={`flex-1 min-w-0 text-sm font-medium ${colors.text}`}>{action.text}</p>
                 {action.href && (
                   <Link
                     href={action.href}
-                    className={`inline-flex items-center gap-1 shrink-0 text-sm font-medium ${colors.link}`}
+                    className={`shrink-0 text-sm font-medium ${colors.link}`}
                   >
                     Take Action
-                    <ArrowRightIcon className="h-4 w-4" />
                   </Link>
                 )}
               </div>
@@ -417,7 +350,7 @@ export default function FinancesClient({
                 {campaign.raisedAmount > 0 && (
                   <div className="mt-4">
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>Fund release progress</span>
+                      <span>Payout progress</span>
                       <span>{releasePercent}% released</span>
                     </div>
                     <div className="mt-1 h-2 w-full rounded-full bg-muted">
@@ -425,53 +358,6 @@ export default function FinancesClient({
                         className="h-2 rounded-full bg-green-500 transition-all"
                         style={{ width: `${Math.min(100, releasePercent)}%` }}
                       />
-                    </div>
-                  </div>
-                )}
-
-                {/* Milestones */}
-                {campaign.milestoneFundRelease && campaign.milestones.length > 0 && (
-                  <div className="mt-5">
-                    <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                      Milestones
-                    </p>
-                    <div className="relative">
-                      {campaign.milestones.map((ms, i) => {
-                        const cfg = MS_STATUS[ms.status] ?? MS_STATUS.pending;
-                        const isLast = i === campaign.milestones.length - 1;
-                        return (
-                          <div key={ms.id} className="relative flex gap-3 pb-4">
-                            {/* Vertical line */}
-                            {!isLast && (
-                              <div className="absolute left-[9px] top-5 bottom-0 w-px bg-border" />
-                            )}
-                            {/* Dot */}
-                            <div
-                              className={`relative mt-1 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full ${cfg.dotClass}`}
-                            >
-                              {ms.status === 'approved' && (
-                                <CheckCircleIcon className="h-3 w-3 text-white" />
-                              )}
-                            </div>
-                            {/* Content */}
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-foreground">
-                                Phase {ms.phase}: {ms.title}
-                              </p>
-                              <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs">
-                                <span className={cfg.className}>{cfg.label}</span>
-                                <span className="text-muted-foreground">&middot;</span>
-                                <span className="font-mono text-muted-foreground">
-                                  {ms.status === 'approved'
-                                    ? `${fmt(ms.releasedAmount)} released`
-                                    : fmt(ms.fundAmount)}{' '}
-                                  ({ms.fundPercentage}%)
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
                     </div>
                   </div>
                 )}
@@ -559,7 +445,6 @@ export default function FinancesClient({
         {/* List */}
         {filteredWithdrawals.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-12 text-center">
-            <BanknotesIcon className="h-10 w-10 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">
               {withdrawals.length === 0
                 ? 'No withdrawal requests yet'
@@ -570,12 +455,6 @@ export default function FinancesClient({
           <div className="space-y-3">
             {filteredWithdrawals.map((w) => {
               const cfg = WD_STATUS[w.status] ?? WD_STATUS.requested;
-              const StatusIcon =
-                w.status === 'completed'
-                  ? CheckCircleIcon
-                  : w.status === 'failed' || w.status === 'rejected'
-                    ? XCircleIcon
-                    : ClockIcon;
               return (
                 <div
                   key={w.id}
@@ -598,9 +477,8 @@ export default function FinancesClient({
                   <div className="flex items-center gap-4">
                     <span className="font-mono text-lg font-bold text-foreground">{fmt(w.amount)}</span>
                     <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.className}`}
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.className}`}
                     >
-                      <StatusIcon className="h-3.5 w-3.5" />
                       {cfg.label}
                     </span>
                   </div>

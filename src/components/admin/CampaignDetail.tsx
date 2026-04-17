@@ -19,6 +19,7 @@ import { CampaignStatusBadge } from '@/components/campaigns/CampaignStatusBadge'
 import { VerificationBadge, FundReleaseIndicator } from '@/components/campaigns/TrustBadge';
 import { centsToDollars } from '@/lib/utils/currency';
 import { formatDate } from '@/lib/utils/dates';
+import { sanitizeHtml } from '@/lib/utils/sanitize';
 import {
   PencilSquareIcon,
   ArchiveBoxIcon,
@@ -88,17 +89,8 @@ interface PhaseRow {
   total: number;
 }
 
-interface MilestoneData {
-  phase: number;
-  title: string;
-  status: string;
-  fundPercentage: number;
-  releasedAmount: number;
-}
-
 interface CampaignDetailProps {
   campaign: CampaignData;
-  milestones: MilestoneData[];
   donations: Donation[];
   updates: Update[];
   phaseBreakdown: PhaseRow[];
@@ -115,7 +107,7 @@ function formatCategory(cat: string) {
   return cat.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
-export function CampaignDetail({ campaign, milestones, donations, updates, phaseBreakdown }: CampaignDetailProps) {
+export function CampaignDetail({ campaign, donations, updates, phaseBreakdown }: CampaignDetailProps) {
   const router = useRouter();
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -142,7 +134,7 @@ export function CampaignDetail({ campaign, milestones, donations, updates, phase
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error?.message ?? 'Archive failed');
+        throw new Error(data.error?.code === 'VALIDATION_ERROR' ? (data.error?.message ?? 'Archive failed') : 'Archive failed');
       }
       router.refresh();
     } catch (err) {
@@ -163,7 +155,7 @@ export function CampaignDetail({ campaign, milestones, donations, updates, phase
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error?.message ?? 'Restore failed');
+        throw new Error(data.error?.code === 'VALIDATION_ERROR' ? (data.error?.message ?? 'Restore failed') : 'Restore failed');
       }
       router.refresh();
     } catch (err) {
@@ -190,7 +182,7 @@ export function CampaignDetail({ campaign, milestones, donations, updates, phase
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error?.message ?? `${governanceAction.label} failed`);
+        throw new Error(data.error?.code === 'VALIDATION_ERROR' ? (data.error?.message ?? `${governanceAction.label} failed`) : `${governanceAction.label} failed`);
       }
       setGovernanceAction(null);
       setGovernanceReason('');
@@ -368,7 +360,7 @@ export function CampaignDetail({ campaign, milestones, donations, updates, phase
         </section>
       )}
 
-      {/* CDS Data Table — Recent Donations */}
+      {/* CDS Data Table - Recent Donations */}
       <section>
         <h2 className="text-sm font-semibold">
           Recent donations ({donations.length})
@@ -421,7 +413,7 @@ export function CampaignDetail({ campaign, milestones, donations, updates, phase
                     </Badge>
                   </td>
                   <td className="hidden max-w-[200px] truncate px-4 py-3 text-muted-foreground lg:table-cell">
-                    {d.message || '—'}
+                    {d.message || '-'}
                   </td>
                   <td className="hidden px-4 py-3 text-muted-foreground sm:table-cell">
                     {formatDate(d.createdAt)}
@@ -466,7 +458,7 @@ export function CampaignDetail({ campaign, milestones, donations, updates, phase
               </div>
               <div
                 className="prose prose-sm mt-2 max-w-none text-muted-foreground dark:prose-invert"
-                dangerouslySetInnerHTML={{ __html: u.bodyHtml }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(u.bodyHtml) }}
               />
               {u.imageUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -486,32 +478,16 @@ export function CampaignDetail({ campaign, milestones, donations, updates, phase
         </div>
       </section>
 
-      {/* CDS Milestones & Fund Release */}
-      {milestones.length > 0 && (
-        <section>
-          <h2 className="text-sm font-semibold">Milestones &amp; fund release</h2>
-          <div className="mt-4 space-y-3">
-            {milestones.map((m) => (
-              <div key={m.phase} className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
-                <div>
-                  <p className="font-medium">Phase {m.phase}: {m.title}</p>
-                  <p className="text-xs text-muted-foreground capitalize">{m.status.replace(/_/g, ' ')}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-mono text-sm tabular-nums">{centsToDollars(m.releasedAmount)} released</p>
-                  <p className="text-xs text-muted-foreground/70">{m.fundPercentage}% of funds</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4">
-            <FundReleaseIndicator
-              totalReleased={campaign.totalReleasedAmount}
-              raisedAmount={campaign.raisedAmount}
-            />
-          </div>
-        </section>
-      )}
+      {/* Payout Status */}
+      <section>
+        <h2 className="text-sm font-semibold">Payout Status</h2>
+        <div className="mt-4">
+          <FundReleaseIndicator
+            totalReleased={campaign.totalReleasedAmount}
+            raisedAmount={campaign.raisedAmount}
+          />
+        </div>
+      </section>
 
       {/* Campaign link */}
       <div className="text-sm text-muted-foreground">

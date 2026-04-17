@@ -1,5 +1,5 @@
 /**
- * Keyword Analyzer — analyzes keyword density and placement in blog content.
+ * Keyword Analyzer - analyzes keyword density and placement in blog content.
  */
 
 export interface KeywordAnalysis {

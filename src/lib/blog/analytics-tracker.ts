@@ -1,5 +1,5 @@
 /**
- * Blog Analytics Tracker — lightweight internal analytics
+ * Blog Analytics Tracker - lightweight internal analytics
  * for tracking blog post performance metrics.
  */
 
@@ -88,8 +88,9 @@ export interface PipelineHealthMetrics {
 export async function getPipelineHealthMetrics(
   daysBack = 30,
 ): Promise<PipelineHealthMetrics> {
-  const since = new Date();
-  since.setDate(since.getDate() - daysBack);
+  const sinceDate = new Date();
+  sinceDate.setDate(sinceDate.getDate() - daysBack);
+  const since = sinceDate.toISOString();
 
   const [totals] = await db
     .select({

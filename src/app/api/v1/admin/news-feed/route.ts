@@ -5,6 +5,7 @@ import { newsItems } from '@/db/schema';
 import { desc, gte, eq, and } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
+import { logError } from '@/lib/errors';
 
 export async function GET(request: NextRequest) {
   const requestId = randomUUID();
@@ -19,6 +20,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(error, { status: 403 });
   }
 
+  try {
   const { searchParams } = request.nextUrl;
   const source = searchParams.get('source');
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '50', 10) || 50, 200);
@@ -39,4 +41,12 @@ export async function GET(request: NextRequest) {
     ok: true,
     data: items,
   });
+  } catch (err) {
+    logError(err, 'admin-news-feed', { requestId });
+    const error: ApiError = {
+      ok: false,
+      error: { code: 'INTERNAL_ERROR', message: 'Failed to load news feed', requestId },
+    };
+    return NextResponse.json(error, { status: 500 });
+  }
 }

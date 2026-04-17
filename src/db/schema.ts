@@ -137,22 +137,14 @@ export const stripeConnectStatusEnum = pgEnum('stripe_connect_status', [
   'rejected',
 ]);
 
-export const milestoneStatusEnum = pgEnum('milestone_status', [
+
+
+export const impactUpdateStatusEnum = pgEnum('impact_update_status', [
   'pending',
-  'reached',
-  'evidence_submitted',
+  'submitted',
   'approved',
   'rejected',
   'overdue',
-]);
-
-export const fundReleaseStatusEnum = pgEnum('fund_release_status', [
-  'held',
-  'approved',
-  'paused',
-  'processing',
-  'released',
-  'refunded',
 ]);
 
 export const infoRequestStatusEnum = pgEnum('info_request_status', [
@@ -221,7 +213,7 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'new_message',
   'message_flagged',
   'campaign_donation_received',
-  'campaign_milestone',
+  'campaign_milestone', // Donor count milestones (10, 25, 50, 100 donors) - actively used
   'campaign_message_received',
   'withdrawal_processed',
   'campaign_submitted',
@@ -231,15 +223,18 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'campaign_cancelled',
   'info_request',
   'info_request_reminder',
-  'milestone_approved',
-  'milestone_rejected',
-  'fund_released',
+  'milestone_approved',  // Legacy: kept for historical notifications (PG enum values cannot be removed)
+  'milestone_rejected',  // Legacy: kept for historical notifications
+  'fund_released',       // Legacy: replaced by lump-sum release via verification approval
   'verification_approved',
   'verification_rejected',
   'verification_documents_submitted',
   'bulk_refund_processed',
   'withdrawal_completed',
   'withdrawal_failed',
+  'abandoned_donation',
+  'donor_reengagement',
+  'creator_inactivity',
 ]);
 
 // ─── Tables ─────────────────────────────────────────────────────────────────
@@ -272,6 +267,8 @@ export const users = pgTable('users', {
   stripeConnectStatus: stripeConnectStatusEnum('stripe_connect_status').notNull().default('not_started'),
   stripeConnectOnboardedAt: timestamp('stripe_connect_onboarded_at', { withTimezone: true }),
   payoutCurrency: text('payout_currency'),
+  failedLoginCount: integer('failed_login_count').notNull().default(0),
+  failedLoginWindowStart: timestamp('failed_login_window_start', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 },
 (table) => [
@@ -279,6 +276,11 @@ export const users = pgTable('users', {
   index('idx_users_donor_type').on(table.donorType),
   index('idx_users_last_donation_at').on(table.lastDonationAt),
   index('idx_users_total_donated').on(table.totalDonated),
+  check('users_total_donated_nonneg', sql`${table.totalDonated} >= 0`),
+  check('users_campaigns_supported_nonneg', sql`${table.campaignsSupported} >= 0`),
+  check('users_last_donor_count_nonneg', sql`${table.lastDonorCount} >= 0`),
+  check('users_donor_score_nonneg', sql`${table.donorScore} >= 0`),
+  check('users_failed_login_nonneg', sql`${table.failedLoginCount} >= 0`),
 ],
 );
 
@@ -290,7 +292,9 @@ export const campaigns = pgTable(
     slug: text('slug').notNull().unique(),
     status: campaignStatusEnum('status').notNull().default('draft'),
     heroImageUrl: text('hero_image_url').notNull(),
+    galleryImages: jsonb('gallery_images').$type<string[]>().default(sql`'[]'::jsonb`),
     photoCredit: text('photo_credit'),
+    youtubeUrl: text('youtube_url'),
     storyHtml: text('story_html').notNull(),
     goalAmount: integer('goal_amount').notNull(),
     raisedAmount: integer('raised_amount').notNull().default(0),
@@ -326,11 +330,14 @@ export const campaigns = pgTable(
     verificationReviewerId: uuid('verification_reviewer_id').references(() => users.id),
     verificationReviewedAt: timestamp('verification_reviewed_at', { withTimezone: true }),
     verificationNotes: text('verification_notes'),
-    milestoneFundRelease: boolean('milestone_fund_release').notNull().default(false),
     totalReleasedAmount: integer('total_released_amount').notNull().default(0),
     totalWithdrawnAmount: integer('total_withdrawn_amount').notNull().default(0),
-    veriffSessionId: text('veriff_session_id'),
-    veriffSessionUrl: text('veriff_session_url'),
+    stripeVerificationId: text('stripe_verification_id'),
+    stripeVerificationUrl: text('stripe_verification_url'),
+    // Echo columns: pre-computed counters to avoid N+1 queries on listing pages
+    seedDonationCount: integer('seed_donation_count').notNull().default(0),
+    messageCount: integer('message_count').notNull().default(0),
+    updateCount: integer('update_count').notNull().default(0),
   },
   (table) => [
     index('idx_campaigns_status').on(table.status),
@@ -339,6 +346,13 @@ export const campaigns = pgTable(
     index('idx_campaigns_published_at').on(table.publishedAt),
     index('idx_campaigns_simulation_flag').on(table.simulationFlag),
     index('idx_campaigns_creator_id').on(table.creatorId),
+    uniqueIndex('idx_campaigns_stripe_verification_id').on(table.stripeVerificationId),
+    check('campaigns_raised_nonneg', sql`${table.raisedAmount} >= 0`),
+    check('campaigns_goal_positive', sql`${table.goalAmount} > 0`),
+    check('campaigns_donor_count_nonneg', sql`${table.donorCount} >= 0`),
+    check('campaigns_released_nonneg', sql`${table.totalReleasedAmount} >= 0`),
+    check('campaigns_released_lte_raised', sql`${table.totalReleasedAmount} <= ${table.raisedAmount}`),
+    check('campaigns_withdrawn_nonneg', sql`${table.totalWithdrawnAmount} >= 0`),
   ],
 );
 
@@ -368,7 +382,7 @@ export const donations = pgTable(
     index('idx_donations_campaign_id').on(table.campaignId),
     index('idx_donations_user_id').on(table.userId),
     index('idx_donations_created_at').on(table.createdAt),
-    index('idx_donations_stripe_payment_id').on(table.stripePaymentId),
+    uniqueIndex('idx_donations_stripe_payment_id').on(table.stripePaymentId),
     check('donations_amount_check', sql`${table.amount} >= 500`),
   ],
 );
@@ -412,13 +426,14 @@ export const blogPosts = pgTable(
     internalLinks: jsonb('internal_links').default(sql`'[]'::jsonb`),
     externalLinks: jsonb('external_links').default(sql`'[]'::jsonb`),
     faqData: jsonb('faq_data'),
-    topicId: uuid('topic_id'),
+    topicId: uuid('topic_id').references(() => blogTopicQueue.id, { onDelete: 'set null' }),
     scheduledAt: timestamp('scheduled_at', { withTimezone: true }),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     causeCategory: text('cause_category'),
   },
   (table) => [
     index('idx_blog_posts_published').on(table.published, table.publishedAt),
+    index('idx_blog_posts_topic_id').on(table.topicId),
   ],
 );
 
@@ -430,7 +445,7 @@ export const newsletterSubscribers = pgTable('newsletter_subscribers', {
   source: text('source'),
 });
 
-// ─── Blog Topic Queue (Pipeline Milestone 1) ───────────────────────────────
+// ─── Blog Topic Queue ───────────────────────────────
 
 export const blogTopicQueue = pgTable(
   'blog_topic_queue',
@@ -450,6 +465,7 @@ export const blogTopicQueue = pgTable(
     contentBrief: jsonb('content_brief'),
     outline: jsonb('outline'),
     status: blogTopicStatusEnum('status').notNull().default('pending'),
+    attemptCount: integer('attempt_count').notNull().default(0),
     generatedPostId: uuid('generated_post_id'),
     rejectedReason: text('rejected_reason'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -462,14 +478,14 @@ export const blogTopicQueue = pgTable(
   ],
 );
 
-// ─── Blog Generation Logs (Pipeline Milestone 1) ───────────────────────────
+// ─── Blog Generation Logs ───────────────────────────
 
 export const blogGenerationLogs = pgTable(
   'blog_generation_logs',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    topicId: uuid('topic_id').notNull(),
-    postId: uuid('post_id'),
+    topicId: uuid('topic_id').notNull().references(() => blogTopicQueue.id, { onDelete: 'cascade' }),
+    postId: uuid('post_id').references(() => blogPosts.id, { onDelete: 'set null' }),
     step: text('step').notNull(),
     model: text('model'),
     inputTokens: integer('input_tokens').notNull().default(0),
@@ -564,6 +580,7 @@ export const auditLogs = pgTable(
     index('idx_audit_logs_event_type').on(table.eventType),
     index('idx_audit_logs_timestamp').on(table.timestamp),
     index('idx_audit_logs_actor_id').on(table.actorId),
+    index('idx_audit_logs_target_id').on(table.targetId),
   ],
 );
 
@@ -653,7 +670,7 @@ export const verificationTokens = pgTable(
   ],
 );
 
-// ─── AI Usage Logs (Milestone 7: Cost Tracking) ────────────────────────────
+// ─── AI Usage Logs ─────────────────────────────────────────────────────────
 
 export const aiUsageLogs = pgTable(
   'ai_usage_logs',
@@ -757,6 +774,8 @@ export const campaignWithdrawals = pgTable(
     index('idx_campaign_withdrawals_campaign').on(table.campaignId),
     index('idx_campaign_withdrawals_status').on(table.status),
     index('idx_campaign_withdrawals_requested_by').on(table.requestedBy),
+    index('idx_campaign_withdrawals_idem').on(table.campaignId, table.requestedBy, table.notes),
+    check('campaign_withdrawals_amount_check', sql`${table.amount} > 0`),
   ],
 );
 
@@ -823,96 +842,35 @@ export const verificationDocuments = pgTable(
   ],
 );
 
-export const campaignMilestones = pgTable(
-  'campaign_milestones',
+// ─── Impact Updates ─────────────────────────────────────────────────────────
+
+export const impactUpdates = pgTable(
+  'impact_updates',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     campaignId: uuid('campaign_id')
       .notNull()
       .references(() => campaigns.id),
-    phase: integer('phase').notNull(),
-    title: text('title').notNull(),
-    description: text('description').notNull(),
-    evidenceType: text('evidence_type').notNull(),
-    fundPercentage: integer('fund_percentage').notNull(),
-    estimatedCompletion: timestamp('estimated_completion', { withTimezone: true }),
-    status: milestoneStatusEnum('status').notNull().default('pending'),
-    fundAmount: integer('fund_amount'),
-    releasedAmount: integer('released_amount').notNull().default(0),
-    releasedAt: timestamp('released_at', { withTimezone: true }),
+    submittedBy: uuid('submitted_by').references(() => users.id),
+    title: text('title'),
+    bodyHtml: text('body_html'),
+    photos: jsonb('photos').default(sql`'[]'::jsonb`),
+    receiptUrls: jsonb('receipt_urls').default(sql`'[]'::jsonb`),
+    status: impactUpdateStatusEnum('status').notNull().default('pending'),
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }),
+    reviewerId: uuid('reviewer_id').references(() => users.id),
+    reviewerNotes: text('reviewer_notes'),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    reminderCount: integer('reminder_count').notNull().default(0),
+    lastReminderAt: timestamp('last_reminder_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    index('idx_milestones_campaign').on(table.campaignId),
-    index('idx_milestones_status').on(table.status),
-    uniqueIndex('idx_milestones_campaign_phase').on(table.campaignId, table.phase),
-    check('milestones_phase_check', sql`${table.phase} >= 1 AND ${table.phase} <= 3`),
-    check('milestones_fund_pct_check', sql`${table.fundPercentage} >= 10 AND ${table.fundPercentage} <= 60`),
-  ],
-);
-
-export const milestoneEvidence = pgTable(
-  'milestone_evidence',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    milestoneId: uuid('milestone_id')
-      .notNull()
-      .references(() => campaignMilestones.id),
-    campaignId: uuid('campaign_id')
-      .notNull()
-      .references(() => campaigns.id),
-    submittedBy: uuid('submitted_by')
-      .notNull()
-      .references(() => users.id),
-    fileUrl: text('file_url').notNull(),
-    fileName: text('file_name').notNull(),
-    fileSize: integer('file_size').notNull(),
-    mimeType: text('mime_type').notNull(),
-    description: text('description'),
-    status: documentStatusEnum('status').notNull().default('pending'),
-    reviewerId: uuid('reviewer_id').references(() => users.id),
-    reviewerNotes: text('reviewer_notes'),
-    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
-    attemptNumber: integer('attempt_number').notNull().default(1),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => [
-    index('idx_milestone_evidence_milestone').on(table.milestoneId),
-    index('idx_milestone_evidence_campaign').on(table.campaignId),
-  ],
-);
-
-export const fundReleases = pgTable(
-  'fund_releases',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    campaignId: uuid('campaign_id')
-      .notNull()
-      .references(() => campaigns.id),
-    milestoneId: uuid('milestone_id')
-      .notNull()
-      .references(() => campaignMilestones.id),
-    amount: integer('amount').notNull(),
-    status: fundReleaseStatusEnum('status').notNull().default('held'),
-    stripeTransferId: text('stripe_transfer_id'),
-    stripeConnectAccount: text('stripe_connect_account'),
-    approvedBy: uuid('approved_by').references(() => users.id),
-    approvedAt: timestamp('approved_at', { withTimezone: true }),
-    releasedAt: timestamp('released_at', { withTimezone: true }),
-    notes: text('notes'),
-    pausedBy: uuid('paused_by').references(() => users.id),
-    pausedAt: timestamp('paused_at', { withTimezone: true }),
-    pauseReason: text('pause_reason'),
-    flaggedForAudit: boolean('flagged_for_audit').notNull().default(false),
-    flagReason: text('flag_reason'),
-    flaggedBy: uuid('flagged_by').references(() => users.id),
-    flaggedAt: timestamp('flagged_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => [
-    index('idx_fund_releases_campaign').on(table.campaignId),
-    index('idx_fund_releases_status').on(table.status),
+    index('idx_impact_updates_campaign').on(table.campaignId),
+    index('idx_impact_updates_status').on(table.status),
+    index('idx_impact_updates_due_date').on(table.dueDate),
   ],
 );
 
@@ -945,6 +903,7 @@ export const infoRequests = pgTable(
     index('idx_info_requests_campaign').on(table.campaignId),
     index('idx_info_requests_status').on(table.status),
     index('idx_info_requests_deadline').on(table.deadline),
+    index('idx_info_requests_target_user').on(table.targetUser),
   ],
 );
 
@@ -1015,6 +974,7 @@ export const refundRecords = pgTable(
   (table) => [
     index('idx_refund_records_batch').on(table.batchId),
     index('idx_refund_records_donation').on(table.donationId),
+    check('refund_records_amount_check', sql`${table.amount} > 0`),
   ],
 );
 

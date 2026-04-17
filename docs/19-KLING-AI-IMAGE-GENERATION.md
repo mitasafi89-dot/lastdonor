@@ -1,4 +1,4 @@
-# LastDonor.org — Kling AI Image Generation Guide
+﻿# LastDonor.org â€” Kling AI Image Generation Guide
 
 **Version**: 1.0
 **Date**: March 26, 2026
@@ -10,12 +10,12 @@
 ## TABLE OF CONTENTS
 
 1. [Purpose & Scope](#1-purpose--scope)
-2. [Brand Constraints — Non-Negotiable Rules](#2-brand-constraints--non-negotiable-rules)
+2. [Brand Constraints â€” Non-Negotiable Rules](#2-brand-constraints--non-negotiable-rules)
 3. [Kling AI Platform Overview](#3-kling-ai-platform-overview)
-4. [Authentication — JWT Token Generation](#4-authentication--jwt-token-generation)
-5. [API Contract — Endpoints, Request, Response](#5-api-contract--endpoints-request-response)
+4. [Authentication â€” JWT Token Generation](#4-authentication--jwt-token-generation)
+5. [API Contract â€” Endpoints, Request, Response](#5-api-contract--endpoints-request-response)
 6. [Image Types & Dimensions](#6-image-types--dimensions)
-7. [Prompt Engineering — Core Framework](#7-prompt-engineering--core-framework)
+7. [Prompt Engineering â€” Core Framework](#7-prompt-engineering--core-framework)
 8. [Category-Specific Prompt Templates (All 23 Categories)](#8-category-specific-prompt-templates-all-23-categories)
 9. [Negative Prompt Strategy](#9-negative-prompt-strategy)
 10. [Full Pipeline Architecture](#10-full-pipeline-architecture)
@@ -35,20 +35,20 @@ This document is the single source of truth for how LastDonor.org generates blog
 
 - The exact API contract (authentication, endpoints, request/response shapes)
 - Prompt engineering perfected for LastDonor's visual identity
-- The full pipeline from prompt → generated image → optimized file → Supabase Storage → public URL in database
+- The full pipeline from prompt â†’ generated image â†’ optimized file â†’ Supabase Storage â†’ public URL in database
 - Every cause category's visual language
 - Error handling, retries, fallbacks, and cost tracking
 
 **What this document does NOT cover:**
-- Campaign hero images (sourced from DVIDS/FEMA/user uploads — see Doc 02)
-- OG card generation (handled by `@vercel/og` — see OG image routes)
-- Platform photography rotation (see Doc 02 §5)
+- Campaign hero images (sourced from DVIDS/FEMA/user uploads â€” see Doc 02)
+- OG card generation (handled by `@vercel/og` â€” see OG image routes)
+- Platform photography rotation (see Doc 02 Â§5)
 
 ---
 
-## 2. BRAND CONSTRAINTS — NON-NEGOTIABLE RULES
+## 2. BRAND CONSTRAINTS â€” NON-NEGOTIABLE RULES
 
-These rules come directly from Doc 02 (Brand Guidelines §5) and override any Kling capability or prompt pattern:
+These rules come directly from Doc 02 (Brand Guidelines Â§5) and override any Kling capability or prompt pattern:
 
 ### Absolute Rules
 
@@ -57,7 +57,7 @@ These rules come directly from Doc 02 (Brand Guidelines §5) and override any Kl
 | **No AI-generated people.** No faces, no realistic human bodies. | LastDonor uses real photography of real people (from DVIDS, FEMA, user uploads). AI faces undermine trust. |
 | **No photorealism.** Every AI image must be obviously illustrative. | Readers must never confuse an AI image with a real photograph. Trust is the platform's currency. |
 | **Abstract, geometric, brand-colored.** Teal (#0F766E) and amber (#D97706) must dominate. | Visual consistency across all blog posts. Every image must feel like it belongs to LastDonor. |
-| **No exploitation imagery.** No graphic suffering, destruction, gore, helplessness. | Dignity first. Show strength, resilience, hope — never victimhood. |
+| **No exploitation imagery.** No graphic suffering, destruction, gore, helplessness. | Dignity first. Show strength, resilience, hope â€” never victimhood. |
 | **No text in images.** No logos, watermarks, or readable text. | Text belongs in HTML, not images. Text in images is inaccessible, non-localizable, non-searchable. |
 
 ### Allowed Representations of Humans
@@ -77,7 +77,7 @@ Geometric/abstract silhouettes are acceptable when they:
 | Background (light) | Warm white or soft cream | #F8F6F2 or #FFF7ED |
 | Background (dark) | Soft charcoal or deep teal | #1A2E2B or #0F1A19 |
 | Supporting elements | Light gray or medium gray | #E5E7EB or #6B7280 |
-| Never use | Red, bright green, purple, or any color outside the brand palette | — |
+| Never use | Red, bright green, purple, or any color outside the brand palette | â€” |
 
 ---
 
@@ -90,22 +90,22 @@ Geometric/abstract silhouettes are acceptable when they:
 | Model | `kling-v2-1` (latest generation model) |
 | API Region | Singapore |
 | API Base URL | `https://api-singapore.klingai.com` |
-| Authentication | JWT (HS256) — **not** plain API keys |
-| Task Model | Asynchronous: submit → poll → retrieve |
-| Output Format | JPEG/PNG (temporary URLs — must download immediately) |
-| Typical Generation Time | 15–60 seconds |
+| Authentication | JWT (HS256) â€” **not** plain API keys |
+| Task Model | Asynchronous: submit â†’ poll â†’ retrieve |
+| Output Format | JPEG/PNG (temporary URLs â€” must download immediately) |
+| Typical Generation Time | 15â€“60 seconds |
 | Maximum Generation Time | ~3 minutes (180 seconds) |
 
 ### How Kling Differs from Other Image APIs
 
-1. **JWT authentication** — You do not pass an API key as a Bearer token. You generate a short-lived JWT signed with your secret key.
-2. **Asynchronous generation** — The API returns a `task_id` immediately. You poll a separate endpoint until the image is ready.
-3. **Temporary URLs** — The image URL returned by Kling expires. You must download the image and re-host it yourself.
-4. **Response code field** — Success is `code: 0` in the JSON body, not HTTP status codes. A 200 HTTP response can still contain an error in `code`.
+1. **JWT authentication** â€” You do not pass an API key as a Bearer token. You generate a short-lived JWT signed with your secret key.
+2. **Asynchronous generation** â€” The API returns a `task_id` immediately. You poll a separate endpoint until the image is ready.
+3. **Temporary URLs** â€” The image URL returned by Kling expires. You must download the image and re-host it yourself.
+4. **Response code field** â€” Success is `code: 0` in the JSON body, not HTTP status codes. A 200 HTTP response can still contain an error in `code`.
 
 ---
 
-## 4. AUTHENTICATION — JWT TOKEN GENERATION
+## 4. AUTHENTICATION â€” JWT TOKEN GENERATION
 
 Kling uses JWT (JSON Web Token) authentication signed with HS256.
 
@@ -133,7 +133,7 @@ Kling uses JWT (JSON Web Token) authentication signed with HS256.
 |-------|-------|---------|
 | `iss` | Your `KLING_ACCESS_KEY` | Identifies the API consumer |
 | `exp` | Now + 1800 (30 minutes) | Token expiration. Kling rejects expired tokens. |
-| `nbf` | Now - 5 | "Not before" — 5-second buffer for clock skew between your server and Kling's |
+| `nbf` | Now - 5 | "Not before" â€” 5-second buffer for clock skew between your server and Kling's |
 | `iat` | Now | Issued-at timestamp |
 
 **Signing:** The payload is signed with `KLING_SECRET_KEY` using the HS256 algorithm.
@@ -166,7 +166,7 @@ function generateKlingToken(): string {
 
 ---
 
-## 5. API CONTRACT — ENDPOINTS, REQUEST, RESPONSE
+## 5. API CONTRACT â€” ENDPOINTS, REQUEST, RESPONSE
 
 ### Base URL
 
@@ -202,8 +202,8 @@ POST /v1/images/generations
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `model_name` | string | **Yes** | Always `"kling-v2-1"` |
-| `prompt` | string | **Yes** | Text description of the desired image (see §7–8) |
-| `negative_prompt` | string | No | Comma-separated list of elements to exclude (see §9) |
+| `prompt` | string | **Yes** | Text description of the desired image (see Â§7â€“8) |
+| `negative_prompt` | string | No | Comma-separated list of elements to exclude (see Â§9) |
 | `n` | integer | No | Number of images per request. Default `1`. Max `4`. |
 | `aspect_ratio` | string | **Yes** | One of: `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9` |
 
@@ -289,8 +289,8 @@ GET /v1/images/generations/{task_id}
 |--------|---------|--------|
 | `submitted` | Queued for processing | Continue polling |
 | `processing` | Image generation in progress | Continue polling |
-| `succeed` | Complete — image URL in `task_result.images[0].url` | Download immediately |
-| `failed` | Generation failed — see `task_status_msg` | Log error, retry with adjusted prompt |
+| `succeed` | Complete â€” image URL in `task_result.images[0].url` | Download immediately |
+| `failed` | Generation failed â€” see `task_status_msg` | Log error, retry with adjusted prompt |
 
 ### Endpoint 3: List Tasks (diagnostic)
 
@@ -308,9 +308,9 @@ Returns recent tasks. Useful for debugging but not used in the pipeline.
 
 | Type | Purpose | Aspect Ratio | Kling `aspect_ratio` | Pixel Dimensions | Target File Size |
 |------|---------|-------------|---------------------|-----------------|-----------------|
-| Hero/Cover | Top of blog post, OG share image, blog listing card | 16:9 | `"16:9"` | 1200×630 | < 150KB (WebP) |
-| Section | Break up text every 500–800 words | 16:9 | `"16:9"` | 800×450 | < 100KB (WebP) |
-| Infographic | Data visualization, process diagrams | 3:4 | `"3:4"` | 800×1067 | < 200KB (WebP) |
+| Hero/Cover | Top of blog post, OG share image, blog listing card | 16:9 | `"16:9"` | 1200Ã-630 | < 150KB (WebP) |
+| Section | Break up text every 500â€“800 words | 16:9 | `"16:9"` | 800Ã-450 | < 100KB (WebP) |
+| Infographic | Data visualization, process diagrams | 3:4 | `"3:4"` | 800Ã-1067 | < 200KB (WebP) |
 
 ### Aspect Ratio Reference
 
@@ -331,7 +331,7 @@ For blog images, use `16:9` for hero and section images, `3:4` for infographics.
 
 ---
 
-## 7. PROMPT ENGINEERING — CORE FRAMEWORK
+## 7. PROMPT ENGINEERING â€” CORE FRAMEWORK
 
 ### The Challenge
 
@@ -345,7 +345,7 @@ Color palette restricted to deep teal (#0F766E), warm amber (#D97706), soft crea
 and neutral grays. No photography. No photorealism. No realistic textures.
 
 AESTHETIC: Abstract and conceptual. Represent themes through geometric shapes, icons,
-and symbols — never through realistic depictions. Clean lines, bold shapes, generous
+and symbols â€” never through realistic depictions. Clean lines, bold shapes, generous
 negative space. The image should look like a premium editorial illustration from a
 modern nonprofit annual report.
 
@@ -370,36 +370,36 @@ VISUAL ELEMENTS: [Specific geometric shapes, icons, and symbols to include]
 
 COLOR EMPHASIS: [Which brand colors dominate and where]
 
-MOOD: [Emotional register — hopeful, warm, empathetic, resilient, celebratory]
+MOOD: [Emotional register â€” hopeful, warm, empathetic, resilient, celebratory]
 
 FORMAT: [Aspect ratio and dimension context]
 ```
 
 ### Why This Structure Works
 
-1. **Style directive first** — Kling processes prompts front-to-back. Establishing "flat vector illustration" immediately prevents photorealistic interpretation.
-2. **Abstract subject** — Describing visual metaphors (a shield for protection, a bridge for transition) produces better illustrations than describing literal scenes.
-3. **Specific visual elements** — Naming exact shapes and icons ("hexagonal grid", "circular flow diagram", "ascending staircase pattern") gives Kling concrete geometry to render.
-4. **Color specification with hex codes** — Kling responds well to hex color codes. Including them produces more accurate color matching than color names alone.
-5. **Mood keywords** — These influence lighting, warmth, and visual weight. "Hopeful" produces brighter, more upward-oriented compositions.
-6. **Format context** — Telling Kling the intended use helps it choose appropriate composition density.
+1. **Style directive first** â€” Kling processes prompts front-to-back. Establishing "flat vector illustration" immediately prevents photorealistic interpretation.
+2. **Abstract subject** â€” Describing visual metaphors (a shield for protection, a bridge for transition) produces better illustrations than describing literal scenes.
+3. **Specific visual elements** â€” Naming exact shapes and icons ("hexagonal grid", "circular flow diagram", "ascending staircase pattern") gives Kling concrete geometry to render.
+4. **Color specification with hex codes** â€” Kling responds well to hex color codes. Including them produces more accurate color matching than color names alone.
+5. **Mood keywords** â€” These influence lighting, warmth, and visual weight. "Hopeful" produces brighter, more upward-oriented compositions.
+6. **Format context** â€” Telling Kling the intended use helps it choose appropriate composition density.
 
 ### Prompt Length Guidelines
 
 | Element | Target Length | Why |
 |---------|-------------|-----|
 | Base style directive | ~80 words | Consistent across all images |
-| Subject description | 15–25 words | Specific enough for the topic, abstract enough to avoid photorealism |
-| Visual elements | 20–40 words | Concrete geometric vocabulary Kling can act on |
-| Color emphasis | 10–20 words | Prevents Kling from introducing off-brand colors |
-| Mood | 5–10 words | Sets emotional tone without overriding style |
-| Total prompt | 150–200 words | Longer prompts give Kling more constraints, reducing randomness |
+| Subject description | 15â€“25 words | Specific enough for the topic, abstract enough to avoid photorealism |
+| Visual elements | 20â€“40 words | Concrete geometric vocabulary Kling can act on |
+| Color emphasis | 10â€“20 words | Prevents Kling from introducing off-brand colors |
+| Mood | 5â€“10 words | Sets emotional tone without overriding style |
+| Total prompt | 150â€“200 words | Longer prompts give Kling more constraints, reducing randomness |
 
 ---
 
 ## 8. CATEGORY-SPECIFIC PROMPT TEMPLATES (ALL 23 CATEGORIES)
 
-Each template below provides the SUBJECT, VISUAL ELEMENTS, COLOR EMPHASIS, and MOOD for that cause category. The base style directive from §7 is always prepended.
+Each template below provides the SUBJECT, VISUAL ELEMENTS, COLOR EMPHASIS, and MOOD for that cause category. The base style directive from Â§7 is always prepended.
 
 ### 8.1 Medical
 
@@ -448,7 +448,7 @@ COLOR EMPHASIS: Deep teal (#0F766E) dominant for structure and duty. Amber (#D97
 as warm accent suggesting the human element behind service. Neutral gray supporting
 elements on cream (#F8F6F2) background.
 
-MOOD: Dignified, proud, warm. Not militaristic or aggressive — honorable and humane.
+MOOD: Dignified, proud, warm. Not militaristic or aggressive â€” honorable and humane.
 ```
 
 ### 8.4 Veterans
@@ -514,7 +514,7 @@ COLOR EMPHASIS: Alternating deep teal (#0F766E) and warm amber (#D97706) shapes 
 diversity within unity. Softer tones where shapes overlap. Cream (#F8F6F2) background.
 
 MOOD: Warm, inclusive, interconnected. The composition should feel cohesive despite
-multiple elements — unity from diversity.
+multiple elements â€” unity from diversity.
 ```
 
 ### 8.8 Essential Needs
@@ -530,7 +530,7 @@ line providing visual stability. A protective encompassing arch or dome shape.
 COLOR EMPHASIS: Deep teal (#0F766E) for the house/shelter structure. Amber (#D97706) for
 warmth rays and essential elements. Thick stable lines in darker teal at the base.
 
-MOOD: Stable, secure, warm. Grounded and reassuring — the visual equivalent of "you are safe."
+MOOD: Stable, secure, warm. Grounded and reassuring â€” the visual equivalent of "you are safe."
 ```
 
 ### 8.9 Education
@@ -544,7 +544,7 @@ amber forms. Graduation cap as a simple angular shape. Branching tree structure 
 knowledge pathways.
 
 COLOR EMPHASIS: Deep teal (#0F766E) for books and foundational knowledge shapes. Amber
-(#D97706) for the lightbulb and growth highlights — amber represents achievement. Cream
+(#D97706) for the lightbulb and growth highlights â€” amber represents achievement. Cream
 (#F8F6F2) background.
 
 MOOD: Aspirational, bright, forward-moving. Upward compostion suggesting growth and potential.
@@ -557,7 +557,7 @@ SUBJECT: Abstract representation of animal care, compassion, and the human-anima
 
 VISUAL ELEMENTS: Stylized paw print rendered as a geometric teal shape. Abstract heart
 shape combining with the paw motif. Simple geometric animal silhouettes (cat, dog) using
-only basic shapes — circles, triangles — clearly not realistic. Sheltering arch or hand
+only basic shapes â€” circles, triangles â€” clearly not realistic. Sheltering arch or hand
 shape (geometric) suggesting protection. Soft curved elements contrasting with angular structure.
 
 COLOR EMPHASIS: Deep teal (#0F766E) for the paw and animal shapes. Warm amber (#D97706)
@@ -577,7 +577,7 @@ of help). Arrow shapes pointing inward toward the center (converging aid). A sta
 horizontal element at the base suggesting the ground being held.
 
 COLOR EMPHASIS: Amber (#D97706) dominant for urgency and alert elements. Deep teal
-(#0F766E) for stabilizing structure. Higher contrast than other categories — bolder, sharper.
+(#0F766E) for stabilizing structure. Higher contrast than other categories â€” bolder, sharper.
 
 MOOD: Urgent but not chaotic. Purposeful energy. The visual says "help is coming" not "everything is falling apart."
 ```
@@ -587,15 +587,15 @@ MOOD: Urgent but not chaotic. Purposeful energy. The visual says "help is coming
 ```
 SUBJECT: Abstract representation of family bonds, intergenerational support, and togetherness.
 
-VISUAL ELEMENTS: Nested geometric shapes (larger protecting smaller — parent/child metaphor).
+VISUAL ELEMENTS: Nested geometric shapes (larger protecting smaller â€” parent/child metaphor).
 Abstract tree of life with branching geometric limbs. Concentric circles suggesting
 connection and closeness. Interlocking simple shapes representing different family members
 (varied sizes, same visual language). A hearth or home base element anchoring the composition.
 
-COLOR EMPHASIS: Balanced teal (#0F766E) and amber (#D97706) — neither dominates, reflecting
+COLOR EMPHASIS: Balanced teal (#0F766E) and amber (#D97706) â€” neither dominates, reflecting
 partnership and equality. Warm cream (#F8F6F2) background with soft warmth.
 
-MOOD: Warm, nurturing, secure. The visual equivalent of a warm embrace — without depicting one.
+MOOD: Warm, nurturing, secure. The visual equivalent of a warm embrace â€” without depicting one.
 ```
 
 ### 8.13 Faith
@@ -611,7 +611,7 @@ with gentle curves. A dove silhouette rendered as two intersecting geometric cur
 COLOR EMPHASIS: Deep teal (#0F766E) for the structural/community elements. Amber (#D97706)
 for light rays and spiritual warmth. Lighter background suggesting openness and light.
 
-MOOD: Peaceful, reverent, communal. Warm light without being radiant. Non-denominational — the visual should resonate across faiths.
+MOOD: Peaceful, reverent, communal. Warm light without being radiant. Non-denominational â€” the visual should resonate across faiths.
 ```
 
 ### 8.14 Environment
@@ -624,8 +624,8 @@ rendered as concentric teal rings. Water droplet shapes in gradient teal. Abstra
 with rolling geometric hills. A recycling or infinity symbol rendered in brand colors.
 Clean branching patterns suggesting both trees and neural networks of ecological connection.
 
-COLOR EMPHASIS: Deep teal (#0F766E) dominant — teal already reads as an environmental color.
-Amber (#D97706) for sun elements and energy accents. Green is NOT used (off-brand) — teal
+COLOR EMPHASIS: Deep teal (#0F766E) dominant â€” teal already reads as an environmental color.
+Amber (#D97706) for sun elements and energy accents. Green is NOT used (off-brand) â€” teal
 carries the environmental message.
 
 MOOD: Clean, hopeful, expansive. Open compositions suggesting wide landscapes and possibility.
@@ -644,7 +644,7 @@ target or goal shapes.
 COLOR EMPHASIS: Deep teal (#0F766E) for team/structural elements. Amber (#D97706) for
 energy, movement, and achievement highlights. High-contrast composition.
 
-MOOD: Energetic, determined, celebratory. Dynamic composition with implied movement —
+MOOD: Energetic, determined, celebratory. Dynamic composition with implied movement â€”
 asymmetric balance.
 ```
 
@@ -655,14 +655,14 @@ SUBJECT: Abstract representation of artistic expression, creativity, and healing
 
 VISUAL ELEMENTS: Geometric paintbrush or pen shape. Abstract canvas or frame form. Musical
 note shapes rendered as simple geometric curves. Color spectrum represented through teal-to-amber
-gradient bands. Flowing curves contrasting with structured geometric forms — the tension
+gradient bands. Flowing curves contrasting with structured geometric forms â€” the tension
 between discipline and freedom. Stage curtain shapes rendered as elegant geometric drapes.
 
 COLOR EMPHASIS: Full teal-to-amber gradient spectrum used more freely than other categories.
 This category has the most color variety within brand constraints.
 
 MOOD: Expressive, inspiring, liberating. The composition should feel less structured than
-other categories — more flowing, more dynamic.
+other categories â€” more flowing, more dynamic.
 ```
 
 ### 8.17 Funeral
@@ -675,12 +675,12 @@ shapes suggesting a gateway or passage. Abstract floral arrangement using simple
 petal forms. Radiating light from a central warm point. Soft horizontal lines suggesting
 peace and rest. A flowing ribbon or banner shape.
 
-COLOR EMPHASIS: Warm amber (#D97706) prominent — warmth and light in somber context.
+COLOR EMPHASIS: Warm amber (#D97706) prominent â€” warmth and light in somber context.
 Deep teal (#0F766E) as supporting structure. Warmer background than other categories
 (pale amber/cream gradient).
 
 MOOD: Dignified, peaceful, warm. Celebration of life, not sorrow. The visual should
-feel like golden hour light — warm and gentle.
+feel like golden hour light â€” warm and gentle.
 ```
 
 ### 8.18 Addiction
@@ -706,7 +706,7 @@ element should move upward or forward.
 ```
 SUBJECT: Abstract representation of dignified aging, intergenerational connection, and elder care.
 
-VISUAL ELEMENTS: Geometric tree with deep roots and wide canopy — strength from years of
+VISUAL ELEMENTS: Geometric tree with deep roots and wide canopy â€” strength from years of
 growth. Concentric rings (tree ring metaphor for years lived). Interlocking shapes of
 different sizes suggesting intergenerational bonds (larger experienced shapes supporting
 smaller newer ones). A rocking chair silhouette rendered as two gentle curves. Warm
@@ -723,7 +723,7 @@ MOOD: Dignified, warm, respectful. The visual should convey "valued" not "vulner
 ```
 SUBJECT: Abstract representation of fairness, advocacy, and the pursuit of equitable outcomes.
 
-VISUAL ELEMENTS: Geometric balance scales rendered with clean teal lines — perfectly
+VISUAL ELEMENTS: Geometric balance scales rendered with clean teal lines â€” perfectly
 level. A gavel shape simplified to its essential geometric form. Equal sign as a prominent
 visual element. Shield shape suggesting protection of rights. Strong vertical line (pillar)
 providing structural backbone to the composition.
@@ -732,7 +732,7 @@ COLOR EMPHASIS: Deep teal (#0F766E) dominant for institutional structure and sta
 Amber (#D97706) for the balance point and justice highlights. High contrast, clean lines.
 
 MOOD: Resolute, principled, balanced. The composition itself should be symmetrical or
-nearly symmetrical — visual justice.
+nearly symmetrical â€” visual justice.
 ```
 
 ### 8.21 Housing
@@ -758,13 +758,13 @@ MOOD: Secure, welcoming, stable. The visual says "this is yours, this is solid, 
 SUBJECT: Abstract representation of mental wellness, inner peace, and emotional support.
 
 VISUAL ELEMENTS: Geometric brain shape formed from flowing interconnected curves (not
-anatomical — stylized). Concentric calming circles or ripples suggesting mindfulness.
+anatomical â€” stylized). Concentric calming circles or ripples suggesting mindfulness.
 A peaceful landscape of rolling geometric hills. Abstract sun or dawn shape suggesting
 clarity. Puzzle pieces fitting together. Clean open space dominating the composition
 (visual breathing room).
 
-COLOR EMPHASIS: Softer teal (#14B8A6 — lighter variant) for calming therapeutic elements.
-Amber (#D97706) as subtle warmth. More negative space than other categories — the emptiness
+COLOR EMPHASIS: Softer teal (#14B8A6 â€” lighter variant) for calming therapeutic elements.
+Amber (#D97706) as subtle warmth. More negative space than other categories â€” the emptiness
 is intentional and therapeutic.
 
 MOOD: Calm, clear, supportive. The most spacious composition of all categories. Minimal
@@ -781,7 +781,7 @@ with amber ribbon. Sparkle shapes rendered as small diamond/rhombus forms. Magic
 simplified to a line with a star endpoint. Ascending celebration shapes (confetti as simple
 geometric dots and triangles). A doorway opening to reveal light.
 
-COLOR EMPHASIS: Amber (#D97706) dominant — this is the most amber-forward category.
+COLOR EMPHASIS: Amber (#D97706) dominant â€” this is the most amber-forward category.
 Warmth and celebration. Deep teal (#0F766E) as grounding structure. Bright, high-energy
 palette within brand constraints.
 
@@ -845,99 +845,99 @@ These are appended to the base negative prompt for specific categories:
 ### Flow Diagram
 
 ```
-┌──────────────────────┐
-│  Blog Pipeline        │
-│  requests hero image  │
-│  for topic            │
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│  1. Build Prompt      │
-│  - Base style         │
-│  - Category template  │
-│  - Negative prompt    │
-│  - Aspect ratio       │
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│  2. Generate JWT      │
-│  - HS256 sign with    │
-│    KLING_SECRET_KEY   │
-│  - 30-min expiry      │
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│  3. Submit Task       │
-│  POST /v1/images/     │
-│    generations        │
-│  - model: kling-v2-1  │
-│  - prompt + negative  │
-│  - aspect_ratio       │
-│  Response: task_id    │
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│  4. Poll for Result   │
-│  GET /v1/images/      │
-│    generations/{id}   │
-│  - Every 5 seconds    │
-│  - Max 180 seconds    │
-│  - Check task_status  │
-└──────────┬───────────┘
-           │
-     ┌─────┴──────┐
-     ▼            ▼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Blog Pipeline        â”‚
+â”‚  requests hero image  â”‚
+â”‚  for topic            â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+           â”‚
+           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  1. Build Prompt      â”‚
+â”‚  - Base style         â”‚
+â”‚  - Category template  â”‚
+â”‚  - Negative prompt    â”‚
+â”‚  - Aspect ratio       â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+           â”‚
+           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  2. Generate JWT      â”‚
+â”‚  - HS256 sign with    â”‚
+â”‚    KLING_SECRET_KEY   â”‚
+â”‚  - 30-min expiry      â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+           â”‚
+           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  3. Submit Task       â”‚
+â”‚  POST /v1/images/     â”‚
+â”‚    generations        â”‚
+â”‚  - model: kling-v2-1  â”‚
+â”‚  - prompt + negative  â”‚
+â”‚  - aspect_ratio       â”‚
+â”‚  Response: task_id    â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+           â”‚
+           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  4. Poll for Result   â”‚
+â”‚  GET /v1/images/      â”‚
+â”‚    generations/{id}   â”‚
+â”‚  - Every 5 seconds    â”‚
+â”‚  - Max 180 seconds    â”‚
+â”‚  - Check task_status  â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+           â”‚
+     â”Œâ”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”
+     â–¼            â–¼
   succeed       failed
-     │            │
-     │            ▼
-     │     ┌──────────────┐
-     │     │ Retry once   │
-     │     │ with adjusted│
-     │     │ prompt       │
-     │     └──────┬───────┘
-     │            │
-     │     ┌──────┴──────┐
-     │     ▼            ▼
-     │  succeed    still failed
-     │     │            │
-     │     │            ▼
-     │     │     ┌──────────────┐
-     │     │     │ Return null  │
-     │     │     │ → OG fallback│
-     │     │     └──────────────┘
-     │     │
-     ▼     ▼
-┌──────────────────────┐
-│  5. Download Image    │
-│  - Fetch from temp    │
-│    Kling URL          │
-│  - Validate size and  │
-│    content-type       │
-│  - Convert to Buffer  │
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│  6. Upload to         │
-│     Supabase Storage  │
-│  - Bucket: 'media'    │
-│  - Path: blog/{slug}/ │
-│    {keyword}-{type}   │
-│    .webp              │
-│  - Get public URL     │
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│  7. Return permanent  │
-│     public URL +      │
-│     alt text +        │
-│     dimensions        │
-└──────────────────────┘
+     â”‚            â”‚
+     â”‚            â–¼
+     â”‚     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+     â”‚     â”‚ Retry once   â”‚
+     â”‚     â”‚ with adjustedâ”‚
+     â”‚     â”‚ prompt       â”‚
+     â”‚     â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜
+     â”‚            â”‚
+     â”‚     â”Œâ”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”
+     â”‚     â–¼            â–¼
+     â”‚  succeed    still failed
+     â”‚     â”‚            â”‚
+     â”‚     â”‚            â–¼
+     â”‚     â”‚     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+     â”‚     â”‚     â”‚ Return null  â”‚
+     â”‚     â”‚     â”‚ â†’ OG fallbackâ”‚
+     â”‚     â”‚     â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+     â”‚     â”‚
+     â–¼     â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  5. Download Image    â”‚
+â”‚  - Fetch from temp    â”‚
+â”‚    Kling URL          â”‚
+â”‚  - Validate size and  â”‚
+â”‚    content-type       â”‚
+â”‚  - Convert to Buffer  â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+           â”‚
+           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  6. Upload to         â”‚
+â”‚     Supabase Storage  â”‚
+â”‚  - Bucket: 'media'    â”‚
+â”‚  - Path: blog/{slug}/ â”‚
+â”‚    {keyword}-{type}   â”‚
+â”‚    .webp              â”‚
+â”‚  - Get public URL     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+           â”‚
+           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  7. Return permanent  â”‚
+â”‚     public URL +      â”‚
+â”‚     alt text +        â”‚
+â”‚     dimensions        â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### Timing Budget
@@ -946,11 +946,11 @@ These are appended to the base negative prompt for specific categories:
 |------|-------------------|
 | Build prompt | < 1ms |
 | Generate JWT | < 5ms |
-| Submit task (network) | 200–500ms |
-| Poll wait (generation) | 15–60 seconds |
-| Download image | 1–3 seconds |
-| Upload to Supabase | 1–3 seconds |
-| **Total per image** | **20–70 seconds** |
+| Submit task (network) | 200â€“500ms |
+| Poll wait (generation) | 15â€“60 seconds |
+| Download image | 1â€“3 seconds |
+| Upload to Supabase | 1â€“3 seconds |
+| **Total per image** | **20â€“70 seconds** |
 
 ---
 
@@ -979,7 +979,7 @@ media/blog/veteran-housing-programs-guide/veteran-housing-hero.webp
 ### File Format
 
 All blog images are stored as WebP. If Kling returns a JPEG or PNG, the image should be
-converted before upload (future optimization — for now, store as-is with `.webp` extension
+converted before upload (future optimization â€” for now, store as-is with `.webp` extension
 if already WebP, or appropriate extension if not).
 
 ### Size Limits
@@ -989,7 +989,7 @@ The existing Supabase Storage configuration (`src/lib/supabase-storage.ts`) allo
 - Allowed MIME types: `image/jpeg`, `image/png`, `image/webp`, `image/avif`
 - Bucket: `media`
 
-Kling-generated images are typically 200KB–1MB, well within limits.
+Kling-generated images are typically 200KBâ€“1MB, well within limits.
 
 ---
 
@@ -1012,10 +1012,10 @@ Kling-generated images are typically 200KB–1MB, well within limits.
 | JWT auth error (401) | Regenerate token and retry immediately |
 | Task submission fails (network) | Wait 3s, retry with same prompt |
 | Task status `failed` | Simplify prompt (remove most specific elements), retry |
-| Poll timeout (no result in 180s) | Log, return null → fallback |
+| Poll timeout (no result in 180s) | Log, return null â†’ fallback |
 | Image download fails | Wait 3s, retry download (URL may still be valid) |
 | Supabase upload fails | Wait 3s, retry upload |
-| All retries exhausted | Return null → OG fallback image |
+| All retries exhausted | Return null â†’ OG fallback image |
 
 ### Prompt Simplification on Retry
 
@@ -1047,15 +1047,15 @@ npm install sharp
 
 Optimization targets:
 - Convert to WebP (quality 80)
-- Resize to exact pixel dimensions (1200×630 for hero, 800×450 for section)
+- Resize to exact pixel dimensions (1200Ã-630 for hero, 800Ã-450 for section)
 - Strip EXIF/metadata
 - Target < 150KB for hero images, < 100KB for section images
-- Generate base64 blur placeholder (10×5px) for above-the-fold images
+- Generate base64 blur placeholder (10Ã-5px) for above-the-fold images
 
 This is **not implemented in the initial pipeline** because:
 1. `sharp` requires native binaries that complicate Vercel deployment
 2. Kling's output quality is sufficient for web use
-3. The blog generates 1 image per day — optimization savings are negligible at this volume
+3. The blog generates 1 image per day â€” optimization savings are negligible at this volume
 
 ---
 
@@ -1065,26 +1065,26 @@ This is **not implemented in the initial pipeline** because:
 
 | Component | Cost | Notes |
 |-----------|------|-------|
-| Kling generation (kling-v2-1) | ~$0.05–0.10 | Per image, varies by plan tier |
+| Kling generation (kling-v2-1) | ~$0.05â€“0.10 | Per image, varies by plan tier |
 | Supabase Storage | ~$0.001 | Per image stored (~500KB average) |
 | Supabase bandwidth | ~$0.001 | Per image served to a reader |
-| **Total per image** | **~$0.05–0.10** | |
+| **Total per image** | **~$0.05â€“0.10** | |
 
 ### Per-Post Costs
 
 | Scenario | Images | Cost |
 |----------|--------|------|
-| Hero only (default) | 1 | $0.05–0.10 |
-| Hero + 2 section images | 3 | $0.15–0.30 |
-| Hero + 3 section + infographic | 5 | $0.25–0.50 |
+| Hero only (default) | 1 | $0.05â€“0.10 |
+| Hero + 2 section images | 3 | $0.15â€“0.30 |
+| Hero + 3 section + infographic | 5 | $0.25â€“0.50 |
 
 ### Monthly Budget (at 1 post/day)
 
 | Scenario | Monthly Posts | Monthly Image Cost |
 |----------|-------------|-------------------|
-| Hero only | 30 | $1.50–$3.00 |
-| Hero + 2 sections | 30 | $4.50–$9.00 |
-| Maximum (5 images/post) | 30 | $7.50–$15.00 |
+| Hero only | 30 | $1.50â€“$3.00 |
+| Hero + 2 sections | 30 | $4.50â€“$9.00 |
+| Maximum (5 images/post) | 30 | $7.50â€“$15.00 |
 
 ### Cost Tracking
 
@@ -1100,8 +1100,8 @@ through the existing pipeline health metrics.
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `KLING_ACCESS_KEY` | Public access key — JWT issuer (`iss`) claim | `AhpgDBPf...` |
-| `KLING_SECRET_KEY` | Secret key — HS256 signing key | `PayHGBCb...` |
+| `KLING_ACCESS_KEY` | Public access key â€” JWT issuer (`iss`) claim | `AhpgDBPf...` |
+| `KLING_SECRET_KEY` | Secret key â€” HS256 signing key | `PayHGBCb...` |
 
 ### Optional Pipeline Controls
 
@@ -1129,7 +1129,7 @@ If `KLING_ACCESS_KEY` or `KLING_SECRET_KEY` is not set:
 |---------|-------------|------------|
 | `JWT auth failed` / 401 | Wrong keys, expired token, or clock skew | Verify `KLING_ACCESS_KEY` and `KLING_SECRET_KEY` match your Kling dashboard. Ensure server clock is synced. |
 | `code: 1001` in response | Prompt triggered content filter | Simplify prompt. Remove words like "injury", "fire", "blood", "weapon" even in abstract context. |
-| Task stuck in `processing` | High API load or complex prompt | Wait for full 180s timeout. If still stuck, the task may complete later — but we move on to fallback. |
+| Task stuck in `processing` | High API load or complex prompt | Wait for full 180s timeout. If still stuck, the task may complete later â€” but we move on to fallback. |
 | Image URL returns 404 | Kling temporary URL expired | This means the download step took too long. Images must be downloaded within seconds of `succeed` status. |
 | Wrong style (photorealistic instead of illustration) | Prompt not assertive enough about style | Ensure `STYLE: Modern flat vector illustration` appears at the very start of the prompt. Add more anti-photorealism terms to negative prompt. |
 | Off-brand colors | Missing hex codes in prompt | Always include `#0F766E` and `#D97706` in the prompt. Include off-brand colors in negative prompt. |
@@ -1140,7 +1140,7 @@ If `KLING_ACCESS_KEY` or `KLING_SECRET_KEY` is not set:
 ### Diagnostic Steps
 
 1. **Test JWT generation**: Generate a token and decode it at jwt.io to verify structure
-2. **Test API access**: Call the list endpoint (`GET /v1/images/generations?pageNum=1&pageSize=1`) — should return `code: 0`
+2. **Test API access**: Call the list endpoint (`GET /v1/images/generations?pageNum=1&pageSize=1`) â€” should return `code: 0`
 3. **Test simple generation**: Submit a minimal prompt like `"abstract teal circles on white background"` and verify end-to-end
 4. **Check generation logs**: Query `blog_generation_logs` for `step = 'images_generated'` or `step = 'error'`
 
@@ -1170,24 +1170,24 @@ These checks are currently human-verified via the admin UI (drafts are reviewed 
 ## APPENDIX A: QUICK REFERENCE
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  KLING AI — LASTDONOR QUICK REFERENCE                           │
-├─────────────────────────────────────────────────────────────────┤
-│  API Base:     https://api-singapore.klingai.com                │
-│  Model:        kling-v2-1                                       │
-│  Auth:         JWT (HS256) — KLING_ACCESS_KEY + KLING_SECRET_KEY│
-│  Create:       POST /v1/images/generations                      │
-│  Poll:         GET  /v1/images/generations/{task_id}             │
-│  Success:      code === 0 && task_status === "succeed"           │
-│  Poll Interval:5s  |  Timeout: 180s  |  Retries: 2             │
-│  Output:       Temporary URL → download → Supabase Storage      │
-│  Storage Path: media/blog/{slug}/{keyword}-{type}.webp          │
-│  Style:        Abstract geometric illustration                  │
-│  Colors:       Teal #0F766E + Amber #D97706 on Cream #F8F6F2   │
-│  NEVER:        Faces, photorealism, text, off-brand colors      │
-│  Fallback:     /api/v1/og/page (branded text-on-gradient)       │
-│  Dependencies: jsonwebtoken                                     │
-└─────────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  KLING AI â€” LASTDONOR QUICK REFERENCE                           â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  API Base:     https://api-singapore.klingai.com                â”‚
+â”‚  Model:        kling-v2-1                                       â”‚
+â”‚  Auth:         JWT (HS256) â€” KLING_ACCESS_KEY + KLING_SECRET_KEYâ”‚
+â”‚  Create:       POST /v1/images/generations                      â”‚
+â”‚  Poll:         GET  /v1/images/generations/{task_id}             â”‚
+â”‚  Success:      code === 0 && task_status === "succeed"           â”‚
+â”‚  Poll Interval:5s  |  Timeout: 180s  |  Retries: 2             â”‚
+â”‚  Output:       Temporary URL â†’ download â†’ Supabase Storage      â”‚
+â”‚  Storage Path: media/blog/{slug}/{keyword}-{type}.webp          â”‚
+â”‚  Style:        Abstract geometric illustration                  â”‚
+â”‚  Colors:       Teal #0F766E + Amber #D97706 on Cream #F8F6F2   â”‚
+â”‚  NEVER:        Faces, photorealism, text, off-brand colors      â”‚
+â”‚  Fallback:     /api/v1/og/page (branded text-on-gradient)       â”‚
+â”‚  Dependencies: jsonwebtoken                                     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
@@ -1197,9 +1197,9 @@ These checks are currently human-verified via the admin UI (drafts are reviewed 
 | # | Category | Central Icon/Shape | Dominant Color | Mood |
 |---|----------|-------------------|---------------|------|
 | 1 | medical | Medical cross + pulse ribbon | Teal | Hopeful, reassuring |
-| 2 | disaster | Rebuilding house + amber rays | Teal → Amber | Resilient, forward |
+| 2 | disaster | Rebuilding house + amber rays | Teal â†’ Amber | Resilient, forward |
 | 3 | military | Shield/chevron + star | Teal | Dignified, proud |
-| 4 | veterans | Bridge + medal shapes | Teal → Amber | Transitional, hopeful |
+| 4 | veterans | Bridge + medal shapes | Teal â†’ Amber | Transitional, hopeful |
 | 5 | memorial | Candle flame + concentric circles | Amber | Peaceful, warm |
 | 6 | first-responders | Badge/shield + flame | Teal + Amber | Bold, courageous |
 | 7 | community | Interlocking hexagons/circles | Balanced | Warm, inclusive |
@@ -1213,7 +1213,7 @@ These checks are currently human-verified via the admin UI (drafts are reviewed 
 | 15 | sports | Dynamic angles + trophy | Teal + Amber | Energetic, dynamic |
 | 16 | creative | Brush + canvas + notes | Full gradient | Expressive, flowing |
 | 17 | funeral | Memorial flame + arch | Amber | Dignified, warm |
-| 18 | addiction | Broken chain + phoenix + sunrise | Teal → Amber | Triumphant, hopeful |
+| 18 | addiction | Broken chain + phoenix + sunrise | Teal â†’ Amber | Triumphant, hopeful |
 | 19 | elderly | Tree + rings + canopy | Teal | Dignified, respectful |
 | 20 | justice | Balance scales + gavel + pillar | Teal | Resolute, balanced |
 | 21 | housing | Key + house blueprint + door | Teal + Amber | Secure, welcoming |

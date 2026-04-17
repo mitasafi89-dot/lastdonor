@@ -1,9 +1,12 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ArrowLeftIcon } from '@heroicons/react/24/solid';
 import { DonationForm } from '@/components/campaign/DonationForm';
+import { ProgressBar } from '@/components/campaign/ProgressBar';
+import { centsToDollarsWhole } from '@/lib/utils/currency';
 
 interface DonatePageClientProps {
   campaignId: string;
@@ -14,6 +17,8 @@ interface DonatePageClientProps {
   donorCount: number;
   initialAmount?: number;
   isDonationSuccess: boolean;
+  confirmedAmount?: number;
+  sessionId?: string;
   paymentIntentId?: string;
 }
 
@@ -21,28 +26,42 @@ export function DonatePageClient({
   campaignId,
   campaignSlug,
   campaignTitle,
-  raisedAmount: _raisedAmount,
-  goalAmount: _goalAmount,
+  raisedAmount,
+  goalAmount,
   donorCount,
   initialAmount,
   isDonationSuccess,
+  confirmedAmount: confirmedAmountFromUrl,
+  sessionId,
   paymentIntentId,
 }: DonatePageClientProps) {
   const router = useRouter();
   const confirmSent = useRef(false);
+  const [confirmedAmount, setConfirmedAmount] = useState<number>(confirmedAmountFromUrl ?? 0);
 
-  // Handle Stripe redirect return — confirm payment server-side
   useEffect(() => {
-    if (!isDonationSuccess || !paymentIntentId || confirmSent.current) return;
-    confirmSent.current = true;
-    fetch('/api/v1/donations/confirm', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paymentIntentId }),
-    }).catch(() => {});
-    // Clean URL without reload
+    if (!isDonationSuccess || confirmSent.current) return;
+    // Handle both Checkout Session return and PaymentIntent return
+    if (sessionId || paymentIntentId) {
+      confirmSent.current = true;
+      const body = sessionId
+        ? { sessionId }
+        : { paymentIntentId };
+      fetch('/api/v1/donations/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.ok && json.amount) setConfirmedAmount(json.amount);
+        })
+        .catch(() => {});
+    }
     window.history.replaceState({}, '', window.location.pathname);
-  }, [isDonationSuccess, paymentIntentId]);
+  }, [isDonationSuccess, sessionId, paymentIntentId]);
+
+
 
   return (
     <div className="min-h-[100dvh] bg-muted/30">
@@ -53,9 +72,7 @@ export function DonatePageClient({
             href={`/campaigns/${campaignSlug}`}
             className="inline-flex items-center gap-2 text-sm font-medium text-foreground transition-colors hover:text-primary"
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
+            <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />
             Back to campaign
           </Link>
         </div>
@@ -63,15 +80,34 @@ export function DonatePageClient({
 
       {/* Main content */}
       <main className="mx-auto max-w-2xl px-6 py-10">
-        <div className="rounded-2xl border border-border bg-card shadow-md">
-          {/* Campaign title + subtle social proof */}
-          <div className="px-8 pt-8 sm:px-10 sm:pt-10">
-            <h1 className="text-xl font-semibold text-card-foreground">
+        <div className="rounded-2xl border border-border bg-card shadow-[--shadow-elevation-2]">
+          {/* Campaign context + Goal-Gradient progress strip.
+              Shows users the campaign progress their donation will advance. */}
+          <div className="border-b border-border px-8 pt-8 sm:px-10 sm:pt-10">
+            <h1 className="font-display text-xl font-bold text-card-foreground sm:text-2xl">
               {campaignTitle}
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {donorCount.toLocaleString()} {donorCount === 1 ? 'person has' : 'people have'} donated
-            </p>
+
+            <div className="mt-4 space-y-2">
+              <div className="flex items-baseline justify-between gap-3 text-sm">
+                <span className="tabular-nums">
+                  <span className="font-mono font-semibold text-foreground">
+                    {centsToDollarsWhole(raisedAmount)}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {' '}of {centsToDollarsWhole(goalAmount)}
+                  </span>
+                </span>
+              </div>
+              <ProgressBar
+                raisedAmount={raisedAmount}
+                goalAmount={goalAmount}
+                compact
+              />
+              <p className="text-xs tabular-nums text-muted-foreground">
+                {donorCount.toLocaleString()} {donorCount === 1 ? 'person has' : 'people have'} donated
+              </p>
+            </div>
           </div>
 
           {/* Donation form */}
@@ -79,9 +115,11 @@ export function DonatePageClient({
             <DonationForm
               campaignId={campaignId}
               campaignTitle={campaignTitle}
+              campaignSlug={campaignSlug}
               embedded
               initialAmount={initialAmount}
               initialStep={isDonationSuccess ? 'success' : undefined}
+              initialConfirmedAmount={confirmedAmount}
               onDonationComplete={() => router.refresh()}
             />
           </div>

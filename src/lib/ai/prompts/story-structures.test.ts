@@ -102,19 +102,19 @@ describe('scoreContextRichness', () => {
 // ── getWordRange ────────────────────────────────────────────────────────────
 
 describe('getWordRange', () => {
-  it('returns 75-120 for minimal', () => {
+  it('returns 200-400 for minimal', () => {
     const range = getWordRange('minimal');
-    expect(range).toEqual({ min: 75, max: 120 });
+    expect(range).toEqual({ min: 200, max: 400 });
   });
 
-  it('returns 150-200 for moderate', () => {
+  it('returns 400-700 for moderate', () => {
     const range = getWordRange('moderate');
-    expect(range).toEqual({ min: 150, max: 200 });
+    expect(range).toEqual({ min: 400, max: 700 });
   });
 
-  it('returns 200-300 for rich', () => {
+  it('returns 700-1000 for rich', () => {
     const range = getWordRange('rich');
-    expect(range).toEqual({ min: 200, max: 300 });
+    expect(range).toEqual({ min: 700, max: 1000 });
   });
 });
 

@@ -4,7 +4,7 @@ import { DonorSegmentation } from '@/components/admin/DonorSegmentation';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Donor CRM — Admin — LastDonor.org',
+  title: 'Donor CRM - Admin - LastDonor.org',
   robots: { index: false },
 };
 

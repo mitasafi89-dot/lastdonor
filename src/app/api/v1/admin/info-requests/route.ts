@@ -10,7 +10,7 @@ import type { ApiError } from '@/types/api';
 import type { UserRole } from '@/types';
 
 /**
- * GET /api/v1/admin/info-requests — List info requests (admin queue)
+ * GET /api/v1/admin/info-requests - List info requests (admin queue)
  */
 export async function GET(request: NextRequest) {
   const requestId = randomUUID();
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /api/v1/admin/info-requests — Create a new info request
+ * POST /api/v1/admin/info-requests - Create a new info request
  */
 export async function POST(request: NextRequest) {
   const requestId = randomUUID();

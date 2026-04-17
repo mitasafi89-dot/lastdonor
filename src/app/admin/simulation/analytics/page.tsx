@@ -7,7 +7,7 @@ import { sql } from 'drizzle-orm';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Simulation Analytics — Admin — LastDonor.org',
+  title: 'Simulation Analytics - Admin - LastDonor.org',
   robots: { index: false },
 };
 

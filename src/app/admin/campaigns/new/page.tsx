@@ -2,7 +2,7 @@ import { CampaignEditor } from '@/components/admin/CampaignEditor';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'New Campaign — Admin — LastDonor.org',
+  title: 'New Campaign - Admin - LastDonor.org',
   robots: { index: false },
 };
 

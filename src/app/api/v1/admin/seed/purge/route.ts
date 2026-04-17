@@ -2,10 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth';
 import { db } from '@/db';
 import { donations, campaignSeedMessages, campaigns, auditLogs } from '@/db/schema';
-import { eq, sql, and } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 
 export async function POST(_request: NextRequest) {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { ok: false, error: { code: 'FORBIDDEN', message: 'Seed purge is disabled in production' } },
+      { status: 403 },
+    );
+  }
+
   const requestId = randomUUID();
 
   try {
@@ -30,34 +37,29 @@ export async function POST(_request: NextRequest) {
     // 3. Delete seed messages
     await db.delete(campaignSeedMessages);
 
-    // 4. Recalculate all campaign totals from remaining real donations
-    const allCampaigns = await db
-      .select({ id: campaigns.id })
-      .from(campaigns);
+    // 4. Recalculate all campaign totals from remaining real donations in a single batch query
+    await db.execute(sql`
+      UPDATE campaigns SET
+        raised_amount = sub.total_amount,
+        donor_count = sub.donor_count,
+        updated_at = NOW()
+      FROM (
+        SELECT
+          c.id AS campaign_id,
+          COALESCE(SUM(CASE WHEN d.refunded = false THEN d.amount ELSE 0 END), 0)::int AS total_amount,
+          COUNT(CASE WHEN d.refunded = false THEN 1 END)::int AS donor_count
+        FROM campaigns c
+        LEFT JOIN donations d ON d.campaign_id = c.id
+        GROUP BY c.id
+      ) sub
+      WHERE campaigns.id = sub.campaign_id
+        AND (campaigns.raised_amount != sub.total_amount OR campaigns.donor_count != sub.donor_count)
+    `);
 
-    for (const campaign of allCampaigns) {
-      const [realTotals] = await db
-        .select({
-          totalAmount: sql<number>`coalesce(sum(${donations.amount}), 0)::int`,
-          donorCount: sql<number>`count(*)::int`,
-        })
-        .from(donations)
-        .where(
-          and(
-            eq(donations.campaignId, campaign.id),
-            eq(donations.refunded, false),
-          ),
-        );
-
-      await db
-        .update(campaigns)
-        .set({
-          raisedAmount: realTotals.totalAmount,
-          donorCount: realTotals.donorCount,
-          updatedAt: new Date(),
-        })
-        .where(eq(campaigns.id, campaign.id));
-    }
+    // Also reset seed_donation_count echo column to 0 for all campaigns
+    await db.update(campaigns)
+      .set({ seedDonationCount: 0, updatedAt: new Date() })
+      .where(sql`${campaigns.seedDonationCount} > 0`);
 
     // 5. Audit log
     const purged = {

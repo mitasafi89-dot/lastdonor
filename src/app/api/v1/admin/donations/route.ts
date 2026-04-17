@@ -10,7 +10,7 @@ const MAX_LIMIT = 200;
 const DEFAULT_LIMIT = 50;
 
 /**
- * GET /api/v1/admin/donations — List all donations with filtering
+ * GET /api/v1/admin/donations - List all donations with filtering
  */
 export async function GET(request: NextRequest) {
   const requestId = randomUUID();

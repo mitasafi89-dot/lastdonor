@@ -59,14 +59,14 @@ ${input.eventDate ? `DATE: ${input.eventDate}` : ''}
 ${input.unit ? `UNIT: ${input.unit}` : ''}
 ${input.department ? `DEPARTMENT: ${input.department}` : ''}
 HOMETOWN: ${input.hometown}
-${familyDescription ? `FAMILY: ${familyDescription}` : 'FAMILY: No family members identified in the source article — do NOT mention or invent any family members'}
+${familyDescription ? `FAMILY: ${familyDescription}` : 'FAMILY: No family members identified in the source article - do NOT mention or invent any family members'}
 CATEGORY: ${input.category}
 FUNDING GOAL: $${input.suggestedGoal.toLocaleString()}
-SOURCE: ${input.sourceName} — ${input.sourceUrl}
+SOURCE: ${input.sourceName} - ${input.sourceUrl}
 
 NARRATIVE PATTERN: ${definition.name}
 TARGET WORD COUNT: ${wordRange.min}–${wordRange.max} words
-CONTEXT LEVEL: ${richness} (${richness === 'minimal' ? 'keep it concise — do NOT pad with fictional details. If information is limited, acknowledge that details are still emerging' : richness === 'moderate' ? 'use all available context, stay factual' : 'use all context to create a rich, detailed narrative'})`;
+CONTEXT LEVEL: ${richness} (${richness === 'minimal' ? 'keep it concise - do NOT pad with fictional details. If information is limited, acknowledge that details are still emerging' : richness === 'moderate' ? 'use all available context, stay factual' : 'use all context to create a rich, detailed narrative'})`;
 
   return { systemPrompt, userPrompt, selectedPattern: pattern };
 }
@@ -92,14 +92,14 @@ ${definition.psychologicalNote}
 RULES:
 - Write in third person
 - Plain language, empathetic but NOT manipulative or exaggerated
-- When citing the source, use the EXACT full URL provided in the SOURCE field — never shorten it to a domain root. The link text must be the source name, NEVER use "here" or "click here" as link text
-- ABSOLUTELY NO fictional details — only use what is provided. If details are unknown, write "details are still emerging" or "the full extent is still being determined" — never invent specifics
+- When citing the source, use the EXACT full URL provided in the SOURCE field - never shorten it to a domain root. The link text must be the source name, NEVER use "here" or "click here" as link text
+- ABSOLUTELY NO fictional details - only use what is provided. If details are unknown, write "details are still emerging" or "the full extent is still being determined" - never invent specifics
 - If family members are not listed, do NOT mention or invent any family members. Simply omit family references
 - If the person's age is not provided, do NOT guess or include any age reference
 - No guilt-tripping or emotional manipulation
-- WORD COUNT: Target ${wordRange.min}–${wordRange.max} words total.${richness === 'minimal' ? ' You have LIMITED context — write concisely. Do NOT invent details to fill space. Use phrases like "details are still emerging" if needed.' : richness === 'rich' ? ' You have RICH context — weave all available details into a compelling narrative.' : ''}
+- WORD COUNT: Target ${wordRange.min}–${wordRange.max} words total.${richness === 'minimal' ? ' You have LIMITED context - write concisely. Do NOT invent details to fill space. Use phrases like "details are still emerging" if needed.' : richness === 'rich' ? ' You have RICH context - weave all available details into a compelling narrative.' : ''}
 
-FORMAT — CRITICAL:
+FORMAT - CRITICAL:
 - You MUST output valid HTML. NEVER use markdown syntax (no [text](url), no **bold**, no # headings)
 - Every paragraph MUST be wrapped in <p> tags
 - Links MUST use <a> tags: <a href="URL" target="_blank" rel="noopener noreferrer">Source Name</a>
@@ -115,7 +115,7 @@ ${definition.formattingGuidance}
 - <ul>/<li> for listing multiple needs or impact tiers (only when naturally appropriate)
 - <hr> to create a visual break before a final section (use sparingly)
 
-STRUCTURE (${definition.sections.length} sections — follow this exact order):
+STRUCTURE (${definition.sections.length} sections - follow this exact order):
 
 ${sectionInstructions}
 

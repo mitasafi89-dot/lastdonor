@@ -5,6 +5,7 @@ import { auditLogs } from '@/db/schema';
 import { desc, gte, lte, eq, and, lt } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
+import { logError } from '@/lib/errors';
 
 export async function GET(request: NextRequest) {
   const requestId = randomUUID();
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(error, { status: 403 });
   }
 
+  try {
   const { searchParams } = request.nextUrl;
   const eventType = searchParams.get('eventType');
   const actorId = searchParams.get('actorId');
@@ -71,4 +73,12 @@ export async function GET(request: NextRequest) {
       cursor: lastEntry?.id ?? null,
     },
   });
+  } catch (err) {
+    logError(err, 'admin-audit-log', { requestId });
+    const error: ApiError = {
+      ok: false,
+      error: { code: 'INTERNAL_ERROR', message: 'Failed to load audit log', requestId },
+    };
+    return NextResponse.json(error, { status: 500 });
+  }
 }

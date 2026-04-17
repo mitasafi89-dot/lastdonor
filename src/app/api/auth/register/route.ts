@@ -2,12 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import bcrypt from 'bcryptjs';
+import { hashPassword } from '@/lib/password';
 import { registerSchema } from '@/lib/validators/user';
 import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
-
-const BCRYPT_ROUNDS = 12;
 
 export async function POST(request: NextRequest) {
   const requestId = randomUUID();
@@ -67,7 +65,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(response, { status: 400 });
     }
 
-    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    const passwordHash = await hashPassword(password);
 
     const [newUser] = await db
       .insert(users)
@@ -121,12 +119,12 @@ async function checkPwnedPassword(password: string): Promise<boolean> {
       { signal: AbortSignal.timeout(3000) },
     );
 
-    if (!response.ok) return false; // Fail open — don't block registration
+    if (!response.ok) return false; // Fail open - don't block registration
 
     const text = await response.text();
     return text.split('\n').some((line) => line.startsWith(suffix));
   } catch {
-    // Network error — fail open
+    // Network error - fail open
     return false;
   }
 }

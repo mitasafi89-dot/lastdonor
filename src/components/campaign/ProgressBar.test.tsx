@@ -53,6 +53,6 @@ describe('ProgressBar', () => {
   it('applies standard height class when compact is false', () => {
     render(<ProgressBar raisedAmount={5000} goalAmount={10000} />);
     const bar = screen.getByRole('progressbar');
-    expect(bar.className).toContain('h-2');
+    expect(bar.className).toContain('h-2.5');
   });
 });

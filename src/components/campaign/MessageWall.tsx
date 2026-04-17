@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useCallback, useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { formatRelativeTime } from '@/lib/utils/dates';
 import { cn } from '@/lib/utils';
+import { useMessageWallRegister } from './MessageWallContext';
+import { usePollingList } from '@/hooks/usePollingList';
 
 export interface MessageItem {
   id: string;
@@ -24,88 +26,38 @@ const POLL_INTERVAL_MS = 30_000;
 const PAGE_SIZE = 20;
 const MESSAGE_TRUNCATE_LENGTH = 200;
 
+const getMessageId = (m: MessageItem) => m.id;
+
 export function MessageWall({
   campaignSlug,
   initialMessages,
   className,
 }: MessageWallProps) {
-  const [messages, setMessages] = useState<MessageItem[]>(initialMessages);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(initialMessages.length >= PAGE_SIZE);
-  const cursorRef = useRef(initialMessages.length);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
-  // Expose a method for optimistic message insertion
-  const addOptimisticMessage = useCallback((msg: MessageItem) => {
-    setMessages((prev) => [msg, ...prev]);
-  }, []);
+  const buildUrl = useCallback(
+    ({ cursor }: { cursor?: number }) => {
+      const params = new URLSearchParams({ limit: String(PAGE_SIZE) });
+      if (cursor != null) params.set('cursor', String(cursor));
+      return `/api/v1/campaigns/${encodeURIComponent(campaignSlug)}/messages?${params}`;
+    },
+    [campaignSlug],
+  );
 
-  // Expose via ref on window for MessageForm to call
+  const { items: messages, loading, hasMore, loadMore, addOptimistic } = usePollingList(
+    initialMessages,
+    {
+      buildUrl,
+      pollIntervalMs: POLL_INTERVAL_MS,
+      getId: getMessageId,
+    },
+  );
+
+  // Register optimistic add with context so MessageForm can call it
+  const registerWall = useMessageWallRegister();
   useEffect(() => {
-    (window as Window & { __addOptimisticMessage?: (msg: MessageItem) => void }).__addOptimisticMessage = addOptimisticMessage;
-    return () => {
-      delete (window as Window & { __addOptimisticMessage?: (msg: MessageItem) => void }).__addOptimisticMessage;
-    };
-  }, [addOptimisticMessage]);
-
-  // Poll for new messages
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function poll() {
-      try {
-        const res = await fetch(
-          `/api/v1/campaigns/${encodeURIComponent(campaignSlug)}/messages?limit=${PAGE_SIZE}`,
-          { signal: controller.signal },
-        );
-        if (!res.ok) return;
-        const json = await res.json();
-        if (json.ok && json.data.length > 0) {
-          const fresh = json.data as MessageItem[];
-          setMessages((prev) => {
-            const existingIds = new Set(prev.map((m) => m.id));
-            const newItems = fresh.filter((m) => !existingIds.has(m.id));
-            if (newItems.length === 0) return prev;
-            return [...newItems, ...prev];
-          });
-        }
-      } catch {
-        // Silently ignore abort & network errors
-      }
-    }
-
-    const interval = setInterval(poll, POLL_INTERVAL_MS);
-    return () => {
-      controller.abort();
-      clearInterval(interval);
-    };
-  }, [campaignSlug]);
-
-  async function loadMore() {
-    if (loading) return;
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `/api/v1/campaigns/${encodeURIComponent(campaignSlug)}/messages?cursor=${cursorRef.current}&limit=${PAGE_SIZE}`,
-      );
-      if (!res.ok) return;
-      const json = await res.json();
-      if (json.ok) {
-        const older = json.data as MessageItem[];
-        setMessages((prev) => {
-          const existingIds = new Set(prev.map((m) => m.id));
-          const unique = older.filter((m) => !existingIds.has(m.id));
-          return [...prev, ...unique];
-        });
-        cursorRef.current += older.length;
-        setHasMore(json.meta?.hasMore ?? false);
-      }
-    } catch {
-      // Ignore
-    } finally {
-      setLoading(false);
-    }
-  }
+    registerWall?.(addOptimistic);
+  }, [registerWall, addOptimistic]);
 
   function toggleExpand(id: string) {
     setExpandedIds((prev) => {
@@ -145,8 +97,7 @@ export function MessageWall({
                   transition={{ duration: 0.3 }}
                   className="flex items-start gap-3 rounded-lg border border-border bg-card p-3"
                 >
-                  {/* Avatar */}
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
                     {msg.isAnonymous ? '?' : msg.donorName.charAt(0).toUpperCase()}
                   </div>
 
@@ -172,7 +123,7 @@ export function MessageWall({
                       <button
                         type="button"
                         onClick={() => toggleExpand(msg.id)}
-                        className="mt-1 text-xs font-medium text-primary hover:underline"
+                        className="mt-1 text-xs font-medium text-muted-foreground underline hover:text-foreground"
                       >
                         {expanded ? 'Show less' : 'Read more'}
                       </button>

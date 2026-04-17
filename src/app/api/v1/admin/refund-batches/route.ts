@@ -8,7 +8,7 @@ import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
 
 /**
- * GET /api/v1/admin/refund-batches — List refund batches with pagination.
+ * GET /api/v1/admin/refund-batches - List refund batches with pagination.
  */
 export async function GET(request: NextRequest) {
   const requestId = randomUUID();

@@ -23,7 +23,7 @@ vi.mock('@/db', () => ({
 }));
 
 // Import after mocks are set up
-const { canAcceptDonation, OVERFUND_CAP_PERCENT, OVERFUND_WINDOW_MS } = await import('./simulation-engine');
+const { canAcceptDonation, OVERFUND_CAP_PERCENT, OVERFUND_WINDOW_MS, getETHour, getETDay } = await import('./simulation-engine');
 
 function buildTestCampaign(overrides: Partial<Campaign> = {}): Campaign {
   return {
@@ -183,5 +183,83 @@ describe('canAcceptDonation', () => {
     it('OVERFUND_WINDOW_MS is 48 hours', () => {
       expect(OVERFUND_WINDOW_MS).toBe(48 * 60 * 60 * 1000);
     });
+  });
+});
+
+// ── DST-Aware ET Helpers ────────────────────────────────────────────────────
+
+describe('getETHour', () => {
+  it('returns a number 0-23 for any date', () => {
+    const hour = getETHour(new Date());
+    expect(hour).toBeGreaterThanOrEqual(0);
+    expect(hour).toBeLessThanOrEqual(23);
+  });
+
+  it('handles midnight UTC (should be ET evening the previous day)', () => {
+    // Midnight UTC = 7pm ET (EST) or 8pm ET (EDT)
+    const midnightUtc = new Date('2026-01-15T00:00:00Z'); // January = EST (UTC-5)
+    const hour = getETHour(midnightUtc);
+    expect(hour).toBe(19); // 7pm ET
+  });
+
+  it('handles noon UTC', () => {
+    const noonUtc = new Date('2026-01-15T12:00:00Z'); // January = EST
+    const hour = getETHour(noonUtc);
+    expect(hour).toBe(7); // 7am ET
+  });
+
+  it('handles EDT (summer) dates correctly', () => {
+    // July = EDT (UTC-4), so noon UTC = 8am ET
+    const summerNoon = new Date('2026-07-15T12:00:00Z');
+    const hour = getETHour(summerNoon);
+    expect(hour).toBe(8); // 8am ET (EDT)
+  });
+
+  it('handles EST (winter) dates correctly', () => {
+    // January = EST (UTC-5), so noon UTC = 7am ET
+    const winterNoon = new Date('2026-01-15T12:00:00Z');
+    const hour = getETHour(winterNoon);
+    expect(hour).toBe(7); // 7am ET (EST)
+  });
+
+  it('DST transition: spring forward shifts by 1 hour', () => {
+    // 2026 spring forward: March 8. Check March 9 vs March 7.
+    const beforeDST = new Date('2026-03-07T17:00:00Z'); // March 7, 5pm UTC = noon EST (12pm)
+    const afterDST = new Date('2026-03-09T17:00:00Z'); // March 9, 5pm UTC = 1pm EDT (13pm)
+    expect(getETHour(beforeDST)).toBe(12); // noon EST
+    expect(getETHour(afterDST)).toBe(13);  // 1pm EDT
+  });
+});
+
+describe('getETDay', () => {
+  it('returns a number 0-6', () => {
+    const day = getETDay(new Date());
+    expect(day).toBeGreaterThanOrEqual(0);
+    expect(day).toBeLessThanOrEqual(6);
+  });
+
+  it('correctly identifies Sunday as 0', () => {
+    // 2026-01-04 is a Sunday
+    const sunday = new Date('2026-01-04T15:00:00Z');
+    expect(getETDay(sunday)).toBe(0);
+  });
+
+  it('correctly identifies Saturday as 6', () => {
+    // 2026-01-03 is a Saturday
+    const saturday = new Date('2026-01-03T15:00:00Z');
+    expect(getETDay(saturday)).toBe(6);
+  });
+
+  it('returns correct day near midnight ET boundary', () => {
+    // Friday at 11pm ET (4am UTC Saturday) should still be Friday in ET
+    // 2026-01-02 (Fri) at 11pm ET = 2026-01-03 4am UTC
+    const fridayNightET = new Date('2026-01-03T04:00:00Z');
+    expect(getETDay(fridayNightET)).toBe(5); // Friday
+  });
+
+  it('correctly transitions to Saturday after midnight ET', () => {
+    // Saturday at 1am ET = 6am UTC
+    const saturdayMorningET = new Date('2026-01-03T06:00:00Z');
+    expect(getETDay(saturdayMorningET)).toBe(6); // Saturday
   });
 });

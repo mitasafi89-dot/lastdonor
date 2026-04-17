@@ -1,5 +1,5 @@
 /**
- * HTML Formatter — post-processing pipeline for blog HTML.
+ * HTML Formatter - post-processing pipeline for blog HTML.
  *
  * Applies structural enhancements that the AI cannot reliably produce:
  * - Table of Contents from H2 headings
@@ -24,7 +24,7 @@ export function injectTableOfContents(html: string): string {
   const headings: { id: string; text: string }[] = [];
   let index = 0;
 
-  // First pass — collect headings and add IDs
+  // First pass - collect headings and add IDs
   const processed = html.replace(h2Regex, (_match, attrs: string, content: string) => {
     const plainText = content.replace(/<[^>]+>/g, '').trim();
     const id = `section-${index++}`;
@@ -100,9 +100,14 @@ export function injectSectionImages(
 
     const insertAt = adjustedPos + firstPEnd + 4; // after </p>
 
+    const captionParts = [escapeHtml(image.altText)];
+    if (image.attribution) {
+      captionParts.push(`<span class="blog-image-attribution">${image.attribution}</span>`);
+    }
+
     const figureHtml = `\n<figure class="blog-section-image">
 <img src="${escapeAttr(image.url)}" alt="${escapeAttr(image.altText)}" width="${image.width}" height="${image.height}" loading="lazy" />
-<figcaption>${escapeHtml(image.altText)}</figcaption>
+<figcaption>${captionParts.join(' | ')}</figcaption>
 </figure>\n`;
 
     html = html.slice(0, insertAt) + figureHtml + html.slice(insertAt);
@@ -119,9 +124,9 @@ export function injectSectionImages(
 
 /**
  * Insert three CTA blocks throughout the article for maximum engagement:
- * 1. Top — after TOC, warm and inviting
- * 2. Middle — at the center H2, social-proof focused
- * 3. Bottom — before FAQ/Key Takeaways, strong closing
+ * 1. Top - after TOC, warm and inviting
+ * 2. Middle - at the center H2, social-proof focused
+ * 3. Bottom - before FAQ/Key Takeaways, strong closing
  */
 export function injectCta(html: string, causeCategory: string): string {
   const categoryLabel = causeCategory.replace(/-/g, ' ');
@@ -326,7 +331,7 @@ export function deduplicateKeyTakeaways(html: string): string {
   } else if (nextSection !== -1) {
     endIdx = firstIdx + 4 + nextSection;
   } else {
-    // Can't determine boundary — leave as-is
+    // Can't determine boundary - leave as-is
     return html;
   }
 

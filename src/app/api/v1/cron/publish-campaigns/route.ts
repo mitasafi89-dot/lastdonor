@@ -3,15 +3,18 @@ import { db } from '@/db';
 import { newsItems, campaigns, auditLogs } from '@/db/schema';
 import { eq, and, gte, desc } from 'drizzle-orm';
 import { publishCampaignFromNewsItem } from '@/lib/news/campaign-publisher';
+import { logError } from '@/lib/errors';
+import { verifyCronAuth } from '@/lib/cron-auth';
+import { randomUUID } from 'crypto';
 import type { StoryPattern } from '@/lib/ai/prompts/story-structures';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  const requestId = randomUUID();
+  if (!verifyCronAuth(request.headers.get('authorization'))) {
+    return NextResponse.json({ ok: false, error: { code: 'UNAUTHORIZED', message: 'Invalid cron authorization.', requestId } }, { status: 401 });
   }
 
   try {
@@ -89,8 +92,10 @@ export async function GET(request: NextRequest) {
       data: { qualifiedItems: qualifiedItems.length, published, errors },
     });
   } catch (error) {
+    logError(error, { requestId, route: '/api/v1/cron/publish-campaigns', method: 'GET' });
+
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : 'Unknown error' },
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Campaign publishing failed.', requestId } },
       { status: 500 },
     );
   }

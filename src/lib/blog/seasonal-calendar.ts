@@ -1,5 +1,5 @@
 /**
- * Seasonal Calendar — maps months to cause categories that peak during specific seasons.
+ * Seasonal Calendar - maps months to cause categories that peak during specific seasons.
  * Used by the topic scorer to boost topic priority when a category's peak season arrives.
  */
 

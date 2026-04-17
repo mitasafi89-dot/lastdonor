@@ -1,10 +1,14 @@
 import { getAICostSummary, getDailyCostTrend, getCostByPromptType } from '@/lib/monitoring/ai-cost-tracker';
 import { getSimulationQuality, getPipelineHealth } from '@/lib/monitoring/pipeline-health';
-import { PipelineMonitor } from '@/components/admin/PipelineMonitor';
+import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 
+const PipelineMonitor = dynamic(
+  () => import('@/components/admin/PipelineMonitor').then((m) => ({ default: m.PipelineMonitor }))
+);
+
 export const metadata: Metadata = {
-  title: 'Monitoring — Admin — LastDonor.org',
+  title: 'Monitoring - Admin - LastDonor.org',
   robots: { index: false },
 };
 

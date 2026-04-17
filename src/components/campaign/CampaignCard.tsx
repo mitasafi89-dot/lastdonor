@@ -1,21 +1,20 @@
+'use client';
+
 import Link from 'next/link';
 import { ProgressBar } from '@/components/campaign/ProgressBar';
 import { CampaignHeroImage } from '@/components/campaign/CampaignHeroImage';
 import { centsToDollarsWhole } from '@/lib/utils/currency';
-import { getCampaignPhase } from '@/lib/utils/phase';
 
 interface CampaignCardProps {
   slug: string;
   title: string;
   heroImageUrl: string;
   subjectName: string;
-  organizerName?: string;
   category?: string;
   location?: string | null;
   raisedAmount: number;
   goalAmount: number;
   donorCount?: number;
-  verificationStatus?: string;
 }
 
 export function CampaignCard({
@@ -29,73 +28,67 @@ export function CampaignCard({
   goalAmount,
   donorCount,
 }: CampaignCardProps) {
-  const percent = goalAmount > 0
-    ? Math.min(Math.round((raisedAmount / goalAmount) * 100), 100)
-    : 0;
-  const phase = getCampaignPhase(raisedAmount, goalAmount);
-  const isLastDonorZone = phase === 'last_donor_zone';
-
   return (
     <article
-      className={`group flex h-full flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
-        isLastDonorZone
-          ? 'border-destructive/40 ring-2 ring-destructive/20'
-          : 'border-border'
-      }`}
+      className="animate-fade-in-up group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card card-hover-lift"
     >
       <Link href={`/campaigns/${slug}`} className="flex flex-1 flex-col">
-        {/* Hero image */}
-        <div className="relative aspect-video overflow-hidden">
+        {/* Hero image - clean, no overlays */}
+        <div className="relative aspect-[16/10] overflow-hidden">
           <CampaignHeroImage
             src={heroImageUrl}
             alt={title}
             category={category}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
           />
-          {/* Category badge */}
-          {category && (
-            <span className="absolute left-3 top-3 rounded-full bg-black/50 px-3 py-1 text-xs font-medium capitalize text-white backdrop-blur-sm">
-              {category}
-            </span>
-          )}
-          {/* Last Donor Zone badge */}
-          {isLastDonorZone && (
-            <span className="absolute right-3 top-3 animate-pulse rounded-full bg-destructive px-3 py-1 text-xs font-bold text-white">
-              Almost there!
-            </span>
-          )}
-          {/* Location */}
-          {location && (
-            <span className="absolute bottom-3 left-3 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
-              {location}
-            </span>
-          )}
         </div>
 
         {/* Content */}
         <div className="flex flex-1 flex-col p-5">
-          <h3 className="line-clamp-2 font-display text-base font-semibold leading-snug text-card-foreground">
+          {/* Row 1: Category + Location */}
+          <div className="flex items-center gap-2">
+            {category && (
+              <span className="rounded-md bg-muted px-2 py-0.5 text-[11px] font-semibold capitalize text-muted-foreground">
+                {category}
+              </span>
+            )}
+            {location && (
+              <span className="text-[11px] text-muted-foreground">
+                {location}
+              </span>
+            )}
+          </div>
+
+          {/* Row 2: Title */}
+          <h3 className="mt-2 line-clamp-2 font-display text-[15px] font-semibold leading-snug text-card-foreground transition-colors duration-200 group-hover:text-primary">
             {title}
           </h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            by {subjectName}
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            for {subjectName}
           </p>
 
-          {/* Progress section */}
+          {/* Row 3: Financial data */}
           <div className="mt-auto pt-4">
-            <ProgressBar raisedAmount={raisedAmount} goalAmount={goalAmount} />
-            <div className="mt-2 flex items-baseline justify-between">
-              <span className="font-mono text-sm font-bold text-foreground">
-                {centsToDollarsWhole(raisedAmount)} raised
+            <div className="flex items-baseline justify-between">
+              <span className="font-mono text-lg font-bold tabular-nums text-foreground number-highlight">
+                {centsToDollarsWhole(raisedAmount)}{' '}<span className="font-sans text-sm font-medium text-muted-foreground">raised</span>
               </span>
-              <span className="text-xs text-muted-foreground">
-                {percent}%
+              <span className="font-mono text-xs font-medium tabular-nums text-muted-foreground">
+                of {centsToDollarsWhole(goalAmount)}
               </span>
             </div>
-            {donorCount !== undefined && (
-              <p className="mt-1 text-xs text-muted-foreground">
+
+            <ProgressBar
+              raisedAmount={raisedAmount}
+              goalAmount={goalAmount}
+              className="mt-2"
+            />
+
+            {/* Row 4: Social proof */}
+            {donorCount !== undefined && donorCount > 0 && (
+              <p className="mt-2 text-xs text-muted-foreground">
                 {donorCount.toLocaleString('en-US')} donor{donorCount !== 1 ? 's' : ''}
               </p>
             )}

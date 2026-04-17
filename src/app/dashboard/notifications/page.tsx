@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { db } from '@/db';
 import { notifications } from '@/db/schema';
@@ -7,14 +6,13 @@ import { NotificationsClient } from '@/app/notifications/NotificationsClient';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Notifications — Dashboard — LastDonor.org',
+  title: 'Notifications - Dashboard - LastDonor.org',
   robots: { index: false },
 };
 
 export default async function DashboardNotificationsPage() {
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) redirect('/login?callbackUrl=/dashboard/notifications');
+  const session = (await auth())!;
+  const userId = session.user!.id;
 
   const [items, [countRow], [unreadRow]] = await Promise.all([
     db

@@ -309,7 +309,7 @@ const NAME_POOL: NameEntry[] = [
 const LOCATION_FORMATS = [
   (n: string, l: string) => `${n} from ${l}`,
   (n: string, l: string) => `${n}, ${l}`,
-  (n: string, l: string) => `${n} — ${l}`,
+  (n: string, l: string) => `${n} - ${l}`,
   (n: string, _l: string) => n,
 ];
 

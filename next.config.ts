@@ -2,6 +2,17 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
+  compress: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
+  experimental: {
+    optimizePackageImports: [
+      '@heroicons/react',
+      'date-fns',
+      'recharts',
+      'motion',
+    ],
+  },
   images: {
     remotePatterns: [
       {
@@ -15,10 +26,28 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "**", // News article images from various sources
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.pexels.com",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.pixabay.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.twincities.com",
+      },
+      {
+        // News article images from any domain (resolved by image-resolver.ts)
+        protocol: "https",
+        hostname: "**",
       },
     ],
     formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 86400,
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
@@ -42,13 +71,33 @@ const nextConfig: NextConfig = {
           key: "Content-Security-Policy",
           value: [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' js.stripe.com plausible.io",
+            "script-src 'self' 'unsafe-inline' js.stripe.com plausible.io",
             "style-src 'self' 'unsafe-inline'",
-            "img-src 'self' data: blob: https: *.supabase.co dvidshub.net",
+            "img-src 'self' data: blob: https: *.supabase.co dvidshub.net img.youtube.com",
             "connect-src 'self' api.stripe.com *.supabase.co *.sentry.io wss://ws-us3.pusher.com",
-            "frame-src js.stripe.com",
+            "frame-src 'self' https://js.stripe.com https://www.youtube-nocookie.com https://youtube-nocookie.com https://www.youtube.com https://youtube.com",
             "font-src 'self' fonts.gstatic.com",
           ].join("; "),
+        },
+      ],
+    },
+    {
+      // Immutable static assets (hashed filenames)
+      source: "/_next/static/:path*",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=31536000, immutable",
+        },
+      ],
+    },
+    {
+      // Public static assets (images, fonts)
+      source: "/:path(images|fonts)/:file*",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=604800, stale-while-revalidate=86400",
         },
       ],
     },

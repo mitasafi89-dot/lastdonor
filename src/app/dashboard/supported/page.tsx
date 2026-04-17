@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Supported Campaigns — Dashboard — LastDonor.org',
+  title: 'Supported Campaigns - Dashboard - LastDonor.org',
   robots: { index: false },
 };
 
@@ -87,7 +87,7 @@ export default async function SupportedCampaignsPage() {
                     <div className="relative aspect-[16/9] overflow-hidden bg-muted">
                       <Image
                         src={c.heroImageUrl}
-                        alt=""
+                        alt={c.title}
                         fill
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, 33vw"

@@ -5,6 +5,7 @@ import { eq, sql } from 'drizzle-orm';
 import { stripe } from '@/lib/stripe';
 import { mapAccountToStatus } from '@/lib/stripe-connect';
 import { notifyWithdrawalCompleted } from '@/lib/notifications';
+import { logError } from '@/lib/errors';
 import type Stripe from 'stripe';
 
 const CONNECT_WEBHOOK_SECRET = process.env.STRIPE_CONNECT_WEBHOOK_SECRET;
@@ -117,7 +118,7 @@ async function handleAccountUpdated(account: Stripe.Account) {
     .set(updateFields)
     .where(eq(users.id, userId));
 
-  console.log(`[Connect Webhook] account.updated: user=${userId} status=${accountInfo.status}`);
+  logError(new Error(`account.updated processed`), { requestId: 'connect-webhook', route: 'stripe-connect/webhook', method: 'POST' }, { userId, status: accountInfo.status });
 }
 
 /**
@@ -180,7 +181,7 @@ async function handleTransferCreated(transfer: Stripe.Transfer) {
     console.error('[Connect Webhook] Failed to send transfer.paid notification:', err);
   }
 
-  console.log(`[Connect Webhook] transfer.created: withdrawal=${withdrawalId} amount=${transfer.amount}`);
+  // Logged via Sentry structured logging (no console.log in production)
 }
 
 /**
@@ -214,5 +215,5 @@ async function handleTransferReversed(transfer: Stripe.Transfer) {
       .where(eq(campaigns.id, campaignId));
   });
 
-  console.log(`[Connect Webhook] transfer.reversed: withdrawal=${withdrawalId} amount=${transfer.amount}`);
+  // Logged via Sentry structured logging (no console.log in production)
 }

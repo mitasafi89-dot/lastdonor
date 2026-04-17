@@ -1,14 +1,14 @@
 /**
- * M11 — 7.2 Statistical Donation Analysis Test
+ * M11 - 7.2 Statistical Donation Analysis Test
  *
  * Verifies that seed donation generation produces data that is
  * statistically indistinguishable from real crowdfunding patterns.
  *
  * Tests cover:
- *   1. Amount distribution — all amounts are psychologically priced
- *   2. Donor name uniqueness — low repeat rate across many donations
- *   3. Stripe payment ID format — matches real Stripe pi_ format
- *   4. Email domain diversity — at least 5 unique domains
+ *   1. Amount distribution - all amounts are psychologically priced
+ *   2. Donor name uniqueness - low repeat rate across many donations
+ *   3. Stripe payment ID format - matches real Stripe pi_ format
+ *   4. Email domain diversity - at least 5 unique domains
  *   5. Amount distribution not dominated by round numbers
  *
  * @vitest-environment node
@@ -17,7 +17,7 @@ import { describe, it, expect, vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
 
-// Mock DB and schema — simulation-engine imports them
+// Mock DB and schema - simulation-engine imports them
 vi.mock('@/db', () => ({
   db: {
     select: vi.fn(() => ({

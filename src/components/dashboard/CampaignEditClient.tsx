@@ -71,7 +71,7 @@ export function CampaignEditClient({ campaign }: { campaign: CampaignData }) {
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        throw new Error(data?.error?.message ?? 'Failed to save changes');
+        throw new Error(data?.error?.code === 'VALIDATION_ERROR' ? (data?.error?.message ?? 'Failed to save changes') : 'Failed to save changes');
       }
 
       toast.success('Campaign updated successfully.');

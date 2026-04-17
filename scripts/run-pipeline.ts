@@ -31,7 +31,7 @@ async function main() {
 
   console.log('\nDetails:');
   for (const d of result.details) {
-    console.log(`  [${d.status}] "${d.topicTitle}" — SEO:${d.seoScore ?? 'n/a'} | ${d.wordCount ?? 'n/a'}w | slug:${d.slug ?? 'n/a'}`);
+    console.log(`  [${d.status}] "${d.topicTitle}" - SEO:${d.seoScore ?? 'n/a'} | ${d.wordCount ?? 'n/a'}w | slug:${d.slug ?? 'n/a'}`);
     if (d.error) console.log(`    Error: ${d.error}`);
   }
 

@@ -1,4 +1,4 @@
-# LastDonor.org — SEO Keyword Research & Content Mapping
+# LastDonor.org - SEO Keyword Research & Content Mapping
 
 **Version**: 0.2
 **Date**: March 20, 2026
@@ -35,17 +35,17 @@
 
 LastDonor.org is a **new domain (DA ~0)**. We CANNOT compete on head terms like "donate" or "charity." Instead we dominate:
 
-1. **Long-tail intent keywords** — specific queries with low competition
-2. **Named-entity keywords** — campaign subjects' names (zero competition)
-3. **Niche cause keywords** — specific situations (fire, flood, medical, military)
-4. **Question-based keywords** — "how to help family who lost home in..."
-5. **Location + cause keywords** — "help family after tornado in [city]"
+1. **Long-tail intent keywords** - specific queries with low competition
+2. **Named-entity keywords** - campaign subjects' names (zero competition)
+3. **Niche cause keywords** - specific situations (fire, flood, medical, military)
+4. **Question-based keywords** - "how to help family who lost home in..."
+5. **Location + cause keywords** - "help family after tornado in [city]"
 
 ### Keyword Difficulty Targeting
 
 | Difficulty | Strategy | Examples |
 |---|---|---|
-| **Easy (KD 0-20)** | Target aggressively — these are where we rank | "help family after house fire", "donate to soldier family" |
+| **Easy (KD 0-20)** | Target aggressively - these are where we rank | "help family after house fire", "donate to soldier family" |
 | **Medium (KD 20-40)** | Target with quality content | "disaster relief fund", "transparent donation platform" |
 | **Hard (KD 40-60)** | Target only with link-building over time | "donate to veterans", "hurricane relief" |
 | **Very Hard (KD 60+)** | Do NOT target as primary | "donate", "charity", "fundraiser" |
@@ -394,7 +394,7 @@ LastDonor.org is a **new domain (DA ~0)**. We CANNOT compete on head terms like 
 
 ---
 
-### 2.7 Campaign-Specific Keywords (Dynamic — Zero Competition)
+### 2.7 Campaign-Specific Keywords (Dynamic - Zero Competition)
 
 Auto-generated per campaign. Zero competition because they target specific people and events.
 
@@ -539,7 +539,7 @@ Auto-generated per campaign. Zero competition because they target specific peopl
 
 ### 2.12 Question-Based Keywords (FAQ & Featured Snippets)
 
-These trigger Google's "People Also Ask" — high visibility, low competition.
+These trigger Google's "People Also Ask" - high visibility, low competition.
 
 #### Donation Questions
 | Question | Est. Volume | Difficulty | Priority |
@@ -602,7 +602,7 @@ These trigger Google's "People Also Ask" — high visibility, low competition.
 
 ### 3.1 Homepage (`/`)
 
-**Meta title**: `LastDonor.org — Donate to Real People in Need | 100% Transparent Charity`
+**Meta title**: `LastDonor.org - Donate to Real People in Need | 100% Transparent Charity`
 
 **Meta description**: `Every campaign is verified. Every dollar is tracked. Donate to families facing medical bills, disasters, loss, and hardship. See exactly where your money goes. Be the Last Donor.`
 
@@ -624,7 +624,7 @@ These trigger Google's "People Also Ask" — high visibility, low competition.
 
 ### 3.2 About Us (`/about`)
 
-**Meta title**: `About LastDonor.org — Verified Campaigns for People in Crisis`
+**Meta title**: `About LastDonor.org - Verified Campaigns for People in Crisis`
 
 **Meta description**: `LastDonor.org is a 501(c)(3) nonprofit funding verified campaigns for military families, disaster victims, medical emergencies, first responders, and community causes. Zero platform fees.`
 
@@ -634,7 +634,7 @@ These trigger Google's "People Also Ask" — high visibility, low competition.
 
 ### 3.3 How It Works (`/how-it-works`)
 
-**Meta title**: `How It Works — Donate, Track Impact, Be the Last Donor | LastDonor.org`
+**Meta title**: `How It Works - Donate, Track Impact, Be the Last Donor | LastDonor.org`
 
 **Meta description**: `Three steps: Pick a verified campaign. Donate any amount. See exactly where your money goes. You might be the Last Donor who completes a campaign.`
 
@@ -644,7 +644,7 @@ These trigger Google's "People Also Ask" — high visibility, low competition.
 
 ### 3.4 Campaign Listing (`/campaigns`)
 
-**Meta title**: `Active Campaigns — Donate to Verified People in Need | LastDonor.org`
+**Meta title**: `Active Campaigns - Donate to Verified People in Need | LastDonor.org`
 
 **Meta description**: `Browse active, verified campaigns for military families, disaster victims, medical emergencies, first responders, and community causes. Every story is real. Every dollar is tracked.`
 
@@ -666,36 +666,36 @@ These trigger Google's "People Also Ask" — high visibility, low competition.
 
 ### 3.5 Individual Campaign Page (`/campaigns/[slug]`)
 
-**Dynamic SEO — all generated per campaign.**
+**Dynamic SEO - all generated per campaign.**
 
-**Meta title pattern**: `Help [Name] — [Situation Summary] | LastDonor.org`
+**Meta title pattern**: `Help [Name] - [Situation Summary] | LastDonor.org`
 
 Examples across all categories:
-- Military: `Help Ashley Rivera — Sgt. Rivera Gave Everything. His Family Shouldn't Have To.`
-- Disaster: `Help the Santos Family — They Lost Everything in the Tulsa Tornado`
-- Medical: `Help Little Sofia — She's Fighting Leukemia and Her Family Can't Afford Treatment`
-- First Responder: `Help the Chen Family — Officer Chen Was Shot Protecting Our Community`
-- Community: `Help Maria — A Single Mom of Three Facing Eviction After Job Loss`
-- Funeral: `Help the Davis Family — Unexpected Loss, Unexpected Costs`
-- Accident: `Help Jake — Hit by a Drunk Driver, Facing $200K in Medical Bills`
+- Military: `Help Ashley Rivera - Sgt. Rivera Gave Everything. His Family Shouldn't Have To.`
+- Disaster: `Help the Santos Family - They Lost Everything in the Tulsa Tornado`
+- Medical: `Help Little Sofia - She's Fighting Leukemia and Her Family Can't Afford Treatment`
+- First Responder: `Help the Chen Family - Officer Chen Was Shot Protecting Our Community`
+- Community: `Help Maria - A Single Mom of Three Facing Eviction After Job Loss`
+- Funeral: `Help the Davis Family - Unexpected Loss, Unexpected Costs`
+- Accident: `Help Jake - Hit by a Drunk Driver, Facing $200K in Medical Bills`
 
-**Meta description pattern**: `[Name] needs your help. [1-sentence situation]. [Progress]. Donate now — every dollar tracked.`
+**Meta description pattern**: `[Name] needs your help. [1-sentence situation]. [Progress]. Donate now - every dollar tracked.`
 
 ---
 
 ### 3.6 Last Donor Wall (`/last-donor-wall`)
 
-**Meta title**: `Last Donor Wall — Donors Who Completed Campaigns | LastDonor.org`
+**Meta title**: `Last Donor Wall - Donors Who Completed Campaigns | LastDonor.org`
 
 **Meta description**: `Meet the donors whose contributions completed campaigns for people in need. They're the reason it's done.`
 
-**H1**: `The Last Donor Wall — They Finished What Others Started`
+**H1**: `The Last Donor Wall - They Finished What Others Started`
 
 ---
 
 ### 3.7 Transparency (`/transparency`)
 
-**Meta title**: `Where Your Money Goes — 100% Transparent Charity | LastDonor.org`
+**Meta title**: `Where Your Money Goes - 100% Transparent Charity | LastDonor.org`
 
 **Meta description**: `Every dollar tracked. Every receipt published. See exactly how LastDonor.org allocates donations: 90%+ directly to people in need. Full financial breakdown.`
 
@@ -705,7 +705,7 @@ Examples across all categories:
 
 ### 3.8 Editorial Standards (`/editorial-standards`)
 
-**Meta title**: `Editorial Standards — How We Verify Every Campaign | LastDonor.org`
+**Meta title**: `Editorial Standards - How We Verify Every Campaign | LastDonor.org`
 
 **Meta description**: `Every campaign on LastDonor.org is verified against official sources. No unverified stories. No exploitation. Learn how we ensure every story is real.`
 
@@ -715,7 +715,7 @@ Examples across all categories:
 
 ### 3.9 Blog Index (`/blog`)
 
-**Meta title**: `Blog — Stories, Impact Reports & News | LastDonor.org`
+**Meta title**: `Blog - Stories, Impact Reports & News | LastDonor.org`
 
 **Meta description**: `Real stories of people in need. Impact reports showing where donations went. News and context about the causes we serve.`
 
@@ -735,7 +735,7 @@ Examples across all categories:
 
 ### 3.11 Share Your Story (`/share-your-story`)
 
-**Meta title**: `Share Your Story — Know Someone Who Needs Help? | LastDonor.org`
+**Meta title**: `Share Your Story - Know Someone Who Needs Help? | LastDonor.org`
 
 **Meta description**: `Know a family, veteran, first responder, or community member who needs support? Tell us their story. We verify, we write, we fund.`
 
@@ -749,7 +749,7 @@ Not SEO-targeted. Functional / legal pages only.
 
 ---
 
-## 4. Blog Content Strategy — Top 25 Posts by SEO ROI
+## 4. Blog Content Strategy - Top 25 Posts by SEO ROI
 
 Balanced across ALL cause areas.
 

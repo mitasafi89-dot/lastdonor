@@ -283,7 +283,7 @@ export function formatDocumentRequirementsHtml(
   return combined
     .map(
       (doc) =>
-        `<li><strong>${doc.label}</strong>${doc.required ? ' (required)' : ' (if available)'} — ${doc.description}</li>`,
+        `<li><strong>${doc.label}</strong>${doc.required ? ' (required)' : ' (if available)'} - ${doc.description}</li>`,
     )
     .join('\n');
 }

@@ -1,6 +1,6 @@
 /**
  * AES-256-GCM encryption for storing secrets (API keys) at rest in the database.
- * Server-only — never import from client components.
+ * Server-only - never import from client components.
  *
  * Requires SETTINGS_ENCRYPTION_KEY env var: a 64-char hex string (32 bytes).
  * Generate one with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
@@ -67,9 +67,9 @@ export function decryptSecret(packed64: string): string {
 const TOKEN_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 function getHmacKey(): string {
-  const key = process.env.SETTINGS_ENCRYPTION_KEY ?? process.env.NEXTAUTH_SECRET;
+  const key = process.env.SETTINGS_ENCRYPTION_KEY;
   if (!key) {
-    throw new Error('Neither SETTINGS_ENCRYPTION_KEY nor NEXTAUTH_SECRET is set — cannot sign security tokens');
+    throw new Error('SETTINGS_ENCRYPTION_KEY is not set - cannot sign security tokens. Do not reuse NEXTAUTH_SECRET for this purpose.');
   }
   return key;
 }

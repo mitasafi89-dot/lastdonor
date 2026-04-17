@@ -5,14 +5,15 @@ import { eq } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import type { ApiResponse, ApiError } from '@/types/api';
+import { messageModerationSchema } from '@/lib/validators/admin';
 
 interface Params {
   params: Promise<{ campaignId: string; messageId: string }>;
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const VALID_ACTIONS = ['flag', 'hide', 'unhide'] as const;
-type ModerationAction = (typeof VALID_ACTIONS)[number];
+const _VALID_ACTIONS = ['flag', 'hide', 'unhide'] as const;
+type _ModerationAction = (typeof _VALID_ACTIONS)[number];
 
 export async function POST(request: NextRequest, { params }: Params) {
   const requestId = randomUUID();
@@ -30,19 +31,21 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
 
     const rawBody = await request.json();
-    const action = rawBody?.action as string;
+    const parsed = messageModerationSchema.safeParse(rawBody);
 
-    if (!VALID_ACTIONS.includes(action as ModerationAction)) {
+    if (!parsed.success) {
       const body: ApiError = {
         ok: false,
         error: {
           code: 'VALIDATION_ERROR',
-          message: `Invalid action. Must be one of: ${VALID_ACTIONS.join(', ')}`,
+          message: parsed.error.issues[0]?.message ?? 'Invalid input',
           requestId,
         },
       };
       return NextResponse.json(body, { status: 400 });
     }
+
+    const { action } = parsed.data;
 
     // Verify message exists and belongs to campaign
     const [existing] = await db

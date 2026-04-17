@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { campaigns, campaignUpdates } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, gte } from 'drizzle-orm';
 import { auth, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import { sanitizeHtml } from '@/lib/utils/sanitize';
+import { notifyCampaignUpdateDigest } from '@/lib/notifications';
 import { revalidatePath } from 'next/cache';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';
@@ -19,7 +20,7 @@ interface Params {
 }
 
 /**
- * POST /api/v1/user-campaigns/[id]/updates — Post a progress update
+ * POST /api/v1/user-campaigns/[id]/updates - Post a progress update
  */
 export async function POST(request: NextRequest, { params }: Params) {
   const requestId = randomUUID();
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     if (!session?.user) throw new UnauthorizedError();
 
     const [campaign] = await db
-      .select({ id: campaigns.id, slug: campaigns.slug, creatorId: campaigns.creatorId, status: campaigns.status })
+      .select({ id: campaigns.id, slug: campaigns.slug, title: campaigns.title, creatorId: campaigns.creatorId, status: campaigns.status, raisedAmount: campaigns.raisedAmount, goalAmount: campaigns.goalAmount })
       .from(campaigns)
       .where(eq(campaigns.id, id))
       .limit(1);
@@ -73,6 +74,25 @@ export async function POST(request: NextRequest, { params }: Params) {
         .join(''),
     );
 
+    // Idempotency: reject duplicate updates with same title within 60 seconds
+    const recentWindow = new Date(Date.now() - 60_000);
+    const [duplicate] = await db
+      .select({ id: campaignUpdates.id, title: campaignUpdates.title, createdAt: campaignUpdates.createdAt })
+      .from(campaignUpdates)
+      .where(
+        and(
+          eq(campaignUpdates.campaignId, id),
+          eq(campaignUpdates.title, parsed.data.title),
+          gte(campaignUpdates.createdAt, recentWindow),
+        ),
+      )
+      .limit(1);
+
+    if (duplicate) {
+      const response: ApiResponse<typeof duplicate> = { ok: true, data: duplicate };
+      return NextResponse.json(response, { status: 200 });
+    }
+
     const [update] = await db
       .insert(campaignUpdates)
       .values({
@@ -84,6 +104,22 @@ export async function POST(request: NextRequest, { params }: Params) {
       .returning({ id: campaignUpdates.id, title: campaignUpdates.title, createdAt: campaignUpdates.createdAt });
 
     revalidatePath(`/campaigns/${campaign.slug}`);
+
+    // Notify subscribers (fire-and-forget, never block response)
+    const excerpt = parsed.data.body.substring(0, 300);
+    const progressPercent = campaign.goalAmount > 0
+      ? Math.min(Math.round((campaign.raisedAmount / campaign.goalAmount) * 100), 100)
+      : 0;
+    notifyCampaignUpdateDigest({
+      campaignId: id,
+      campaignTitle: campaign.title,
+      campaignSlug: campaign.slug,
+      updateTitle: parsed.data.title,
+      updateExcerpt: excerpt,
+      progressPercent,
+      raisedCents: campaign.raisedAmount,
+      goalCents: campaign.goalAmount,
+    }).catch((err) => console.error('[user-campaign-update] notify error:', err));
 
     const response: ApiResponse<typeof update> = { ok: true, data: update };
     return NextResponse.json(response, { status: 201 });

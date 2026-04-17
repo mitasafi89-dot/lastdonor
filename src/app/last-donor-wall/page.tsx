@@ -61,7 +61,7 @@ export default async function LastDonorWallPage() {
     itemListElement: completedCampaigns.map((c, i) => ({
       '@type': 'ListItem',
       position: i + 1,
-      name: `${c.lastDonorName ?? 'Anonymous'} — ${c.campaignTitle}`,
+      name: `${c.lastDonorName ?? 'Anonymous'} - ${c.campaignTitle}`,
     })),
   };
 

@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import {
   validateStory,
   cleanStoryHtml,
 } from '@/lib/ai/prompts/story-validation';
 import type { StoryPattern } from '@/lib/ai/prompts/story-structures';
 
-// ── Helper: build valid story HTML for a given pattern ──────────────────────
+// â”€â”€ Helper: build valid story HTML for a given pattern â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildValidStory(
   pattern: StoryPattern,
@@ -42,7 +42,7 @@ function buildValidStory(
   return sections.join('\n\n');
 }
 
-// ── cleanStoryHtml ──────────────────────────────────────────────────────────
+// â”€â”€ cleanStoryHtml â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('cleanStoryHtml', () => {
   it('strips code fences', () => {
@@ -71,7 +71,7 @@ describe('cleanStoryHtml', () => {
   });
 });
 
-// ── validateStory ───────────────────────────────────────────────────────────
+// â”€â”€ validateStory â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('validateStory', () => {
   const defaultWordRange = { min: 100, max: 250 };
@@ -162,7 +162,7 @@ describe('validateStory', () => {
     // We need to use inline HTML to control word count precisely
     const sections = ['before', 'the-event', 'aftermath', 'whats-needed', 'looking-ahead'];
     const sectionHtml = sections.map((id, idx) => {
-      // ~18 words per section × 5 = ~90 words + some extra = ~95
+      // ~18 words per section Ã- 5 = ~90 words + some extra = ~95
       const words = Array.from({ length: 18 }, (_, i) => `word${idx}w${i}`).join(' ');
       const content = idx === 1
         ? `<p>As reported by <a href="https://example.com">News</a> ${words}</p>`

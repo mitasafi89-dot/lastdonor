@@ -2,15 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { runNewsPipeline } from '@/lib/news/news-pipeline';
 import { db } from '@/db';
 import { auditLogs } from '@/db/schema';
+import { logError, safeCronError } from '@/lib/errors';
+import { verifyCronAuth } from '@/lib/cron-auth';
+import { randomUUID } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // 5 min for AI processing
 
 export async function GET(request: NextRequest) {
-  // Verify cron secret
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  const requestId = randomUUID();
+  if (!verifyCronAuth(request.headers.get('authorization'))) {
+    return NextResponse.json({ ok: false, error: { code: 'UNAUTHORIZED', message: 'Invalid cron authorization.', requestId } }, { status: 401 });
   }
 
   try {
@@ -24,14 +26,16 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ ok: true, data: result });
   } catch (error) {
+    logError(error, { requestId, route: '/api/v1/cron/ingest-news', method: 'GET' });
+
     await db.insert(auditLogs).values({
       eventType: 'cron.ingest_news',
       severity: 'error',
-      details: { error: error instanceof Error ? error.message : String(error) },
-    });
+      details: { error: safeCronError(error), requestId },
+    }).catch(() => {});
 
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : 'Unknown error' },
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'News ingestion processing failed.', requestId } },
       { status: 500 },
     );
   }

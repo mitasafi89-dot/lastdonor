@@ -1,5 +1,6 @@
 import { ai, aiFallbackClient, PRIMARY_MODEL, FALLBACK_MODEL, TERTIARY_MODEL } from './openrouter';
 import { logAIUsage } from '@/lib/monitoring/ai-cost-tracker';
+import { pipelineLog, pipelineError } from '@/lib/server-logger';
 
 // ─── Global Rate Limit Tracking ────────────────────────────────────────────
 // Tracks last successful call timestamp to avoid blind delays.
@@ -107,11 +108,11 @@ export async function callAI<T>(opts: {
       // Reasoning models may return null content if max_tokens was exhausted on thinking
       if (!response && (choice?.message as unknown as Record<string, unknown>)?.reasoning) {
         if (!reasoningExhaustedModels.has(model)) {
-          // First time — mark it and the next attempt with this model will get higher max_tokens
+          // First time - mark it and the next attempt with this model will get higher max_tokens
           reasoningExhaustedModels.add(model);
-          console.log(`[callAI] ${model} spent all tokens on reasoning (${outputTokens} tokens), will retry with higher budget...`);
+          pipelineLog('ai', `${model} spent all tokens on reasoning (${outputTokens} tokens), will retry with higher budget...`);
         } else {
-          console.log(`[callAI] ${model} reasoning exhaustion persists even with ${effectiveMaxTokens} tokens, trying next...`);
+          pipelineLog('ai', `${model} reasoning exhaustion persists even with ${effectiveMaxTokens} tokens, trying next...`);
         }
         continue;
       }
@@ -119,7 +120,7 @@ export async function callAI<T>(opts: {
       // Detect truncated output (model hit max_tokens before finishing)
       const finishReason = choice?.finish_reason;
       if (response && finishReason === 'length') {
-        console.log(`[callAI] ${model} output truncated (${outputTokens}/${effectiveMaxTokens} tokens, finish_reason=length), trying next...`);
+        pipelineLog('ai', `${model} output truncated (${outputTokens}/${effectiveMaxTokens} tokens, finish_reason=length), trying next...`);
         response = null;
         continue;
       }
@@ -131,19 +132,19 @@ export async function callAI<T>(opts: {
       const errMsg = lastError.message;
 
       if (status === 429) {
-        // Detect per-day exhaustion — skip ALL attempts for this model (key rotation won't help)
+        // Detect per-day exhaustion - skip ALL attempts for this model (key rotation won't help)
         if (errMsg.includes('per-day') || errMsg.includes('per day')) {
-          console.log(`[callAI] ${model} hit daily limit, marking exhausted for this session`);
+          pipelineLog('ai', `${model} hit daily limit, marking exhausted for this session`);
           dailyExhaustedModels.add(model);
         } else {
-          console.log(`[callAI] Rate limited on ${model} (key ${clients.indexOf(client) + 1}), rotating...`);
+          pipelineLog('ai', `Rate limited on ${model} (key ${clients.indexOf(client) + 1}), rotating...`);
           // Brief backoff before next attempt (per-minute limits)
           await new Promise((r) => setTimeout(r, 2_000));
         }
         continue;
       }
 
-      // Non-429 error on last attempt — throw
+      // Non-429 error on last attempt - throw
       if (i === attempts.length - 1) {
         logAIUsage({
           model: modelUsed,
@@ -158,13 +159,13 @@ export async function callAI<T>(opts: {
         throw error;
       }
 
-      // Non-429 error but more attempts remain — try next
-      console.log(`[callAI] ${model} error (${status ?? 'unknown'}): ${errMsg.slice(0, 100)}, trying next...`);
+      // Non-429 error but more attempts remain - try next
+      pipelineLog('ai', `${model} error (${status ?? 'unknown'}): ${errMsg.slice(0, 100)}, trying next...`);
     }
   }
 
   if (!response) {
-    const errMsg = dailyExhaustedModels.size > 0
+    const internalMsg = dailyExhaustedModels.size > 0
       ? `All free models exhausted for the day (${[...dailyExhaustedModels].join(', ')}). ${lastError?.message ?? 'No response received.'}`
       : 'AI returned empty response from all models';
     logAIUsage({
@@ -174,10 +175,11 @@ export async function callAI<T>(opts: {
       outputTokens,
       latencyMs: Date.now() - startMs,
       success: false,
-      errorMessage: errMsg,
+      errorMessage: internalMsg,
       campaignId,
     }).catch(() => {});
-    throw new Error(errMsg);
+    pipelineError('ai', internalMsg);
+    throw new Error('AI content generation is temporarily unavailable. Please try again later.');
   }
 
   // Log successful usage (fire-and-forget)
@@ -198,7 +200,7 @@ export async function callAI<T>(opts: {
   // Strip markdown code fences if present
   let cleaned = response.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
 
-  // Some models wrap JSON in extra text — extract the JSON object/array
+  // Some models wrap JSON in extra text - extract the JSON object/array
   if (cleaned.length > 0 && cleaned[0] !== '{' && cleaned[0] !== '[') {
     const jsonStart = cleaned.search(/[\[{]/);
     if (jsonStart !== -1) {

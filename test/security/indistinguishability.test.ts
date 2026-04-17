@@ -1,8 +1,8 @@
 /**
- * M11 — 7.3 Cross-Campaign Indistinguishability Test
+ * M11 - 7.3 Cross-Campaign Indistinguishability Test
  *
  * Verifies that the public data boundary produces identical response
- * shapes for simulated and real campaigns — no extra or missing fields.
+ * shapes for simulated and real campaigns - no extra or missing fields.
  *
  * Strategy:
  *   1. Assert that publicCampaignSelect, publicCampaignCardSelect,
@@ -24,15 +24,19 @@ import {
   publicMessageSelect,
 } from '@/db/public-select';
 
-/** Expected public campaign detail keys — sorted alphabetically. */
+/** Expected public campaign detail keys - sorted alphabetically. */
 const EXPECTED_CAMPAIGN_KEYS = [
   'campaignOrganizer',
+  'cancellationNotes',
+  'cancellationReason',
+  'cancelledAt',
   'category',
   'completedAt',
   'createdAt',
   'creatorId',
   'donorCount',
   'fundUsagePlan',
+  'galleryImages',
   'goalAmount',
   'heroImageUrl',
   'id',
@@ -55,12 +59,10 @@ const EXPECTED_CAMPAIGN_KEYS = [
   'totalReleasedAmount',
   'updatedAt',
   'verificationStatus',
-  'cancellationReason',
-  'cancellationNotes',
-  'cancelledAt',
+  'youtubeUrl',
 ].sort();
 
-/** Expected public campaign card keys — sorted. */
+/** Expected public campaign card keys - sorted. */
 const EXPECTED_CARD_KEYS = [
   'category',
   'campaignOrganizer',
@@ -79,7 +81,7 @@ const EXPECTED_CARD_KEYS = [
   'verificationStatus',
 ].sort();
 
-/** Expected public donation keys — sorted. */
+/** Expected public donation keys - sorted. */
 const EXPECTED_DONATION_KEYS = [
   'amount',
   'createdAt',
@@ -90,7 +92,7 @@ const EXPECTED_DONATION_KEYS = [
   'message',
 ].sort();
 
-/** Expected public message keys — sorted. */
+/** Expected public message keys - sorted. */
 const EXPECTED_MESSAGE_KEYS = [
   'createdAt',
   'donorLocation',

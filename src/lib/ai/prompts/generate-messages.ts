@@ -36,7 +36,7 @@ const CATEGORY_PERSONA_EMPHASIS: Record<CampaignCategory, string> = {
   'first-responders': 'Emphasize: fellow firefighters/officers, station family, blue line supporters, neighbors. De-emphasize: academics.',
   community: 'Emphasize: neighbors, PTA parents, local business owners, church members, retirees. Mix broadly.',
   'essential-needs': 'Emphasize: social workers, church members, neighbors, working class, teachers. De-emphasize: corporate execs.',
-  emergency: 'Emphasize: friends, neighbors, coworkers, church members. Mix broadly — emergencies attract diverse donors.',
+  emergency: 'Emphasize: friends, neighbors, coworkers, church members. Mix broadly - emergencies attract diverse donors.',
   charity: 'Emphasize: regular donors, nonprofit workers, church members, corporate matching. Mix broadly.',
   education: 'Emphasize: teachers, parents, alumni, coaches, PTA members. De-emphasize: military jargon.',
   animal: 'Emphasize: animal lovers, shelter volunteers, vet techs, pet owners, grandmas. De-emphasize: military jargon.',
@@ -59,7 +59,7 @@ export function buildGenerateMessagesPrompt(input: GenerateMessagesInput) {
 
   const systemPrompt = `You generate realistic donation messages for a nonprofit fundraising platform. Each message should sound like it was written by a real person who just donated.
 
-Return a JSON array of exactly ${count} unique message strings. No numbering, no labels, no markdown — ONLY a JSON array of strings.`;
+Return a JSON array of exactly ${count} unique message strings. No numbering, no labels, no markdown - ONLY a JSON array of strings.`;
 
   // Build context section with campaign progress info
   const contextLines: string[] = [
@@ -91,7 +91,7 @@ Return a JSON array of exactly ${count} unique message strings. No numbering, no
   // Add existing message examples for tonal continuity
   let continuitySectionStr = '';
   if (input.existingMessages && input.existingMessages.length > 0) {
-    continuitySectionStr = `\n\nEXISTING MESSAGES (match this tonal range — do NOT repeat these, but maintain similar diversity and voice):
+    continuitySectionStr = `\n\nEXISTING MESSAGES (match this tonal range - do NOT repeat these, but maintain similar diversity and voice):
 ${input.existingMessages.map((m, i) => `${i + 1}. "${m}"`).join('\n')}`;
   }
 
@@ -143,7 +143,7 @@ NEVER:
 - Use the same opening word twice
 - Be longer than 2 sentences
 - Sound like a corporate statement
-- Reference being a "donor" or "donating" explicitly — the message IS the donation note`;
+- Reference being a "donor" or "donating" explicitly - the message IS the donation note`;
 
   return { systemPrompt, userPrompt };
 }
@@ -151,7 +151,7 @@ NEVER:
 function getPhaseGuidance(phase: DonationPhase): string {
   switch (phase) {
     case 'first_believers':
-      return '- Hopeful, launching energy, "Let\'s get this started", pioneer spirit\n- These are EARLY donors — they reference being "first" or "getting the ball rolling"';
+      return '- Hopeful, launching energy, "Let\'s get this started", pioneer spirit\n- These are EARLY donors - they reference being "first" or "getting the ball rolling"';
     case 'the_push':
       return '- Building momentum, encouraging, "Keep it going", community energy\n- Reference momentum: "Saw this was picking up steam", "Glad to see the support growing"';
     case 'closing_in':
@@ -166,8 +166,8 @@ function getCampaignAgeGuidance(ageDays?: number, donorCount?: number): string {
 
   if (ageDays <= 1) {
     return `CAMPAIGN IS BRAND NEW (${ageDays} day old):
-- Donors found this early — some reference that: "Just saw this", "First hearing about this"
-- No references to momentum or progress yet — it's too early`;
+- Donors found this early - some reference that: "Just saw this", "First hearing about this"
+- No references to momentum or progress yet - it's too early`;
   }
   if (ageDays <= 7) {
     return `CAMPAIGN IS YOUNG (${ageDays} days):
@@ -176,10 +176,10 @@ function getCampaignAgeGuidance(ageDays?: number, donorCount?: number): string {
   }
   if (ageDays <= 21) {
     return `CAMPAIGN HAS BEEN RUNNING (${ageDays} days, ${donorCount ?? 'many'} donors):
-- Donors arrive through various channels — social shares, news articles, word of mouth
+- Donors arrive through various channels - social shares, news articles, word of mouth
 - Some reference having followed the story: "Been meaning to help", "Finally getting around to this"`;
   }
   return `ESTABLISHED CAMPAIGN (${ageDays} days, ${donorCount ?? 'many'} donors):
-- Mature campaign — donors arrive through news coverage, social shares, community awareness
+- Mature campaign - donors arrive through news coverage, social shares, community awareness
 - Some reference the campaign's longevity: "Can't believe this is still going", "Better late than never"`;
 }

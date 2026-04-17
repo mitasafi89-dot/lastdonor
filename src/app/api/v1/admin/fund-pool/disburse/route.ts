@@ -13,7 +13,7 @@ const disburseSchema = z.object({
 });
 
 /**
- * POST /api/v1/admin/fund-pool/disburse — Mark allocated funds as disbursed.
+ * POST /api/v1/admin/fund-pool/disburse - Mark allocated funds as disbursed.
  */
 export async function POST(request: NextRequest) {
   const requestId = randomUUID();

@@ -3,6 +3,9 @@ import { db } from '@/db';
 import { campaigns, auditLogs } from '@/db/schema';
 import { and, inArray, eq } from 'drizzle-orm';
 import { isOrganizerUpdateDue, generateOrganizerUpdate } from '@/lib/seed/organizer-generator';
+import { logError } from '@/lib/errors';
+import { verifyCronAuth } from '@/lib/cron-auth';
+import { randomUUID } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -16,9 +19,9 @@ export const maxDuration = 120;
  * 3-7 days to keep campaign pages alive between phase transitions.
  */
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  const requestId = randomUUID();
+  if (!verifyCronAuth(request.headers.get('authorization'))) {
+    return NextResponse.json({ ok: false, error: { code: 'UNAUTHORIZED', message: 'Invalid cron authorization.', requestId } }, { status: 401 });
   }
 
   try {
@@ -68,8 +71,10 @@ export async function GET(request: NextRequest) {
       data: { campaignsChecked: activeCampaigns.length, updatesGenerated, errors },
     });
   } catch (error) {
+    logError(error, { requestId, route: '/api/v1/cron/update-phases', method: 'GET' });
+
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : 'Unknown error' },
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Phase update processing failed.', requestId } },
       { status: 500 },
     );
   }

@@ -68,7 +68,7 @@ export async function fetchWeatherAlerts(): Promise<NormalizedNewsItem[]> {
       items.push({
         title: props.headline,
         url: props['@id'],
-        summary: `${props.event} — ${props.areaDesc}. ${props.description?.slice(0, 300) ?? ''}`,
+        summary: `${props.event} - ${props.areaDesc}. ${props.description?.slice(0, 300) ?? ''}`,
         source: 'NWS',
         publishedAt: props.onset ? new Date(props.onset) : null,
         category: 'disaster',

@@ -8,9 +8,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatDate } from '@/lib/utils/dates';
 import type { Metadata } from 'next';
+import { sanitizeHtml } from '@/lib/utils/sanitize';
 
 export const metadata: Metadata = {
-  title: 'Campaign Updates — Dashboard — LastDonor.org',
+  title: 'Campaign Updates - Dashboard - LastDonor.org',
   robots: { index: false },
 };
 
@@ -85,7 +86,7 @@ export default async function DashboardUpdatesPage() {
                     {upd.bodyHtml && (
                       <div
                         className="prose prose-sm mt-3 max-w-none text-muted-foreground line-clamp-3 dark:prose-invert"
-                        dangerouslySetInnerHTML={{ __html: upd.bodyHtml }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(upd.bodyHtml) }}
                       />
                     )}
                   </div>

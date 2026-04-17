@@ -1,5 +1,5 @@
 /**
- * Re-engagement CTA engine — find similar verified campaigns for refund emails.
+ * Re-engagement CTA engine - find similar verified campaigns for refund emails.
  *
  * Query logic (per spec Section 8.6):
  * 1. Same category as cancelled campaign → up to 3 campaigns

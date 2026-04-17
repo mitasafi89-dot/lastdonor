@@ -76,8 +76,12 @@ vi.mock('@/lib/news/fetch-article-body', () => ({
   fetchArticleBody: mockFetchArticleBody,
 }));
 
-vi.mock('@/lib/news/image-validation', () => ({
-  resolveHeroImage: vi.fn().mockResolvedValue('/images/fallback.jpg'),
+vi.mock('@/lib/news/image-resolver', () => ({
+  resolveHeroImageEnhanced: vi.fn().mockResolvedValue({
+    url: '/images/fallback.jpg',
+    credit: null,
+    source: 'fallback',
+  }),
 }));
 
 vi.mock('@/lib/utils/slug', () => ({
@@ -90,9 +94,11 @@ vi.mock('@/lib/utils/phase', () => ({
 
 const mockIsValidEntityName = vi.fn(() => true);
 const mockNormalizeSubjectName = vi.fn((name: string) => name.toLowerCase());
+const mockValidateCampaignQuality = vi.fn((): { pass: true } | { pass: false; reason: string } => ({ pass: true }));
 vi.mock('@/lib/utils/entity-validation', () => ({
   isValidEntityName: mockIsValidEntityName,
   normalizeSubjectName: mockNormalizeSubjectName,
+  validateCampaignQuality: mockValidateCampaignQuality,
 }));
 
 vi.mock('@/lib/seed/message-validation', () => ({
@@ -248,7 +254,7 @@ describe('publishCampaignFromNewsItem', () => {
   });
 
   it('returns INVALID_ENTITY when entity name is garbage', async () => {
-    mockIsValidEntityName.mockReturnValueOnce(false);
+    mockValidateCampaignQuality.mockReturnValueOnce({ pass: false, reason: 'Invalid entity name: all words are generic descriptors' });
     mockCallAI.mockResolvedValueOnce(DEFAULT_ENTITY);
 
     mockLimit

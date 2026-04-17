@@ -5,7 +5,7 @@ import { CampaignsList } from '@/components/admin/CampaignsList';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Campaigns — Admin — LastDonor.org',
+  title: 'Campaigns - Admin - LastDonor.org',
   robots: { index: false },
 };
 

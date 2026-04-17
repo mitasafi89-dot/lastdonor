@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { campaigns, campaignWithdrawals, users } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { withdrawalRequestSchema } from '@/lib/validators/payout';
 import { createTransfer } from '@/lib/stripe-connect';
@@ -48,7 +48,27 @@ export async function POST(
     );
   }
 
-  const { amount } = parsed.data;
+  const { amount, idempotencyKey } = parsed.data;
+
+  // Idempotency: reject if a withdrawal with the same key already exists
+  const [existing] = await db
+    .select({ id: campaignWithdrawals.id, status: campaignWithdrawals.status })
+    .from(campaignWithdrawals)
+    .where(
+      and(
+        eq(campaignWithdrawals.campaignId, campaignId),
+        eq(campaignWithdrawals.requestedBy, session.user.id),
+        eq(campaignWithdrawals.notes, `idem:${idempotencyKey}`),
+      ),
+    )
+    .limit(1);
+
+  if (existing) {
+    return NextResponse.json(
+      { ok: true, data: { withdrawalId: existing.id, status: existing.status, deduplicated: true } },
+      { status: 200 },
+    );
+  }
 
   // Fetch campaign and verify ownership
   const [campaign] = await db
@@ -117,6 +137,7 @@ export async function POST(
       amount,
       status: 'processing',
       stripeConnectAccount: user.stripeConnectAccountId,
+      notes: `idem:${idempotencyKey}`,
     });
 
     // Execute Stripe transfer
@@ -130,6 +151,7 @@ export async function POST(
         withdrawal_id: withdrawalId,
         user_id: session.user.id,
       },
+      idempotencyKey,
     );
 
     // Update withdrawal with transfer ID
@@ -152,17 +174,31 @@ export async function POST(
     console.error('[POST /api/v1/user-campaigns/[id]/withdraw]', err);
 
     // Mark withdrawal as failed if it was inserted
+    const failureReason = err instanceof Error ? err.message : 'Transfer failed';
     await db
       .update(campaignWithdrawals)
       .set({
         status: 'failed',
-        failureReason: err instanceof Error ? err.message : 'Transfer failed',
+        failureReason,
         processedAt: new Date(),
       })
       .where(eq(campaignWithdrawals.id, withdrawalId));
 
+    // Surface user-safe error messages only. Never expose Stripe internals.
+    let message = 'Withdrawal could not be processed right now. Please try again later or contact support.';
+    if (err instanceof Error && 'type' in err) {
+      const stripeErr = err as { type: string; message: string; code?: string };
+      if (stripeErr.code === 'balance_insufficient' || stripeErr.message?.includes('insufficient')) {
+        message = 'This withdrawal cannot be processed at the moment. Platform funds are being settled. Please try again later.';
+      } else if (stripeErr.message?.includes('not currently available') || stripeErr.message?.includes('payouts_not_allowed')) {
+        message = 'Your payout account is not yet ready to receive transfers. Please check your account for any pending requirements.';
+      } else if (stripeErr.message?.includes('currency')) {
+        message = 'There was a currency mismatch with your payout account. Please contact support.';
+      }
+    }
+
     return NextResponse.json(
-      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Withdrawal failed. Please try again.', requestId } } satisfies ApiError,
+      { ok: false, error: { code: 'INTERNAL_ERROR', message, requestId } } satisfies ApiError,
       { status: 500 },
     );
   }

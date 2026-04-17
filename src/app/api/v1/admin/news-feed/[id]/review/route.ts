@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
+import { logError } from '@/lib/errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,6 +71,7 @@ export async function PATCH(
     return NextResponse.json(error, { status: 400 });
   }
 
+  try {
   const [updated] = await db
     .update(newsItems)
     .set(updates)
@@ -91,4 +93,12 @@ export async function PATCH(
   });
 
   return NextResponse.json({ ok: true, data: { id: updated.id } });
+  } catch (err) {
+    logError(err, 'admin-news-review', { requestId, newsItemId: id });
+    const error: ApiError = {
+      ok: false,
+      error: { code: 'INTERNAL_ERROR', message: 'Failed to update news item', requestId },
+    };
+    return NextResponse.json(error, { status: 500 });
+  }
 }

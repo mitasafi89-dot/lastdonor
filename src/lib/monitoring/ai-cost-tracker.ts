@@ -54,8 +54,9 @@ export async function logAIUsage(entry: AIUsageEntry): Promise<void> {
     if (entry.success) {
       await checkDailyCostThreshold();
     }
-  } catch {
-    // Logging must never crash the caller
+  } catch (err) {
+    // Logging must never crash the caller - but record the failure
+    console.error('[ai-cost-tracker] logAIUsage failed:', err instanceof Error ? err.message : err);
   }
 }
 

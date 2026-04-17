@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Font families — mapped from next/font CSS variables */
+  /* Font families -- mapped from next/font CSS variables */
   --font-display: var(--font-dm-serif-display), serif;
   --font-sans: var(--font-dm-sans), system-ui, sans-serif;
   --font-mono: var(--font-dm-mono), ui-monospace, monospace;
@@ -16,9 +16,13 @@
   --color-brand-amber: #D97706;
   --color-brand-red: #8B2332;
   --color-brand-green: #2D6A4F;
+  --color-brand-live: #10B981;
 
   /* shadcn semantic color mappings */
   --color-background: var(--background);
+  --color-surface-teal: var(--surface-teal);
+  --color-surface-amber: var(--surface-amber);
+  --color-surface-sage: var(--surface-sage);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -50,6 +54,14 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  /* Elevation shadows (structured depth system) */
+  --shadow-elevation-1: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+  --shadow-elevation-2: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.03);
+  --shadow-elevation-3: 0 8px 24px rgba(0,0,0,0.08), 0 4px 8px rgba(0,0,0,0.04);
+  --shadow-elevation-4: 0 16px 48px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.06);
+  --shadow-brand: 0 4px 16px rgba(15,118,110,0.15);
+  --shadow-amber: 0 4px 16px rgba(217,119,6,0.20);
+
   /* Radii */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -61,7 +73,7 @@
 }
 
 /*
- * Light mode — LastDonor brand
+ * Light mode - LastDonor brand
  * Primary: Deep Teal #0F766E
  * CTA/Accent: Warm Amber #D97706
  * Background: Pure White #FFFFFF
@@ -69,6 +81,10 @@
  */
 :root {
   --background: #FFFFFF;
+  /* Brand-tinted section surfaces (light mode) */
+  --surface-teal: #ECF4F2;   /* ~7% teal on white  */
+  --surface-amber: #FDF3E4;  /* ~8% amber on white */
+  --surface-sage: #EEF4EE;   /* ~6% green on white */
   --foreground: #1A1A1A;
   --card: #FFFFFF;
   --card-foreground: #1A1A1A;
@@ -79,7 +95,7 @@
   --secondary: #F5F5F5;
   --secondary-foreground: #1A1A1A;
   --muted: #F5F5F5;
-  --muted-foreground: #6B7280;
+  --muted-foreground: #64707D;
   --accent: #D97706;
   --accent-foreground: #FFFFFF;
   --destructive: #8B2332;
@@ -103,13 +119,17 @@
 }
 
 /*
- * Dark mode — LastDonor brand
+ * Dark mode - LastDonor brand
  * Background: #0F1A19
  * Surface: #1A2E2B
  * Teal light: #14B8A6
  */
 .dark {
   --background: #0F1A19;
+  /* Brand-tinted section surfaces (dark mode) */
+  --surface-teal: #152E2A;
+  --surface-amber: #2A2218;
+  --surface-sage: #17241E;
   --foreground: #F1F5F9;
   --card: #1A2E2B;
   --card-foreground: #F1F5F9;
@@ -154,35 +174,67 @@
   }
 }
 
-/* Focus indicator — Warm Amber for visibility on generic focusables */
+/* Focus indicator - Warm Amber for visibility on generic focusables */
 *:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
 
-/* Form controls use component-level ring indicators; suppress the global outline */
+/* Form controls and buttons use component-level ring indicators; suppress the global outline
+   and apply a consistent focus ring instead */
 input:focus-visible,
 textarea:focus-visible,
-select:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
 button:focus-visible {
   outline: none;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--accent);
+  border-radius: inherit;
 }
 
 .dark *:focus-visible {
   outline-color: #FBBF24;
 }
 
-/* Navigation progress bar animation */
-@keyframes progress-bar {
-  0% { width: 0%; }
-  20% { width: 30%; }
-  50% { width: 60%; }
-  80% { width: 85%; }
-  100% { width: 95%; }
+/* ─── Proof Design System: Interaction Utilities ────────────────────── */
+
+/* CSS-based fade-in-up animation (replaces motion/react for cards) */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.animate-progress-bar {
-  animation: progress-bar 8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+.animate-fade-in-up {
+  animation: fade-in-up 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Card hover lift - controlled, not bouncy */
+.card-hover-lift {
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out, border-color 200ms ease-out;
+}
+.card-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elevation-2);
+}
+
+/* Button press feedback */
+.btn-press:active {
+  transform: scale(0.97) translateY(1px);
+  transition: transform 50ms ease-out;
+}
+
+/* Number highlight - draws attention to financial data */
+.number-highlight {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 /* Fade the campaign grid when filters are loading */
@@ -193,6 +245,133 @@ button:focus-visible {
 }
 
 /* ─── Blog Article Styles ───────────────────────────────────────────── */
+
+/* Base article typography (replaces @tailwindcss/typography prose classes) */
+.blog-article {
+  max-width: none;
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--foreground);
+}
+
+.dark .blog-article {
+  color: var(--foreground);
+}
+
+/* Headings */
+.blog-article h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.3;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+@media (min-width: 640px) {
+  .blog-article h2 {
+    font-size: 1.875rem;
+  }
+}
+
+.blog-article h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1.4;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-style: italic;
+  color: var(--foreground);
+}
+
+/* Paragraphs */
+.blog-article p {
+  margin-bottom: 1.25rem;
+  line-height: 1.8;
+}
+
+/* Links */
+.blog-article a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  transition: color 150ms;
+}
+
+.blog-article a:hover {
+  opacity: 0.8;
+}
+
+/* Strong & Emphasis */
+.blog-article strong {
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.blog-article em {
+  font-style: italic;
+}
+
+/* Blockquotes */
+.blog-article blockquote {
+  margin: 1.5rem 0;
+  padding: 0.5rem 1rem;
+  border-left: 4px solid var(--primary);
+  background-color: color-mix(in srgb, var(--muted) 30%, transparent);
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+.blog-article blockquote p {
+  margin-bottom: 0.5rem;
+}
+
+.blog-article blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Lists */
+.blog-article ul {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+  list-style-type: disc;
+}
+
+.blog-article ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+  list-style-type: decimal;
+}
+
+.blog-article li {
+  margin: 0.25rem 0;
+  padding-left: 0.375rem;
+}
+
+.blog-article li::marker {
+  color: var(--muted-foreground);
+}
+
+/* Images */
+.blog-article img {
+  margin: 1.5rem 0;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  max-width: 100%;
+  height: auto;
+}
+
+/* Horizontal rules */
+.blog-article hr {
+  margin: 2rem 0;
+  border: none;
+  border-top: 1px solid var(--border);
+}
 
 /* Table of Contents */
 .blog-toc {
@@ -279,6 +458,11 @@ button:focus-visible {
   border-radius: var(--radius);
   text-decoration: none;
   transition: opacity 150ms;
+}
+
+.blog-article .blog-cta-button {
+  color: var(--primary-foreground);
+  text-decoration: none;
 }
 
 .blog-cta-button:hover {

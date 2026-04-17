@@ -1,4 +1,4 @@
-# Keyword Research — Real User Language & Search Data
+# Keyword Research - Real User Language & Search Data
 
 > **Methodology**: Keywords sourced from Reddit discussions (r/GoFundMe, r/povertyfinance, r/personalfinance, r/Assistance, r/Crowdfunding, r/cancer, r/transplant), Google Autocomplete suggestions, and forum post titles. Every keyword below reflects how real people actually type.
 >
@@ -10,7 +10,7 @@
 
 ## Category 1: Medical & Health
 
-### Funder Side (🔴) — People in Medical Crisis
+### Funder Side (🔴) - People in Medical Crisis
 
 **High-urgency "I need help paying" queries:**
 | Keyword | Intent | Source |
@@ -73,7 +73,7 @@
 | how did you raise money for transplant expenses | I | Reddit r/transplant |
 | transplant fundraiser | T | Google Autocomplete |
 
-### Donor Side (🟢) — People Wanting to Help with Medical Bills
+### Donor Side (🟢) - People Wanting to Help with Medical Bills
 
 | Keyword | Intent | Source |
 |---------|--------|--------|
@@ -93,7 +93,7 @@
 
 ## Category 2: Memorial & Funeral
 
-### Funder Side (🔴) — People Who Can't Afford a Funeral
+### Funder Side (🔴) - People Who Can't Afford a Funeral
 
 **"Can't afford" crisis queries:**
 | Keyword | Intent | Source |
@@ -170,7 +170,7 @@
 
 ## Category 3: Emergency & Disaster Relief
 
-### Funder Side (🔴) — People Who Lost Everything
+### Funder Side (🔴) - People Who Lost Everything
 
 | Keyword | Intent | Source |
 |---------|--------|--------|
@@ -207,7 +207,7 @@
 
 ## Category 4: Veterans & Military
 
-### Funder Side (🔴) — Veterans/Military Families Needing Help
+### Funder Side (🔴) - Veterans/Military Families Needing Help
 
 | Keyword | Intent | Source |
 |---------|--------|--------|
@@ -237,7 +237,7 @@
 
 ## Category 5: Education & School
 
-### Funder Side (🔴) — Students/Schools Needing Funds
+### Funder Side (🔴) - Students/Schools Needing Funds
 
 | Keyword | Intent | Source |
 |---------|--------|--------|
@@ -265,7 +265,7 @@
 
 ## Category 6: Faith & Religious
 
-### Funder Side (🔴) — Churches/Missions Needing Funds
+### Funder Side (🔴) - Churches/Missions Needing Funds
 
 | Keyword | Intent | Source |
 |---------|--------|--------|
@@ -301,7 +301,7 @@
 
 ## Category 7: Animals & Pets
 
-### Funder Side (🔴) — Pet Owners Facing Vet Bills
+### Funder Side (🔴) - Pet Owners Facing Vet Bills
 
 | Keyword | Intent | Source |
 |---------|--------|--------|
@@ -335,7 +335,7 @@
 
 ## Category 8: Community & Personal
 
-### Funder Side (🔴) — Community Groups/Individuals Fundraising
+### Funder Side (🔴) - Community Groups/Individuals Fundraising
 
 | Keyword | Intent | Source |
 |---------|--------|--------|
@@ -396,7 +396,7 @@
 
 ## Cross-Category: Platform & Trust Keywords
 
-### Funder Side (🔴) — People Looking for Fundraising Platforms
+### Funder Side (🔴) - People Looking for Fundraising Platforms
 
 | Keyword | Intent | Source |
 |---------|--------|--------|
@@ -423,7 +423,7 @@
 | how to make a successful crowdfunding campaign | I | Google Autocomplete |
 | gofundme success tips | I | Google Autocomplete |
 
-### Donor Side (🟢) — People Looking for Trustworthy Places to Give
+### Donor Side (🟢) - People Looking for Trustworthy Places to Give
 
 | Keyword | Intent | Source |
 |---------|--------|--------|
@@ -446,31 +446,31 @@
 
 Based on the research above, here are the highest-priority content opportunities:
 
-### Tier 1 — High Volume, Low Competition (Publish First)
-1. "how to pay for surgery without insurance" — massive search volume, clear funder intent
-2. "funeral assistance programs [state]" — state-by-state geo-targeting opportunity
-3. "help paying medical bills" — huge volume, many long-tail variants
-4. "how to pay for a funeral with no money" — high urgency, clear pain
-5. "can't afford vet bill what to do" — emotionally driven, high search volume
-6. "gofundme alternatives no fees" — direct competitor capture
-7. "average funeral cost 2025" — informational gateway to conversion
-8. "emergency financial assistance" — high volume, broad funnel
-9. "best fundraising site for medical expenses" — commercial intent, direct conversion
-10. "school fundraiser ideas" — very high volume, broad appeal
+### Tier 1 - High Volume, Low Competition (Publish First)
+1. "how to pay for surgery without insurance" - massive search volume, clear funder intent
+2. "funeral assistance programs [state]" - state-by-state geo-targeting opportunity
+3. "help paying medical bills" - huge volume, many long-tail variants
+4. "how to pay for a funeral with no money" - high urgency, clear pain
+5. "can't afford vet bill what to do" - emotionally driven, high search volume
+6. "gofundme alternatives no fees" - direct competitor capture
+7. "average funeral cost 2025" - informational gateway to conversion
+8. "emergency financial assistance" - high volume, broad funnel
+9. "best fundraising site for medical expenses" - commercial intent, direct conversion
+10. "school fundraiser ideas" - very high volume, broad appeal
 
-### Tier 2 — Medium Volume, Very Low Competition (Quick Wins)
-1. "how to write a gofundme for medical expenses" — funder how-to
-2. "funeral fundraiser wording examples" — template content
-3. "mission trip fundraising letter" — template content
-4. "house fire fundraiser flyer" — template content
-5. "church fundraiser ideas for small churches" — niche audience
-6. "help with vet bills for low income families" — specific audience
-7. "who pays for funeral if deceased has no money" — emotional query
-8. "how to start a fundraiser for someone with cancer" — specific how-to
-9. "organizations that help pay vet bills" — resource list
-10. "best charity for veterans 2025" — annual update content
+### Tier 2 - Medium Volume, Very Low Competition (Quick Wins)
+1. "how to write a gofundme for medical expenses" - funder how-to
+2. "funeral fundraiser wording examples" - template content
+3. "mission trip fundraising letter" - template content
+4. "house fire fundraiser flyer" - template content
+5. "church fundraiser ideas for small churches" - niche audience
+6. "help with vet bills for low income families" - specific audience
+7. "who pays for funeral if deceased has no money" - emotional query
+8. "how to start a fundraiser for someone with cancer" - specific how-to
+9. "organizations that help pay vet bills" - resource list
+10. "best charity for veterans 2025" - annual update content
 
-### Tier 3 — Long-Tail Emotional Keywords (High Conversion Potential)
+### Tier 3 - Long-Tail Emotional Keywords (High Conversion Potential)
 1. "lost everything in fire need help"
 2. "can't afford funeral or cremation"
 3. "i can't afford my medical bills what do i do"

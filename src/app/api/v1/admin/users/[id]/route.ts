@@ -9,6 +9,7 @@ import { refreshDonorScore } from '@/lib/donor-scoring.server';
 import type { ApiError } from '@/types/api';
 import type { UserRole } from '@/types';
 import { notifyRoleChange, notifyAccountDeletion } from '@/lib/notifications';
+import { logError } from '@/lib/errors';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -37,6 +38,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return NextResponse.json(error, { status: 400 });
   }
 
+  try {
   const [user] = await db
     .select({
       id: users.id,
@@ -124,6 +126,14 @@ export async function GET(request: NextRequest, context: RouteContext) {
       hasRecurring: recurringStats.total > 0,
     },
   });
+  } catch (err) {
+    logError(err, 'admin-user-get', { requestId, userId: id });
+    const error: ApiError = {
+      ok: false,
+      error: { code: 'INTERNAL_ERROR', message: 'Failed to load user details', requestId },
+    };
+    return NextResponse.json(error, { status: 500 });
+  }
 }
 
 export async function PUT(request: NextRequest, context: RouteContext) {
@@ -185,6 +195,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     return NextResponse.json(error, { status: 400 });
   }
 
+  try {
   // Verify user exists and get current role for audit
   const [existing] = await db
     .select({ id: users.id, role: users.role, email: users.email, name: users.name })
@@ -238,6 +249,14 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     ok: true,
     data: { id, role: newRole },
   });
+  } catch (err) {
+    logError(err, 'admin-user-role-change', { requestId, userId: id });
+    const error: ApiError = {
+      ok: false,
+      error: { code: 'INTERNAL_ERROR', message: 'Failed to update user role', requestId },
+    };
+    return NextResponse.json(error, { status: 500 });
+  }
 }
 
 export async function PATCH(request: NextRequest, context: RouteContext) {
@@ -280,6 +299,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     );
   }
 
+  try {
   const [existing] = await db
     .select({ id: users.id, preferences: users.preferences })
     .from(users)
@@ -341,10 +361,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   });
 
   return NextResponse.json({ ok: true, data: { id, donorScore: newScore, ...changes } });
+  } catch (err) {
+    logError(err, 'admin-user-profile-update', { requestId, userId: id });
+    return NextResponse.json(
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to update user profile', requestId } } satisfies ApiError,
+      { status: 500 },
+    );
+  }
 }
 
 /**
- * DELETE /api/v1/admin/users/[id] — Delete a user account
+ * DELETE /api/v1/admin/users/[id] - Delete a user account
  * Users with donations are anonymized (soft-delete) to preserve financial records.
  * Users with no donations are hard-deleted.
  */
@@ -377,6 +404,7 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
     );
   }
 
+  try {
   const [user] = await db
     .select({ id: users.id, email: users.email, name: users.name, role: users.role })
     .from(users)
@@ -409,41 +437,43 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
     await notifyAccountDeletion({ userEmail: user.email, userName: user.name ?? '' });
 
     // Soft-delete: anonymize user data, unlink donations
-    await db.update(users).set({
-      name: 'Deleted User',
-      email: `deleted-${id}@lastdonor.org`,
-      passwordHash: null,
-      phone: null,
-      avatarUrl: null,
-      location: null,
-      organizationName: null,
-      address: null,
-      preferences: null,
-      badges: null,
-    }).where(eq(users.id, id));
+    await db.transaction(async (tx) => {
+      await tx.update(users).set({
+        name: 'Deleted User',
+        email: `deleted-${id}@lastdonor.org`,
+        passwordHash: null,
+        phone: null,
+        avatarUrl: null,
+        location: null,
+        organizationName: null,
+        address: null,
+        preferences: null,
+        badges: null,
+      }).where(eq(users.id, id));
 
-    // Nullify userId on donations so they become "guest" donations
-    await db.update(donations).set({ userId: null }).where(eq(donations.userId, id));
+      // Nullify userId on donations so they become "guest" donations
+      await tx.update(donations).set({ userId: null }).where(eq(donations.userId, id));
 
-    // Clean up CRM data
-    await db.delete(interactionLogs).where(eq(interactionLogs.donorId, id));
-    await db.delete(donorRelationships).where(
-      or(eq(donorRelationships.donorId, id), eq(donorRelationships.relatedDonorId, id)),
-    );
+      // Clean up CRM data
+      await tx.delete(interactionLogs).where(eq(interactionLogs.donorId, id));
+      await tx.delete(donorRelationships).where(
+        or(eq(donorRelationships.donorId, id), eq(donorRelationships.relatedDonorId, id)),
+      );
 
-    await db.insert(auditLogs).values({
-      eventType: 'user.anonymized',
-      actorId: session.user?.id ?? null,
-      actorRole: session.user?.role as UserRole,
-      targetType: 'user',
-      targetId: id,
-      severity: 'warning',
-      details: { email: user.email, name: user.name, reason: 'admin_delete_with_donations', donationCount: donationCount.total },
+      await tx.insert(auditLogs).values({
+        eventType: 'user.anonymized',
+        actorId: session.user?.id ?? null,
+        actorRole: session.user?.role as UserRole,
+        targetType: 'user',
+        targetId: id,
+        severity: 'warning',
+        details: { email: user.email, name: user.name, reason: 'admin_delete_with_donations', donationCount: donationCount.total },
+      });
     });
 
     return NextResponse.json({
       ok: true,
-      data: { id, action: 'anonymized', reason: `User has ${donationCount.total} donation(s) — anonymized for financial integrity.` },
+      data: { id, action: 'anonymized', reason: `User has ${donationCount.total} donation(s) - anonymized for financial integrity.` },
     });
   }
 
@@ -451,21 +481,30 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
   // Notify the user BEFORE hard deletion
   await notifyAccountDeletion({ userEmail: user.email, userName: user.name ?? '' });
 
-  await db.delete(interactionLogs).where(eq(interactionLogs.donorId, id));
-  await db.delete(donorRelationships).where(
-    or(eq(donorRelationships.donorId, id), eq(donorRelationships.relatedDonorId, id)),
-  );
-  await db.delete(users).where(eq(users.id, id));
+  await db.transaction(async (tx) => {
+    await tx.delete(interactionLogs).where(eq(interactionLogs.donorId, id));
+    await tx.delete(donorRelationships).where(
+      or(eq(donorRelationships.donorId, id), eq(donorRelationships.relatedDonorId, id)),
+    );
+    await tx.delete(users).where(eq(users.id, id));
 
-  await db.insert(auditLogs).values({
-    eventType: 'user.deleted',
-    actorId: session.user?.id ?? null,
-    actorRole: session.user?.role as UserRole,
-    targetType: 'user',
-    targetId: id,
-    severity: 'warning',
-    details: { email: user.email, name: user.name, role: user.role },
+    await tx.insert(auditLogs).values({
+      eventType: 'user.deleted',
+      actorId: session.user?.id ?? null,
+      actorRole: session.user?.role as UserRole,
+      targetType: 'user',
+      targetId: id,
+      severity: 'warning',
+      details: { email: user.email, name: user.name, role: user.role },
+    });
   });
 
   return NextResponse.json({ ok: true, data: { id, action: 'deleted' } });
+  } catch (err) {
+    logError(err, 'admin-user-delete', { requestId, userId: id });
+    return NextResponse.json(
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to delete user', requestId } } satisfies ApiError,
+      { status: 500 },
+    );
+  }
 }

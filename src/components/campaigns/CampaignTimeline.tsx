@@ -4,7 +4,7 @@ import { formatDistanceToNow, format } from 'date-fns';
 
 interface TimelineEvent {
   id: string;
-  type: 'created' | 'published' | 'paused' | 'resumed' | 'suspended' | 'cancelled' | 'completed' | 'milestone' | 'info_request' | 'fund_released' | 'verified';
+  type: 'created' | 'published' | 'paused' | 'resumed' | 'suspended' | 'cancelled' | 'completed' | 'info_request' | 'fund_released' | 'verified';
   title: string;
   description?: string;
   timestamp: string | Date;
@@ -18,7 +18,6 @@ const EVENT_ICONS: Record<TimelineEvent['type'], { icon: string; color: string }
   suspended: { icon: '🚫', color: 'bg-red-200' },
   cancelled: { icon: '❌', color: 'bg-red-300' },
   completed: { icon: '🎉', color: 'bg-teal-200' },
-  milestone: { icon: '🏆', color: 'bg-amber-200' },
   info_request: { icon: '📋', color: 'bg-blue-200' },
   fund_released: { icon: '💰', color: 'bg-green-200' },
   verified: { icon: '✅', color: 'bg-teal-200' },

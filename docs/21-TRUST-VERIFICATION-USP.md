@@ -1,6 +1,6 @@
-# 21 — Trust, Verification & Accountability USP
+﻿# 21 â€” Trust, Verification & Accountability USP
 
-> **Purpose**: Define LastDonor.org's core Unique Selling Proposition — the most rigorous campaign verification, milestone-based fund release, proactive donor protection, and multi-channel human support system in the crowdfunding industry. This document serves as the exhaustive implementation specification.
+> **Purpose**: Define LastDonor.org's core Unique Selling Proposition â€” the most rigorous campaign verification, milestone-based fund release, proactive donor protection, and multi-channel human support system in the crowdfunding industry. This document serves as the exhaustive implementation specification.
 
 > **Date**: March 27, 2026
 
@@ -12,12 +12,12 @@
 2. [Industry Problem Analysis](#2-industry-problem-analysis)
 3. [Competitive Landscape & Benchmarks](#3-competitive-landscape--benchmarks)
 4. [USP Statement](#4-usp-statement)
-5. [Pillar 1 — Campaign Verification System](#5-pillar-1--campaign-verification-system)
-6. [Pillar 2 — Milestone-Based Fund Release](#6-pillar-2--milestone-based-fund-release)
-7. [Pillar 3 — Campaign Lifecycle Transparency](#7-pillar-3--campaign-lifecycle-transparency)
-8. [Pillar 4 — Donor Protection & Refund System](#8-pillar-4--donor-protection--refund-system)
-9. [Pillar 5 — Admin Autonomy & Campaign Governance](#9-pillar-5--admin-autonomy--campaign-governance)
-10. [Pillar 6 — Multi-Channel Human + AI Support](#10-pillar-6--multi-channel-human--ai-support)
+5. [Pillar 1 â€” Campaign Verification System](#5-pillar-1--campaign-verification-system)
+6. [Pillar 2 â€” Milestone-Based Fund Release](#6-pillar-2--milestone-based-fund-release)
+7. [Pillar 3 â€” Campaign Lifecycle Transparency](#7-pillar-3--campaign-lifecycle-transparency)
+8. [Pillar 4 â€” Donor Protection & Refund System](#8-pillar-4--donor-protection--refund-system)
+9. [Pillar 5 â€” Admin Autonomy & Campaign Governance](#9-pillar-5--admin-autonomy--campaign-governance)
+10. [Pillar 6 â€” Multi-Channel Human + AI Support](#10-pillar-6--multi-channel-human--ai-support)
 11. [Database Schema Changes](#11-database-schema-changes)
 12. [API Specifications](#12-api-specifications)
 13. [Email Templates & Notification Matrix](#13-email-templates--notification-matrix)
@@ -30,7 +30,7 @@
 
 ## 1. Executive Summary
 
-The single greatest weakness of existing crowdfunding platforms is **trust**. Trustpilot ratings reveal a damning pattern: the largest platforms — GoFundMe (3.2★, 57% one-star reviews), JustGiving (2.9★), GiveSendGo (2.7★) — are also the worst-rated. Meanwhile, smaller platforms that prioritize transparency and human support — SpotFund (4.7★), WhyDonate (4.8★), Zeffy (4.5★) — prove that trust-first architecture earns user loyalty. Fake campaigns, misappropriated funds, zero accountability, hidden fees, and opaque fund usage erode donor confidence across the market leaders.
+The single greatest weakness of existing crowdfunding platforms is **trust**. Trustpilot ratings reveal a damning pattern: the largest platforms â€” GoFundMe (3.2â˜…, 57% one-star reviews), JustGiving (2.9â˜…), GiveSendGo (2.7â˜…) â€” are also the worst-rated. Meanwhile, smaller platforms that prioritize transparency and human support â€” SpotFund (4.7â˜…), WhyDonate (4.8â˜…), Zeffy (4.5â˜…) â€” prove that trust-first architecture earns user loyalty. Fake campaigns, misappropriated funds, zero accountability, hidden fees, and opaque fund usage erode donor confidence across the market leaders.
 
 LastDonor.org will differentiate with a **Trust-First Architecture** built on six pillars:
 
@@ -40,43 +40,43 @@ LastDonor.org will differentiate with a **Trust-First Architecture** built on si
 | 2 | **Milestone-Based Fund Release** | Funds are released in 3 phases tied to campaigner-defined milestones with evidence requirements |
 | 3 | **Campaign Lifecycle Transparency** | Real-time status visibility (paused, cancelled, completed) with hover-tooltips, status badges, and donor email updates |
 | 4 | **Donor Protection & Refunds** | Cancelled campaigns trigger automatic full refunds with personalized re-engagement emails |
-| 5 | **Admin Autonomy** | Admin has full campaign governance — delete, pause, suspend, activate, request info — with automated communication |
+| 5 | **Admin Autonomy** | Admin has full campaign governance â€” delete, pause, suspend, activate, request info â€” with automated communication |
 | 6 | **Multi-Channel Human + AI Support** | WhatsApp, email, site chat, phone, and social media support with guaranteed response SLAs |
 
 ---
 
 ## 2. Industry Problem Analysis
 
-### 2.1 The Trust Crisis in Crowdfunding — By the Numbers
+### 2.1 The Trust Crisis in Crowdfunding â€” By the Numbers
 
 Trustpilot data reveals the industry's trust problem in stark terms:
 
 | Platform | Trustpilot Rating | Reviews | 1-Star % | Key Complaint |
 |----------|------------------|---------|----------|---------------|
-| GoFundMe | 3.2★ | 24,000+ | 57% | Fund withdrawal delays, hidden tip defaults, account suspensions |
-| JustGiving | 2.9★ | 7,000+ | ~60% | 17% tip slider that won't go to zero, owned by Blackbaud ($3B+ company, £31M profit) |
-| GiveSendGo | 2.7★ | 615+ | ~65% | Content moderation failures, confusing "send" terminology, no fraud prevention |
-| Beggingmoney | 2.3★ | 83 | ~70% | Outright scam reports |
+| GoFundMe | 3.2â˜… | 24,000+ | 57% | Fund withdrawal delays, hidden tip defaults, account suspensions |
+| JustGiving | 2.9â˜… | 7,000+ | ~60% | 17% tip slider that won't go to zero, owned by Blackbaud ($3B+ company, Â£31M profit) |
+| GiveSendGo | 2.7â˜… | 615+ | ~65% | Content moderation failures, confusing "send" terminology, no fraud prevention |
+| Beggingmoney | 2.3â˜… | 83 | ~70% | Outright scam reports |
 
-**Contrast — platforms that get trust RIGHT:**
+**Contrast â€” platforms that get trust RIGHT:**
 
 | Platform | Trustpilot Rating | Reviews | 5-Star % | Why They Win |
 |----------|------------------|---------|----------|-------------|
-| **WhyDonate** | **4.8★** | 315+ | 88% | Named agents (Akshit, Vaibhav, Rushikesh, Sonali), WhatsApp support, 100% negative review response rate |
-| **SpotFund** | **4.7★** | 1,650+ | 88% | 0% platform fee, next-day payouts, proactive human support, no AI gatekeeping |
-| **Zeffy** | **4.5★** | 3,000+ | ~85% | 100% free (no fees at all, even CC), optional donor tips fund the platform |
-| **Givebutter** | **4.3★** | G2 #1 rated | ~80% | Free CRM + fundraising tools, 24/7 live chat support |
-| **GoGetFunding** | **4.3★** | 429 | ~75% | Simple setup, reliable payouts |
+| **WhyDonate** | **4.8â˜…** | 315+ | 88% | Named agents (Akshit, Vaibhav, Rushikesh, Sonali), WhatsApp support, 100% negative review response rate |
+| **SpotFund** | **4.7â˜…** | 1,650+ | 88% | 0% platform fee, next-day payouts, proactive human support, no AI gatekeeping |
+| **Zeffy** | **4.5â˜…** | 3,000+ | ~85% | 100% free (no fees at all, even CC), optional donor tips fund the platform |
+| **Givebutter** | **4.3â˜…** | G2 #1 rated | ~80% | Free CRM + fundraising tools, 24/7 live chat support |
+| **GoGetFunding** | **4.3â˜…** | 429 | ~75% | Simple setup, reliable payouts |
 
 ### 2.2 The 5 Universal Pain Points (from Trustpilot, Reddit, SiteJabber)
 
 | # | Pain Point | Verbatim Evidence | Platforms Affected |
 |---|-----------|-------------------|-------------------|
-| 1 | **Hidden/deceptive fees** | *"GoFundMe defaulted me into a recurring 'tip' I never agreed to"* — Reddit r/personalfinance | GoFundMe, JustGiving |
-| 2 | **Fund withdrawal nightmares** | *"My campaign raised $5,000 but GoFundMe held my funds for 3 weeks wanting more documents"* — Trustpilot | GoFundMe, GiveSendGo |
-| 3 | **Zero customer support** | *"GiveSendGo has literally no phone number or chat. You submit a form and pray"* — SiteJabber | GiveSendGo, GoFundMe |
-| 4 | **Scam proliferation** | *"I donated $200 to a campaign for a family that turned out to not exist. GoFundMe took weeks to investigate"* — Trustpilot | GoFundMe, GiveSendGo |
-| 5 | **Lack of transparency** | *"Where does my money actually go? No updates, no proof, just 'trust us'"* — Reddit r/charity | Industry-wide |
+| 1 | **Hidden/deceptive fees** | *"GoFundMe defaulted me into a recurring 'tip' I never agreed to"* â€” Reddit r/personalfinance | GoFundMe, JustGiving |
+| 2 | **Fund withdrawal nightmares** | *"My campaign raised $5,000 but GoFundMe held my funds for 3 weeks wanting more documents"* â€” Trustpilot | GoFundMe, GiveSendGo |
+| 3 | **Zero customer support** | *"GiveSendGo has literally no phone number or chat. You submit a form and pray"* â€” SiteJabber | GiveSendGo, GoFundMe |
+| 4 | **Scam proliferation** | *"I donated $200 to a campaign for a family that turned out to not exist. GoFundMe took weeks to investigate"* â€” Trustpilot | GoFundMe, GiveSendGo |
+| 5 | **Lack of transparency** | *"Where does my money actually go? No updates, no proof, just 'trust us'"* â€” Reddit r/charity | Industry-wide |
 
 ### 2.3 Campaigner Pain Points (Often Overlooked)
 
@@ -92,14 +92,14 @@ Trustpilot data reveals the industry's trust problem in stark terms:
 
 Based on analysis of donor trust research (Nonprofit Source, Charity Navigator donor surveys, BBB Wise Giving Alliance) and Trustpilot review sentiment:
 
-1. **Transparency** — 73% of donors say "knowing exactly how funds are used" is their #1 concern
-2. **Accountability** — 68% want regular updates with evidence of fund usage
-3. **Verification** — 61% would donate more if campaigns were independently verified
-4. **Refund assurance** — 82% say guaranteed refund on fraudulent campaigns would increase confidence
-5. **Human contact** — 56% want the ability to reach a real person, not just a chatbot (SpotFund and WhyDonate prove this works — *"It was so refreshing to communicate with a real person who was responsive and genuinely helpful"* — SpotFund Trustpilot)
-6. **Ongoing updates** — 77% want to see progress updates after donating
-7. **No hidden fees** — *"I love how 100% of your donation goes directly to the cause"* — SpotFund Trustpilot (most-praised feature of high-rated platforms)
-8. **Fast payouts** — *"Funds available 2 business days after closing fundraiser"* — SpotFund Trustpilot; WhyDonate offers instant payouts
+1. **Transparency** â€” 73% of donors say "knowing exactly how funds are used" is their #1 concern
+2. **Accountability** â€” 68% want regular updates with evidence of fund usage
+3. **Verification** â€” 61% would donate more if campaigns were independently verified
+4. **Refund assurance** â€” 82% say guaranteed refund on fraudulent campaigns would increase confidence
+5. **Human contact** â€” 56% want the ability to reach a real person, not just a chatbot (SpotFund and WhyDonate prove this works â€” *"It was so refreshing to communicate with a real person who was responsive and genuinely helpful"* â€” SpotFund Trustpilot)
+6. **Ongoing updates** â€” 77% want to see progress updates after donating
+7. **No hidden fees** â€” *"I love how 100% of your donation goes directly to the cause"* â€” SpotFund Trustpilot (most-praised feature of high-rated platforms)
+8. **Fast payouts** â€” *"Funds available 2 business days after closing fundraiser"* â€” SpotFund Trustpilot; WhyDonate offers instant payouts
 
 ---
 
@@ -107,17 +107,17 @@ Based on analysis of donor trust research (Nonprofit Source, Charity Navigator d
 
 ### 3.1 Platform-by-Platform Analysis
 
-#### GoFundMe (Market Leader by Volume — ~$30B raised, BUT 3.2★ Trustpilot)
+#### GoFundMe (Market Leader by Volume â€” ~$30B raised, BUT 3.2â˜… Trustpilot)
 
-> **Critical context**: GoFundMe is the *largest* platform by volume, but NOT the most reputable. With a 3.2★ Trustpilot rating and 57% one-star reviews, it represents what NOT to do with trust and support. The platforms to learn from are SpotFund (4.7★) and WhyDonate (4.8★).
+> **Critical context**: GoFundMe is the *largest* platform by volume, but NOT the most reputable. With a 3.2â˜… Trustpilot rating and 57% one-star reviews, it represents what NOT to do with trust and support. The platforms to learn from are SpotFund (4.7â˜…) and WhyDonate (4.8â˜…).
 | Feature | Implementation | Gap |
 |---------|---------------|-----|
-| Verification | GoFundMe Guarantee — reactive (post-fraud detection), reviews after reports | No proactive verification before campaign launch |
+| Verification | GoFundMe Guarantee â€” reactive (post-fraud detection), reviews after reports | No proactive verification before campaign launch |
 | Fund Release | Immediate transfer to campaigner bank account | Zero milestone accountability |
 | Refunds | Case-by-case review; 7-14 day processing | No automatic refund on cancellation |
-| Status Transparency | Active / Ended — two states only | No paused, under-review, or suspended states |
+| Status Transparency | Active / Ended â€” two states only | No paused, under-review, or suspended states |
 | Support | Email-only + help center articles; no phone or chat | No human-first support |
-| Updates | Optional — campaigners choose whether to post updates | No update enforcement |
+| Updates | Optional â€” campaigners choose whether to post updates | No update enforcement |
 | **GoFundMe Guarantee** | Refunds donors if fraud proven; covers up to $1,000 per donation | Reactive, not preventive; limited coverage |
 
 #### GiveSendGo (Faith-based alternative)
@@ -125,7 +125,7 @@ Based on analysis of donor trust research (Nonprofit Source, Charity Navigator d
 |---------|---------------|-----|
 | Verification | Self-attestation only; no document verification | Essentially no verification |
 | Fund Release | Immediate; uses Stripe Connect for direct payouts | Zero milestone accountability |
-| Refunds | "If a campaign is found to be fraudulent... funds may be returned" — no guarantee | Vague refund policy |
+| Refunds | "If a campaign is found to be fraudulent... funds may be returned" â€” no guarantee | Vague refund policy |
 | Support | Email contact form only | No live support channels |
 | Transparency | Active / Completed | Minimal status granularity |
 
@@ -145,7 +145,7 @@ Based on analysis of donor trust research (Nonprofit Source, Charity Navigator d
 | Support | Dedicated account manager for vetted orgs | Not available to individual donors |
 | Transparency | Detailed project reports required quarterly | Best-in-class for nonprofits, not applicable to individuals |
 
-#### Ketto (India — largest Asian platform)
+#### Ketto (India â€” largest Asian platform)
 | Feature | Implementation | Gap |
 |---------|---------------|-----|
 | Verification | Aadhaar-based identity verification (India-specific) | Limited to Indian campaigns |
@@ -153,7 +153,7 @@ Based on analysis of donor trust research (Nonprofit Source, Charity Navigator d
 | Support | Phone + WhatsApp + email | Best multi-channel support in the industry |
 | Refunds | 7-day refund window; active support via phone | Time-limited refund window |
 
-#### Milaap (India — social impact)
+#### Milaap (India â€” social impact)
 | Feature | Implementation | Gap |
 |---------|---------------|-----|
 | Verification | Hospital verification for medical campaigns; ID verification for all | Strongest individual verification among Asian platforms |
@@ -161,7 +161,7 @@ Based on analysis of donor trust research (Nonprofit Source, Charity Navigator d
 | Support | Dedicated fundraising expert assigned per campaign | Best human-touch model |
 | Updates | Mandatory updates for verified campaigns | Updates required but not tied to fund release |
 
-#### SpotFund (Highest-Rated US Platform — 4.7★, 1,650+ reviews)
+#### SpotFund (Highest-Rated US Platform â€” 4.7â˜…, 1,650+ reviews)
 
 > **Model platform**: SpotFund proves that 0% platform fees + proactive human support + fast payouts = exceptional trust scores. This is the primary US-market benchmark for LastDonor.
 
@@ -169,8 +169,8 @@ Based on analysis of donor trust research (Nonprofit Source, Charity Navigator d
 |---------|---------------|---------------|
 | **Fees** | 0% platform fee; only CC processing (2.9% + $0.30); optional donor tip funds the platform | Transparency about fees is the #1 trust driver. Donors repeatedly praise "100% goes to the cause" |
 | **Payouts** | Next-business-day payouts; campaigners can request payout while campaign is still active | Fast payouts eliminate the #2 pain point (fund withdrawal delays). *"Deposit in the bank within just one business day!"* |
-| **Support** | Human-first email + SMS support; named agents (Maria Tillerson); proactive outreach to new campaigners | *"As soon as I created the funding page, someone from customer service emailed me and guided me through the process"* — SpotFund IS the model for proactive support |
-| **AI Policy** | No AI gatekeeping; human agents handle all issues | *"Customer service is one of the best and I don't have to deal with AI"* — real human interaction is what donors and campaigners value most |
+| **Support** | Human-first email + SMS support; named agents (Maria Tillerson); proactive outreach to new campaigners | *"As soon as I created the funding page, someone from customer service emailed me and guided me through the process"* â€” SpotFund IS the model for proactive support |
+| **AI Policy** | No AI gatekeeping; human agents handle all issues | *"Customer service is one of the best and I don't have to deal with AI"* â€” real human interaction is what donors and campaigners value most |
 | **Verification** | Basic identity verification; campaigns can be paused for review | Weakness: no document-backed story verification. LastDonor can surpass with T1/T2 system |
 | **Refunds** | Case-by-case handling | Weakness: no automatic refund guarantee. LastDonor's automatic refund on cancellation is a clear differentiator |
 | **Transparency** | Campaign page shows real-time donation tracking, optional donor tips clearly labeled | *"I love how you can watch the total go up and how they state about all the fees being credit card processing"* |
@@ -184,15 +184,15 @@ SpotFund weaknesses that LastDonor addresses:
 - Some users report scam campaigns not caught quickly enough: *"They need to focus more on spotfraud"*
 - Limited support channels (email + SMS only, no WhatsApp/chat/phone)
 
-#### WhyDonate (Highest-Rated Global Platform — 4.8★, 315 reviews, 100% Negative Review Response)
+#### WhyDonate (Highest-Rated Global Platform â€” 4.8â˜…, 315 reviews, 100% Negative Review Response)
 
 > **Model platform**: WhyDonate demonstrates that named human agents, multi-channel support (especially WhatsApp), and 100% review engagement creates the highest trust in the industry. Founded in 2012 (Amsterdam), serving 80,000+ organizations in 19 languages.
 
 | Feature | Implementation | What We Learn |
 |---------|---------------|---------------|
-| **Fees** | 0% platform fee; payment processing only (1.9% + €0.25 for cards; €0.35 for iDEAL/Bancontact); voluntary donor tip | Lowest processing fees among major platforms. Transparent comparison table on their fees page |
+| **Fees** | 0% platform fee; payment processing only (1.9% + â‚¬0.25 for cards; â‚¬0.35 for iDEAL/Bancontact); voluntary donor tip | Lowest processing fees among major platforms. Transparent comparison table on their fees page |
 | **Support** | Multi-channel: WhatsApp, live chat, email, scheduled phone appointments; 7 days/week 9-5 CET | *"Very responsive. My request was sent via WhatsApp after working hours. Nevertheless I received a confirmation the next morning"* |
-| **Named agents** | Real names in reviews: Akshit, Vaibhav, Rushikesh, Sonali, Anirban — customers reference them by name | *"I am so grateful for Vaibhav!"*, *"Akshit provided outstanding support"* — this personal touch is WHY they achieve 4.8★ |
+| **Named agents** | Real names in reviews: Akshit, Vaibhav, Rushikesh, Sonali, Anirban â€” customers reference them by name | *"I am so grateful for Vaibhav!"*, *"Akshit provided outstanding support"* â€” this personal touch is WHY they achieve 4.8â˜… |
 | **Negative review response** | **100% response rate** to negative reviews typically within 48 hours | Industry-best practice. Even negative reviewers update their reviews upward after responses |
 | **Global reach** | 19 languages, 29 currencies, operates across EU/global | *"For everyone, everywhere in the world, in their own language"* |
 | **Payouts** | Instant payouts, automatic weekly or monthly payout options | Flexible payout schedules eliminate friction |
@@ -211,11 +211,11 @@ WhyDonate weaknesses that LastDonor addresses:
 
 | Platform | Rating | Reviews | Model | Key Innovation |
 |----------|--------|---------|-------|---------------|
-| **Zeffy** | 4.5★ | 3,000+ | 100% free for nonprofits (zero fees — no CC fees, no platform fee, nothing) | Funded entirely by optional donor tips. Proves 100% free model is viable for nonprofits. Includes CRM, ticketing, auctions, raffles |
-| **Givebutter** | 4.3★ | G2 #1 | Free core + Givebutter Plus ($29/mo) | #1 rated on G2 for fundraising, donor management, and nonprofit CRM. 24/7 live chat. Automated workflows. Broadest free feature set |
-| **GoGetFunding** | 4.3★ | 429 | 4% platform fee + 2.9% processing | Simple, reliable, global. Higher fees but good reputation |
-| **4fund.com** | 4.1★ | 361 | European-focused | Strong in Central/Eastern Europe. Simple UX |
-| **Crowdfunder UK** | 4.3★ | limited | UK-focused | Community-driven, local impact campaigns |
+| **Zeffy** | 4.5â˜… | 3,000+ | 100% free for nonprofits (zero fees â€” no CC fees, no platform fee, nothing) | Funded entirely by optional donor tips. Proves 100% free model is viable for nonprofits. Includes CRM, ticketing, auctions, raffles |
+| **Givebutter** | 4.3â˜… | G2 #1 | Free core + Givebutter Plus ($29/mo) | #1 rated on G2 for fundraising, donor management, and nonprofit CRM. 24/7 live chat. Automated workflows. Broadest free feature set |
+| **GoGetFunding** | 4.3â˜… | 429 | 4% platform fee + 2.9% processing | Simple, reliable, global. Higher fees but good reputation |
+| **4fund.com** | 4.1â˜… | 361 | European-focused | Strong in Central/Eastern Europe. Simple UX |
+| **Crowdfunder UK** | 4.3â˜… | limited | UK-focused | Community-driven, local impact campaigns |
 
 ### 3.2 Best-in-Class Features We Will Adopt
 
@@ -225,23 +225,23 @@ WhyDonate weaknesses that LastDonor addresses:
 | **Next-day payouts** | SpotFund (next business day) | Match next-business-day payouts for approved milestones |
 | **Proactive human support outreach** | SpotFund (emails new campaigners proactively) | Auto-assign support agent on campaign creation; proactive check-in at key milestones |
 | **Named support agents** | WhyDonate (Akshit, Vaibhav, etc. referenced by name in reviews) | Support agents use real names; build personal relationships with campaigners |
-| **Multi-channel support including WhatsApp** | WhyDonate (WhatsApp + chat + email + phone) + Ketto | WhatsApp + email + site chat + phone + social media — all with human agents |
+| **Multi-channel support including WhatsApp** | WhyDonate (WhatsApp + chat + email + phone) + Ketto | WhatsApp + email + site chat + phone + social media â€” all with human agents |
 | **100% negative review response** | WhyDonate (100% response rate, < 48h) | Commit to responding to every Trustpilot review within 24 hours |
 | **Document-based verification** | GlobalGiving + Milaap | Apply to ALL campaigns, not just nonprofits/medical |
 | **Milestone fund release** | GlobalGiving (orgs only) | Extend to individual campaigns with 3-phase system |
 | **Dedicated human support** | Milaap (fundraising expert) + SpotFund (proactive agents) | Assign verification auditor + support agent per campaign |
-| **Automatic refund guarantee** | GoFundMe Guarantee (reactive, limited to $1,000) | Proactive — automatic refund on ALL cancellations, ANY amount, no questions asked |
+| **Automatic refund guarantee** | GoFundMe Guarantee (reactive, limited to $1,000) | Proactive â€” automatic refund on ALL cancellations, ANY amount, no questions asked |
 | **Mandatory progress updates** | Milaap | Tie updates to milestone evidence for fund release |
-| **Campaign status transparency** | **None** (industry gap — even SpotFund/WhyDonate lack this) | 8+ campaign states with hover-tooltips, donor email updates |
+| **Campaign status transparency** | **None** (industry gap â€” even SpotFund/WhyDonate lack this) | 8+ campaign states with hover-tooltips, donor email updates |
 | **After-hours support** | WhyDonate (WhatsApp after hours, confirmed next morning) | WhatsApp available 24/7 with AI triage + human follow-up within 4 hours |
 
-### 3.3 Our Unique Differentiators (What NO Competitor Does — Including SpotFund & WhyDonate)
+### 3.3 Our Unique Differentiators (What NO Competitor Does â€” Including SpotFund & WhyDonate)
 
 | # | Differentiator | Description | Even SpotFund & WhyDonate Don't Do This |
 |---|---------------|-------------|----------------------------------------|
 | 1 | **Pre-launch document verification for ALL campaigns** | No platform verifies individual campaigns before launch with supporting evidence; we require identity documents + story proof | SpotFund: basic ID only. WhyDonate: Stripe identity only. Neither verifies the campaign *story* |
 | 2 | **3-phase milestone-based fund release** | No platform ties fund disbursement to campaigner evidence milestones for individual campaigns | Both release funds without milestone accountability |
-| 3 | **Automatic full refund on cancellation** | No platform guarantees automatic refund to all donors when a campaign is cancelled — no cap, no questions | GoFundMe has a $1,000 cap. SpotFund/WhyDonate handle case-by-case |
+| 3 | **Automatic full refund on cancellation** | No platform guarantees automatic refund to all donors when a campaign is cancelled â€” no cap, no questions | GoFundMe has a $1,000 cap. SpotFund/WhyDonate handle case-by-case |
 | 4 | **Granular campaign states with public transparency** | No platform shows paused/under-review/suspended states to the public with explanatory tooltips | All competitors: "active" or "ended" only |
 | 5 | **Proactive donor email lifecycle** | No platform emails donors at every status change with evidence and alternative campaigns | SpotFund proactively supports campaigners, but not donors |
 | 6 | **Admin info-request with enforced response deadline** | No platform has a formal information request flow with automated escalation and campaign suspension | All competitors handle verification ad-hoc |
@@ -255,14 +255,14 @@ WhyDonate weaknesses that LastDonor addresses:
 > **"Every Campaign Verified. Every Dollar Accountable. Every Donor Protected."**
 
 ### Elevator Pitch (30 seconds)
-> LastDonor.org is the only crowdfunding platform where every campaign is document-verified by human auditors before it goes live, funds are released in three milestone-based phases tied to real evidence, and donors receive automatic full refunds if a campaign is cancelled — with real-time transparency into every campaign's status and multi-channel human support available 24/7.
+> LastDonor.org is the only crowdfunding platform where every campaign is document-verified by human auditors before it goes live, funds are released in three milestone-based phases tied to real evidence, and donors receive automatic full refunds if a campaign is cancelled â€” with real-time transparency into every campaign's status and multi-channel human support available 24/7.
 
 ### Trust Guarantee Statement (for the site)
-> **The LastDonor Trust Guarantee**: We verify every campaign with real documents. We release funds only when campaigners prove progress. If we cancel a campaign, you get a full refund — no questions asked. Your generosity will never fund an unverified cause.
+> **The LastDonor Trust Guarantee**: We verify every campaign with real documents. We release funds only when campaigners prove progress. If we cancel a campaign, you get a full refund â€” no questions asked. Your generosity will never fund an unverified cause.
 
 ---
 
-## 5. Pillar 1 — Campaign Verification System
+## 5. Pillar 1 â€” Campaign Verification System
 
 ### 5.1 Verification Tiers
 
@@ -270,12 +270,12 @@ We introduce a **3-tier verification system** replacing the current simple `unve
 
 | Tier | Name | Requirements | Badge | Trust Level |
 |------|------|-------------|-------|-------------|
-| **T0** | Unverified | Campaign just submitted; no review started | ⚪ Gray "Pending Review" | Not visible to public |
-| **T1** | Identity Verified | Campaigner identity confirmed via government ID + selfie match | 🔵 Blue "ID Verified" | Can be published but funds held |
-| **T2** | Story Verified | Supporting documents from reputable authorities confirm the campaign story | 🟢 Green "Fully Verified" | Funds released per milestones |
-| **TX** | Verification Failed | Documents rejected or identity mismatch | 🔴 Red "Verification Failed" | Campaign rejected; cannot be published |
+| **T0** | Unverified | Campaign just submitted; no review started | âšª Gray "Pending Review" | Not visible to public |
+| **T1** | Identity Verified | Campaigner identity confirmed via government ID + selfie match | ðŸ”µ Blue "ID Verified" | Can be published but funds held |
+| **T2** | Story Verified | Supporting documents from reputable authorities confirm the campaign story | ðŸŸ¢ Green "Fully Verified" | Funds released per milestones |
+| **TX** | Verification Failed | Documents rejected or identity mismatch | ðŸ”´ Red "Verification Failed" | Campaign rejected; cannot be published |
 
-### 5.2 Required Documents — By Campaign Category
+### 5.2 Required Documents â€” By Campaign Category
 
 | Category | Identity Documents (T1) | Story Documents (T2) |
 |----------|------------------------|---------------------|
@@ -292,76 +292,76 @@ We introduce a **3-tier verification system** replacing the current simple `unve
 
 ```
 Step 1: CAMPAIGN SUBMISSION
-├── Campaigner fills out Share Your Story form
-├── Uploads: hero image, story, goal amount, category, impact tiers
-├── Defines 3 milestones with evidence requirements (see Pillar 2)
-├── Status: draft | Verification: submitted_for_review
-├── System: Creates in-app notification for admin + email alert
-└── CTA shown to campaigner: "Upload Verification Documents"
+â”œâ”€â”€ Campaigner fills out Share Your Story form
+â”œâ”€â”€ Uploads: hero image, story, goal amount, category, impact tiers
+â”œâ”€â”€ Defines 3 milestones with evidence requirements (see Pillar 2)
+â”œâ”€â”€ Status: draft | Verification: submitted_for_review
+â”œâ”€â”€ System: Creates in-app notification for admin + email alert
+â””â”€â”€ CTA shown to campaigner: "Upload Verification Documents"
 
 Step 2: DOCUMENT UPLOAD
-├── Campaigner navigates to "My Campaigns > [Campaign] > Verification"
-├── Uploads required documents per category (see table above)
-├── Each document: file (PDF/JPG/PNG, max 10MB), type, description
-├── System: Stores in secure encrypted storage (S3 + server-side encryption)
-├── Status: draft | Verification: documents_uploaded
-└── Admin notification: "Campaign '[title]' has documents ready for review"
+â”œâ”€â”€ Campaigner navigates to "My Campaigns > [Campaign] > Verification"
+â”œâ”€â”€ Uploads required documents per category (see table above)
+â”œâ”€â”€ Each document: file (PDF/JPG/PNG, max 10MB), type, description
+â”œâ”€â”€ System: Stores in secure encrypted storage (S3 + server-side encryption)
+â”œâ”€â”€ Status: draft | Verification: documents_uploaded
+â””â”€â”€ Admin notification: "Campaign '[title]' has documents ready for review"
 
 Step 3: AUDITOR REVIEW (Admin Panel)
-├── Admin navigates to Admin > Campaigns > Verification Queue
-├── Views submitted documents alongside campaign details
-├── Auditor checklist (per document):
-│   ☐ Document is legible and not altered
-│   ☐ Document is from a reputable source/authority
-│   ☐ Names match across all documents and campaign
-│   ☐ Dates are recent and relevant
-│   ☐ Information corroborates campaign story
-├── Auditor actions:
-│   ✅ APPROVE T1 (Identity Verified) — if ID + selfie match
-│   ✅ APPROVE T2 (Fully Verified) — if all story documents check out
-│   ❌ REJECT — with mandatory reason selection + free-text explanation
-│   ⏸️ REQUEST MORE INFO — specify what additional documents/info needed
-└── All actions logged in audit trail with timestamp, actor, notes
+â”œâ”€â”€ Admin navigates to Admin > Campaigns > Verification Queue
+â”œâ”€â”€ Views submitted documents alongside campaign details
+â”œâ”€â”€ Auditor checklist (per document):
+â”‚   â˜ Document is legible and not altered
+â”‚   â˜ Document is from a reputable source/authority
+â”‚   â˜ Names match across all documents and campaign
+â”‚   â˜ Dates are recent and relevant
+â”‚   â˜ Information corroborates campaign story
+â”œâ”€â”€ Auditor actions:
+â”‚   âœ… APPROVE T1 (Identity Verified) â€” if ID + selfie match
+â”‚   âœ… APPROVE T2 (Fully Verified) â€” if all story documents check out
+â”‚   âŒ REJECT â€” with mandatory reason selection + free-text explanation
+â”‚   â¸ï¸ REQUEST MORE INFO â€” specify what additional documents/info needed
+â””â”€â”€ All actions logged in audit trail with timestamp, actor, notes
 
 Step 4a: APPROVAL PATH
-├── T1 Approved:
-│   ├── Verification: identity_verified
-│   ├── Campaign can now be published (admin activates)
-│   ├── Blue "ID Verified" badge shown on campaign page
-│   ├── Funds held until T2 achieved (cannot be withdrawn)
-│   └── Email to campaigner: "Your identity is verified! Complete story verification to unlock fund release."
-├── T2 Approved:
-│   ├── Verification: fully_verified
-│   ├── Green "Fully Verified" badge shown on campaign page
-│   ├── Milestone-based fund release activated
-│   └── Email to campaigner: "Your campaign is fully verified! Funds will be released per your milestones."
+â”œâ”€â”€ T1 Approved:
+â”‚   â”œâ”€â”€ Verification: identity_verified
+â”‚   â”œâ”€â”€ Campaign can now be published (admin activates)
+â”‚   â”œâ”€â”€ Blue "ID Verified" badge shown on campaign page
+â”‚   â”œâ”€â”€ Funds held until T2 achieved (cannot be withdrawn)
+â”‚   â””â”€â”€ Email to campaigner: "Your identity is verified! Complete story verification to unlock fund release."
+â”œâ”€â”€ T2 Approved:
+â”‚   â”œâ”€â”€ Verification: fully_verified
+â”‚   â”œâ”€â”€ Green "Fully Verified" badge shown on campaign page
+â”‚   â”œâ”€â”€ Milestone-based fund release activated
+â”‚   â””â”€â”€ Email to campaigner: "Your campaign is fully verified! Funds will be released per your milestones."
 
 Step 4b: REJECTION PATH
-├── Verification: rejected
-├── Status remains: draft (cannot be published)
-├── Email to campaigner with:
-│   ├── Specific rejection reason(s)
-│   ├── Which documents failed and why
-│   ├── Option to re-submit with corrected documents
-│   └── Support contact information
-├── Campaigner can re-upload and re-submit (up to 3 attempts)
-└── After 3 rejections → campaign permanently rejected, escalated to admin review
+â”œâ”€â”€ Verification: rejected
+â”œâ”€â”€ Status remains: draft (cannot be published)
+â”œâ”€â”€ Email to campaigner with:
+â”‚   â”œâ”€â”€ Specific rejection reason(s)
+â”‚   â”œâ”€â”€ Which documents failed and why
+â”‚   â”œâ”€â”€ Option to re-submit with corrected documents
+â”‚   â””â”€â”€ Support contact information
+â”œâ”€â”€ Campaigner can re-upload and re-submit (up to 3 attempts)
+â””â”€â”€ After 3 rejections â†’ campaign permanently rejected, escalated to admin review
 
 Step 4c: REQUEST MORE INFO PATH
-├── Verification: info_requested
-├── Admin specifies: what's needed, deadline (default: 7 days)
-├── In-app notification + email to campaigner:
-│   ├── "Your campaign requires additional information"
-│   ├── Specific items requested
-│   ├── Deadline with countdown
-│   └── Upload link
-├── Campaigner provides requested info
-├── System: Verification returns to documents_uploaded, auditor re-reviews
-├── If deadline passes without response:
-│   ├── Day 7: Reminder email + notification ("2 days remaining")
-│   ├── Day 9: Final warning ("Response overdue — campaign may be suspended")
-│   ├── Day 14: Auto-suspend campaign, notify admin
-│   └── Admin decides: extend deadline, reject, or close
+â”œâ”€â”€ Verification: info_requested
+â”œâ”€â”€ Admin specifies: what's needed, deadline (default: 7 days)
+â”œâ”€â”€ In-app notification + email to campaigner:
+â”‚   â”œâ”€â”€ "Your campaign requires additional information"
+â”‚   â”œâ”€â”€ Specific items requested
+â”‚   â”œâ”€â”€ Deadline with countdown
+â”‚   â””â”€â”€ Upload link
+â”œâ”€â”€ Campaigner provides requested info
+â”œâ”€â”€ System: Verification returns to documents_uploaded, auditor re-reviews
+â”œâ”€â”€ If deadline passes without response:
+â”‚   â”œâ”€â”€ Day 7: Reminder email + notification ("2 days remaining")
+â”‚   â”œâ”€â”€ Day 9: Final warning ("Response overdue â€” campaign may be suspended")
+â”‚   â”œâ”€â”€ Day 14: Auto-suspend campaign, notify admin
+â”‚   â””â”€â”€ Admin decides: extend deadline, reject, or close
 ```
 
 ### 5.4 Verification Status Enum (Expanded)
@@ -373,12 +373,12 @@ Step 4c: REQUEST MORE INFO PATH
 | Status | Description | Campaigner Visibility | Public Visibility |
 |--------|-------------|----------------------|-------------------|
 | `submitted_for_review` | Campaign submitted, awaiting document upload | "Upload your verification documents" | Not visible (draft) |
-| `documents_uploaded` | Documents received, in auditor queue | "Under review — we'll update you within 48 hours" | Not visible (draft) |
-| `identity_verified` | T1 passed — ID confirmed | "Identity verified ✓ — Complete story verification" | 🔵 "ID Verified" badge |
-| `fully_verified` | T2 passed — story + identity confirmed | "Fully Verified ✓" | 🟢 "Fully Verified" badge |
-| `info_requested` | Auditor needs more info/documents | "Action Required: Provide additional information by [date]" | Not visible or shows ⏸️ |
-| `rejected` | Documents did not pass review | "Verification unsuccessful — [reason]. You may resubmit." | Not visible (draft) |
-| `suspended` | Deadline passed without response or investigation underway | "Campaign suspended — contact support" | 🟠 "Under Review" |
+| `documents_uploaded` | Documents received, in auditor queue | "Under review â€” we'll update you within 48 hours" | Not visible (draft) |
+| `identity_verified` | T1 passed â€” ID confirmed | "Identity verified âœ“ â€” Complete story verification" | ðŸ”µ "ID Verified" badge |
+| `fully_verified` | T2 passed â€” story + identity confirmed | "Fully Verified âœ“" | ðŸŸ¢ "Fully Verified" badge |
+| `info_requested` | Auditor needs more info/documents | "Action Required: Provide additional information by [date]" | Not visible or shows â¸ï¸ |
+| `rejected` | Documents did not pass review | "Verification unsuccessful â€” [reason]. You may resubmit." | Not visible (draft) |
+| `suspended` | Deadline passed without response or investigation underway | "Campaign suspended â€” contact support" | ðŸŸ  "Under Review" |
 
 ### 5.5 Document Storage & Security
 
@@ -395,7 +395,7 @@ Step 4c: REQUEST MORE INFO PATH
 
 ---
 
-## 6. Pillar 2 — Milestone-Based Fund Release
+## 6. Pillar 2 â€” Milestone-Based Fund Release
 
 ### 6.1 Overview
 
@@ -415,25 +415,25 @@ At campaign creation, the campaigner fills out for each milestone:
 
 ```
 Milestone 1: Initial Steps
-├── Title: (e.g., "Hospital Admission & Initial Treatment")
-├── Description: (e.g., "Admit patient and begin chemotherapy cycle 1")
-├── Evidence type: [document | photo | receipt | official_letter | other]
-├── Estimated completion: (date)
-└── Fund percentage: 30% (system default, can be adjusted 20-40%)
+â”œâ”€â”€ Title: (e.g., "Hospital Admission & Initial Treatment")
+â”œâ”€â”€ Description: (e.g., "Admit patient and begin chemotherapy cycle 1")
+â”œâ”€â”€ Evidence type: [document | photo | receipt | official_letter | other]
+â”œâ”€â”€ Estimated completion: (date)
+â””â”€â”€ Fund percentage: 30% (system default, can be adjusted 20-40%)
 
 Milestone 2: Progress
-├── Title: (e.g., "Complete First 3 Chemo Cycles")
-├── Description: (e.g., "Patient completes cycles 1-3 with medical reports")
-├── Evidence type: [document | photo | receipt | official_letter | other]
-├── Estimated completion: (date)
-└── Fund percentage: 40% (system default, can be adjusted 30-50%)
+â”œâ”€â”€ Title: (e.g., "Complete First 3 Chemo Cycles")
+â”œâ”€â”€ Description: (e.g., "Patient completes cycles 1-3 with medical reports")
+â”œâ”€â”€ Evidence type: [document | photo | receipt | official_letter | other]
+â”œâ”€â”€ Estimated completion: (date)
+â””â”€â”€ Fund percentage: 40% (system default, can be adjusted 30-50%)
 
 Milestone 3: Completion
-├── Title: (e.g., "Treatment Complete & Recovery")
-├── Description: (e.g., "Patient completes all treatment cycles, discharge")
-├── Evidence type: [document | photo | receipt | official_letter | other]
-├── Estimated completion: (date)
-└── Fund percentage: 30% (system default, can be adjusted 20-40%)
+â”œâ”€â”€ Title: (e.g., "Treatment Complete & Recovery")
+â”œâ”€â”€ Description: (e.g., "Patient completes all treatment cycles, discharge")
+â”œâ”€â”€ Evidence type: [document | photo | receipt | official_letter | other]
+â”œâ”€â”€ Estimated completion: (date)
+â””â”€â”€ Fund percentage: 30% (system default, can be adjusted 20-40%)
 
 Constraint: Phase 1% + Phase 2% + Phase 3% MUST = 100%
 ```
@@ -442,47 +442,47 @@ Constraint: Phase 1% + Phase 2% + Phase 3% MUST = 100%
 
 ```
 Step 1: MILESTONE REACHED
-├── Campaigner navigates to "My Campaigns > [Campaign] > Milestones"
-├── Selects milestone (1, 2, or 3)
-├── Uploads evidence files (same file constraints as verification docs)
-├── Adds description of what was achieved
-├── Submits for review
-└── System: Status → milestone_evidence_submitted
+â”œâ”€â”€ Campaigner navigates to "My Campaigns > [Campaign] > Milestones"
+â”œâ”€â”€ Selects milestone (1, 2, or 3)
+â”œâ”€â”€ Uploads evidence files (same file constraints as verification docs)
+â”œâ”€â”€ Adds description of what was achieved
+â”œâ”€â”€ Submits for review
+â””â”€â”€ System: Status â†’ milestone_evidence_submitted
 
 Step 2: ADMIN REVIEW
-├── Admin sees milestone evidence in Admin > Campaigns > Fund Release Queue
-├── Reviews evidence against milestone description
-├── Checks:
-│   ☐ Evidence matches milestone description
-│   ☐ Documents are authentic and not altered
-│   ☐ Dates and details are consistent
-│   ☐ Photos have metadata showing recent capture (if applicable)
-├── Actions:
-│   ✅ APPROVE → Triggers fund release for this phase
-│   ❌ REJECT → Requirement to resubmit with specifics on what's wrong
-│   ⏸️ REQUEST MORE → Specific additional evidence needed
-└── All actions audit-logged
+â”œâ”€â”€ Admin sees milestone evidence in Admin > Campaigns > Fund Release Queue
+â”œâ”€â”€ Reviews evidence against milestone description
+â”œâ”€â”€ Checks:
+â”‚   â˜ Evidence matches milestone description
+â”‚   â˜ Documents are authentic and not altered
+â”‚   â˜ Dates and details are consistent
+â”‚   â˜ Photos have metadata showing recent capture (if applicable)
+â”œâ”€â”€ Actions:
+â”‚   âœ… APPROVE â†’ Triggers fund release for this phase
+â”‚   âŒ REJECT â†’ Requirement to resubmit with specifics on what's wrong
+â”‚   â¸ï¸ REQUEST MORE â†’ Specific additional evidence needed
+â””â”€â”€ All actions audit-logged
 
 Step 3: FUND RELEASE (on approval)
-├── System calculates: (phase_percentage × total_raised_minus_fees)
-├── Creates withdrawal record: status = 'approved'
-├── Initiates Stripe Connect transfer to campaigner's verified bank account
-├── Updates milestone status: released
-├── Notifies campaigner: "Phase [N] funds of $[amount] have been released"
-├── Creates campaign update (visible to public): "Milestone [N]: [title] — Evidence Verified ✓"
-└── Notifies donors who opted in: "Campaign update: Milestone achieved!"
+â”œâ”€â”€ System calculates: (phase_percentage Ã- total_raised_minus_fees)
+â”œâ”€â”€ Creates withdrawal record: status = 'approved'
+â”œâ”€â”€ Initiates Stripe Connect transfer to campaigner's verified bank account
+â”œâ”€â”€ Updates milestone status: released
+â”œâ”€â”€ Notifies campaigner: "Phase [N] funds of $[amount] have been released"
+â”œâ”€â”€ Creates campaign update (visible to public): "Milestone [N]: [title] â€” Evidence Verified âœ“"
+â””â”€â”€ Notifies donors who opted in: "Campaign update: Milestone achieved!"
 
 Step 4: FAILED EVIDENCE
-├── If evidence rejected:
-│   ├── Campaigner notified with specific rejection reason
-│   ├── Can resubmit (up to 3 attempts per milestone)
-│   ├── After 3 failures → milestone escalated to admin investigation
-│   └── Funds for this phase remain held
-├── If no evidence submitted within 30 days of estimated date:
-│   ├── Day 30: Reminder notification + email
-│   ├── Day 45: Warning: "Funds may be returned to donors if evidence not provided"
-│   ├── Day 60: Campaign paused, admin review triggered
-│   └── Day 90: Campaign cancelled, automatic refund to all donors
+â”œâ”€â”€ If evidence rejected:
+â”‚   â”œâ”€â”€ Campaigner notified with specific rejection reason
+â”‚   â”œâ”€â”€ Can resubmit (up to 3 attempts per milestone)
+â”‚   â”œâ”€â”€ After 3 failures â†’ milestone escalated to admin investigation
+â”‚   â””â”€â”€ Funds for this phase remain held
+â”œâ”€â”€ If no evidence submitted within 30 days of estimated date:
+â”‚   â”œâ”€â”€ Day 30: Reminder notification + email
+â”‚   â”œâ”€â”€ Day 45: Warning: "Funds may be returned to donors if evidence not provided"
+â”‚   â”œâ”€â”€ Day 60: Campaign paused, admin review triggered
+â”‚   â””â”€â”€ Day 90: Campaign cancelled, automatic refund to all donors
 ```
 
 ### 6.5 Fund Hold Mechanism
@@ -492,8 +492,8 @@ Step 4: FAILED EVIDENCE
 | Campaign active, no milestone approved | Funds held in LastDonor escrow (Stripe) | No |
 | Phase 1 approved | 30% released, 70% held | 30% yes |
 | Phase 2 approved | 70% cumulative released, 30% held | 70% yes |
-| Phase 3 approved | 100% released | Yes — fully disbursed |
-| Campaign cancelled | 0% — all refunded to donors | No (refunded) |
+| Phase 3 approved | 100% released | Yes â€” fully disbursed |
+| Campaign cancelled | 0% â€” all refunded to donors | No (refunded) |
 | Campaign paused | Funds frozen at current release state | No new releases |
 
 ### 6.6 Example: Medical Campaign Milestones
@@ -510,7 +510,7 @@ Step 4: FAILED EVIDENCE
 
 ---
 
-## 7. Pillar 3 — Campaign Lifecycle Transparency
+## 7. Pillar 3 â€” Campaign Lifecycle Transparency
 
 ### 7.1 Expanded Campaign Status System
 
@@ -520,16 +520,16 @@ Step 4: FAILED EVIDENCE
 
 | Status | Description | Public Visibility | Badge |
 |--------|-------------|-------------------|-------|
-| `active` | Campaign live, accepting donations | Full public page | 🟢 "Active" |
-| `paused` | Temporarily halted (admin decision) | Public with explanation tooltip | ⏸️ "Paused" (amber) |
-| `under_review` | Admin investigating concerns | Public with generic message | 🔍 "Under Review" (amber) |
-| `suspended` | Serious concerns, investigation in progress | Public with warning | 🟠 "Suspended" |
-| `cancelled` | Permanently cancelled (fraud, non-compliance) | Public with reason | 🔴 "Cancelled" |
-| `completed` | Goal met + all milestones cleared | Public celebration state | ✅ "Completed" |
-| `last_donor_zone` | 91-100% of goal | Public, urgent CTA | 🎯 "Last Donor Zone" |
-| `archived` | Historical record | Accessible via direct link | 📁 "Archived" |
+| `active` | Campaign live, accepting donations | Full public page | ðŸŸ¢ "Active" |
+| `paused` | Temporarily halted (admin decision) | Public with explanation tooltip | â¸ï¸ "Paused" (amber) |
+| `under_review` | Admin investigating concerns | Public with generic message | ðŸ” "Under Review" (amber) |
+| `suspended` | Serious concerns, investigation in progress | Public with warning | ðŸŸ  "Suspended" |
+| `cancelled` | Permanently cancelled (fraud, non-compliance) | Public with reason | ðŸ”´ "Cancelled" |
+| `completed` | Goal met + all milestones cleared | Public celebration state | âœ… "Completed" |
+| `last_donor_zone` | 91-100% of goal | Public, urgent CTA | ðŸŽ¯ "Last Donor Zone" |
+| `archived` | Historical record | Accessible via direct link | ðŸ“ "Archived" |
 
-### 7.2 Campaign Status Display — Public Campaign Page
+### 7.2 Campaign Status Display â€” Public Campaign Page
 
 #### Status Badge Placement
 - **Location**: Immediately below campaign title, left-aligned
@@ -540,21 +540,21 @@ Step 4: FAILED EVIDENCE
 
 | Status | Tooltip Hover Text |
 |--------|-------------------|
-| ⏸️ Paused | "This campaign has been temporarily paused. Reason: [admin-provided reason]. Expected resolution: [date if provided]." |
-| 🔍 Under Review | "This campaign is currently under review by our verification team. Donations are paused until review is complete." |
-| 🟠 Suspended | "This campaign has been suspended pending investigation. Funds are held securely. If you've donated, you will be notified of the outcome." |
-| 🔴 Cancelled | "This campaign has been cancelled. Reason: [specific reason]. All donors have been fully refunded." |
-| ✅ Completed | "This campaign has been successfully completed! All milestones were achieved and verified." |
+| â¸ï¸ Paused | "This campaign has been temporarily paused. Reason: [admin-provided reason]. Expected resolution: [date if provided]." |
+| ðŸ” Under Review | "This campaign is currently under review by our verification team. Donations are paused until review is complete." |
+| ðŸŸ  Suspended | "This campaign has been suspended pending investigation. Funds are held securely. If you've donated, you will be notified of the outcome." |
+| ðŸ”´ Cancelled | "This campaign has been cancelled. Reason: [specific reason]. All donors have been fully refunded." |
+| âœ… Completed | "This campaign has been successfully completed! All milestones were achieved and verified." |
 
 #### Status History Timeline (on campaign page)
 A collapsible "Campaign Timeline" section showing:
 ```
-📅 Mar 15, 2026 — Campaign Created
-📅 Mar 16, 2026 — Identity Verified ✓
-📅 Mar 18, 2026 — Fully Verified ✓ — Campaign Published
-📅 Mar 25, 2026 — Milestone 1 Achieved: "Hospital Admission" ✓
-📅 Apr 10, 2026 — Milestone 2 Achieved: "First Treatment Cycle" ✓
-📅 May 02, 2026 — Campaign Completed ✅
+ðŸ“… Mar 15, 2026 â€” Campaign Created
+ðŸ“… Mar 16, 2026 â€” Identity Verified âœ“
+ðŸ“… Mar 18, 2026 â€” Fully Verified âœ“ â€” Campaign Published
+ðŸ“… Mar 25, 2026 â€” Milestone 1 Achieved: "Hospital Admission" âœ“
+ðŸ“… Apr 10, 2026 â€” Milestone 2 Achieved: "First Treatment Cycle" âœ“
+ðŸ“… May 02, 2026 â€” Campaign Completed âœ…
 ```
 
 ### 7.3 Donor Email Lifecycle Notifications
@@ -563,21 +563,21 @@ Donors who have **opted in to email updates** (via donation form checkbox: "Keep
 
 | Trigger | Email Subject | Email Content |
 |---------|--------------|---------------|
-| Campaign paused | "Update on [Campaign Title] — Campaign Paused" | Explanation of pause reason, assurance funds are secure, ETA for resolution |
+| Campaign paused | "Update on [Campaign Title] â€” Campaign Paused" | Explanation of pause reason, assurance funds are secure, ETA for resolution |
 | Campaign resumed | "Good News! [Campaign Title] Has Resumed" | Pause resolved, donations now active, progress update |
-| Campaign under review | "Update on [Campaign Title] — Under Review" | Neutral language, investigation underway, funds secure |
+| Campaign under review | "Update on [Campaign Title] â€” Under Review" | Neutral language, investigation underway, funds secure |
 | Campaign suspended | "Important: [Campaign Title] Suspended" | Investigation in progress, funds held, will be notified of outcome |
 | Campaign cancelled | **See Section 8 (Donor Protection)** | Full refund + alternative campaigns |
-| Milestone achieved | "[Campaign Title] — Milestone Reached! 🎉" | Evidence summary, photos (if available), how funds were used |
-| Campaign completed | "[Campaign Title] — Campaign Successfully Completed!" | Final outcome, thank you, impact summary, evidence |
+| Milestone achieved | "[Campaign Title] â€” Milestone Reached! ðŸŽ‰" | Evidence summary, photos (if available), how funds were used |
+| Campaign completed | "[Campaign Title] â€” Campaign Successfully Completed!" | Final outcome, thank you, impact summary, evidence |
 | Campaign update posted | "New Update from [Campaign Title]" | Update content preview + link to full update |
 
 ### 7.4 Opt-In Mechanism
 
 **At donation time** (already partially implemented in donation flow):
 ```
-☑ Keep me updated about this campaign (email)
-☐ Subscribe to LastDonor newsletter
+â˜‘ Keep me updated about this campaign (email)
+â˜ Subscribe to LastDonor newsletter
 ```
 
 **Post-donation** (in user dashboard for registered users):
@@ -587,24 +587,24 @@ Donors who have **opted in to email updates** (via donation form checkbox: "Keep
 
 ---
 
-## 8. Pillar 4 — Donor Protection & Refund System
+## 8. Pillar 4 â€” Donor Protection & Refund System
 
-### 8.1 Refund Policy — The LastDonor Guarantee
+### 8.1 Refund Policy â€” The LastDonor Guarantee
 
-> **Policy**: If LastDonor.org cancels a campaign for any reason, ALL donors receive a full refund — automatically, without request, within 5 business days. No exceptions.
+> **Policy**: If LastDonor.org cancels a campaign for any reason, ALL donors receive a full refund â€” automatically, without request, within 5 business days. No exceptions.
 
 ### 8.2 Cancellation Reasons & Refund Triggers
 
 | Cancellation Reason | Refund? | Donor Communication |
 |---------------------|---------|---------------------|
-| **Identity fraud** | ✅ Full refund | "Campaign cancelled: Identity verification failed" |
-| **Fake/fabricated story** | ✅ Full refund | "Campaign cancelled: Story could not be verified" |
-| **Document forgery** | ✅ Full refund | "Campaign cancelled: Submitted documents were not authentic" |
-| **Campaigner non-responsive** (90+ days no evidence) | ✅ Full refund | "Campaign cancelled: Campaigner did not provide required evidence" |
-| **Duplicate campaign** | ✅ Full refund | "Campaign cancelled: Duplicate of existing campaign [link]" |
-| **Legal/compliance issue** | ✅ Full refund | "Campaign cancelled: Compliance review" |
-| **Campaigner requested cancellation** | ✅ Full refund | "Campaign cancelled by organizer: [campaigner-provided reason]" |
-| **Terms of service violation** | ✅ Full refund | "Campaign cancelled: Violation of platform terms" |
+| **Identity fraud** | âœ… Full refund | "Campaign cancelled: Identity verification failed" |
+| **Fake/fabricated story** | âœ… Full refund | "Campaign cancelled: Story could not be verified" |
+| **Document forgery** | âœ… Full refund | "Campaign cancelled: Submitted documents were not authentic" |
+| **Campaigner non-responsive** (90+ days no evidence) | âœ… Full refund | "Campaign cancelled: Campaigner did not provide required evidence" |
+| **Duplicate campaign** | âœ… Full refund | "Campaign cancelled: Duplicate of existing campaign [link]" |
+| **Legal/compliance issue** | âœ… Full refund | "Campaign cancelled: Compliance review" |
+| **Campaigner requested cancellation** | âœ… Full refund | "Campaign cancelled by organizer: [campaigner-provided reason]" |
+| **Terms of service violation** | âœ… Full refund | "Campaign cancelled: Violation of platform terms" |
 
 ### 8.3 Automatic Refund Process
 
@@ -612,37 +612,37 @@ Donors who have **opted in to email updates** (via donation form checkbox: "Keep
 TRIGGER: Admin sets campaign status to 'cancelled'
 
 Step 1: INITIATE MASS REFUND
-├── System queries all donations WHERE campaignId = X AND refunded = false AND source = 'real'
-├── For each donation:
-│   ├── Call Stripe API: stripe.refunds.create({ payment_intent: stripePaymentId })
-│   ├── Update donation: refunded = true
-│   ├── Log: auditLogs entry (donation.refunded, actor: 'system/admin', reason)
-│   └── Track: refundBatch record (batchId, donationId, status, stripeRefundId)
-├── Process in batches of 50 (Stripe rate limiting: 100 requests/sec)
-├── Total refund amount calculated and logged
-└── Campaign raisedAmount reset to 0, donorCount reset to 0
+â”œâ”€â”€ System queries all donations WHERE campaignId = X AND refunded = false AND source = 'real'
+â”œâ”€â”€ For each donation:
+â”‚   â”œâ”€â”€ Call Stripe API: stripe.refunds.create({ payment_intent: stripePaymentId })
+â”‚   â”œâ”€â”€ Update donation: refunded = true
+â”‚   â”œâ”€â”€ Log: auditLogs entry (donation.refunded, actor: 'system/admin', reason)
+â”‚   â””â”€â”€ Track: refundBatch record (batchId, donationId, status, stripeRefundId)
+â”œâ”€â”€ Process in batches of 50 (Stripe rate limiting: 100 requests/sec)
+â”œâ”€â”€ Total refund amount calculated and logged
+â””â”€â”€ Campaign raisedAmount reset to 0, donorCount reset to 0
 
 Step 2: DONOR NOTIFICATION EMAIL
-├── Subject: "Important: Your Donation to [Campaign Title] Has Been Refunded"
-├── Body:
-│   ├── Personal greeting: "Dear [Donor Name],"
-│   ├── What happened: "[Campaign Title] has been cancelled because [reason]."
-│   ├── Refund confirmation: "Your donation of $[amount] has been fully refunded to your original payment method. Please allow 5-10 business days for the refund to appear."
-│   ├── Apology & assurance: "We take full responsibility for this situation. Your trust matters deeply to us, and we want you to know that your generosity will never go to an unverified cause. Every campaign on LastDonor.org is document-verified before launch."
-│   ├── Re-engagement CTA: "You can still make a difference! Here are verified campaigns in [same category] that need your support:"
-│   │   ├── Campaign 1: [Title] — $X raised of $Y — [Fully Verified ✓] — [Donate Now button]
-│   │   ├── Campaign 2: [Title] — $X raised of $Y — [Fully Verified ✓] — [Donate Now button]
-│   │   └── Campaign 3: [Title] — $X raised of $Y — [Fully Verified ✓] — [Donate Now button]
-│   ├── Footer: "If you have any questions, reach out to us anytime:" + support channels
-│   └── Unsubscribe link
-└── Sent to ALL donors (including guests who donated without account)
+â”œâ”€â”€ Subject: "Important: Your Donation to [Campaign Title] Has Been Refunded"
+â”œâ”€â”€ Body:
+â”‚   â”œâ”€â”€ Personal greeting: "Dear [Donor Name],"
+â”‚   â”œâ”€â”€ What happened: "[Campaign Title] has been cancelled because [reason]."
+â”‚   â”œâ”€â”€ Refund confirmation: "Your donation of $[amount] has been fully refunded to your original payment method. Please allow 5-10 business days for the refund to appear."
+â”‚   â”œâ”€â”€ Apology & assurance: "We take full responsibility for this situation. Your trust matters deeply to us, and we want you to know that your generosity will never go to an unverified cause. Every campaign on LastDonor.org is document-verified before launch."
+â”‚   â”œâ”€â”€ Re-engagement CTA: "You can still make a difference! Here are verified campaigns in [same category] that need your support:"
+â”‚   â”‚   â”œâ”€â”€ Campaign 1: [Title] â€” $X raised of $Y â€” [Fully Verified âœ“] â€” [Donate Now button]
+â”‚   â”‚   â”œâ”€â”€ Campaign 2: [Title] â€” $X raised of $Y â€” [Fully Verified âœ“] â€” [Donate Now button]
+â”‚   â”‚   â””â”€â”€ Campaign 3: [Title] â€” $X raised of $Y â€” [Fully Verified âœ“] â€” [Donate Now button]
+â”‚   â”œâ”€â”€ Footer: "If you have any questions, reach out to us anytime:" + support channels
+â”‚   â””â”€â”€ Unsubscribe link
+â””â”€â”€ Sent to ALL donors (including guests who donated without account)
 
 Step 3: CAMPAIGN PAGE UPDATE
-├── Status badge: 🔴 "Cancelled"
-├── Banner at top: "This campaign has been cancelled. All donors have been fully refunded."
-├── Hover tooltip with specific reason
-├── Donation button: REMOVED (replaced with "View Similar Campaigns")
-└── Campaign timeline: Shows cancellation event with date
+â”œâ”€â”€ Status badge: ðŸ”´ "Cancelled"
+â”œâ”€â”€ Banner at top: "This campaign has been cancelled. All donors have been fully refunded."
+â”œâ”€â”€ Hover tooltip with specific reason
+â”œâ”€â”€ Donation button: REMOVED (replaced with "View Similar Campaigns")
+â””â”€â”€ Campaign timeline: Shows cancellation event with date
 ```
 
 ### 8.4 Admin Bulk Refund UI
@@ -650,34 +650,34 @@ Step 3: CAMPAIGN PAGE UPDATE
 **Location**: Admin > Campaigns > [Campaign] > Actions > Cancel Campaign
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  CANCEL CAMPAIGN: "Help Sarah Fight Leukemia"       │
-│                                                      │
-│  ⚠️  This will:                                     │
-│  • Cancel the campaign permanently                   │
-│  • Refund ALL [47] donors totaling [$12,450.00]     │
-│  • Send refund notification emails to all donors     │
-│  • Log this action in the audit trail               │
-│                                                      │
-│  Cancellation Reason: [dropdown]                     │
-│  ├── Identity fraud                                  │
-│  ├── Fabricated story                               │
-│  ├── Document forgery                               │
-│  ├── Campaigner non-responsive                       │
-│  ├── Duplicate campaign                             │
-│  ├── Legal/compliance issue                          │
-│  ├── Campaigner requested cancellation              │
-│  └── Terms of service violation                      │
-│                                                      │
-│  Additional Notes: [text area]                       │
-│  (internal — not shown to donors)                    │
-│                                                      │
-│  Email Preview: [View Email Template]                │
-│                                                      │
-│  ☑ I understand this action is irreversible          │
-│                                                      │
-│  [Cancel — Go Back]  [Confirm Cancellation & Refund] │
-└─────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  CANCEL CAMPAIGN: "Help Sarah Fight Leukemia"       â”‚
+â”‚                                                      â”‚
+â”‚  âš ï¸  This will:                                     â”‚
+â”‚  â€¢ Cancel the campaign permanently                   â”‚
+â”‚  â€¢ Refund ALL [47] donors totaling [$12,450.00]     â”‚
+â”‚  â€¢ Send refund notification emails to all donors     â”‚
+â”‚  â€¢ Log this action in the audit trail               â”‚
+â”‚                                                      â”‚
+â”‚  Cancellation Reason: [dropdown]                     â”‚
+â”‚  â”œâ”€â”€ Identity fraud                                  â”‚
+â”‚  â”œâ”€â”€ Fabricated story                               â”‚
+â”‚  â”œâ”€â”€ Document forgery                               â”‚
+â”‚  â”œâ”€â”€ Campaigner non-responsive                       â”‚
+â”‚  â”œâ”€â”€ Duplicate campaign                             â”‚
+â”‚  â”œâ”€â”€ Legal/compliance issue                          â”‚
+â”‚  â”œâ”€â”€ Campaigner requested cancellation              â”‚
+â”‚  â””â”€â”€ Terms of service violation                      â”‚
+â”‚                                                      â”‚
+â”‚  Additional Notes: [text area]                       â”‚
+â”‚  (internal â€” not shown to donors)                    â”‚
+â”‚                                                      â”‚
+â”‚  Email Preview: [View Email Template]                â”‚
+â”‚                                                      â”‚
+â”‚  â˜‘ I understand this action is irreversible          â”‚
+â”‚                                                      â”‚
+â”‚  [Cancel â€” Go Back]  [Confirm Cancellation & Refund] â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### 8.5 Admin Bulk Email Template System
@@ -688,53 +688,53 @@ For situations requiring custom communication beyond automated templates:
 
 ```
 Step 1: SELECT RECIPIENTS
-├── Filter by:
-│   ├── Campaign: [dropdown — select specific campaign]
-│   ├── Donation status: [all | active | refunded]
-│   ├── Donor type: [registered | guest | all]
-│   └── Date range: [from — to]
-├── Results: Table with checkboxes
-│   ☑ Select All (47 donors)
-│   ☑ John Smith — john@example.com — $100.00 — Mar 15
-│   ☑ Jane Doe — jane@example.com — $250.00 — Mar 16
-│   ☐ Anonymous — anon@example.com — $50.00 — Mar 17
-│   ...
-└── Selected: 45 of 47
+â”œâ”€â”€ Filter by:
+â”‚   â”œâ”€â”€ Campaign: [dropdown â€” select specific campaign]
+â”‚   â”œâ”€â”€ Donation status: [all | active | refunded]
+â”‚   â”œâ”€â”€ Donor type: [registered | guest | all]
+â”‚   â””â”€â”€ Date range: [from â€” to]
+â”œâ”€â”€ Results: Table with checkboxes
+â”‚   â˜‘ Select All (47 donors)
+â”‚   â˜‘ John Smith â€” john@example.com â€” $100.00 â€” Mar 15
+â”‚   â˜‘ Jane Doe â€” jane@example.com â€” $250.00 â€” Mar 16
+â”‚   â˜ Anonymous â€” anon@example.com â€” $50.00 â€” Mar 17
+â”‚   ...
+â””â”€â”€ Selected: 45 of 47
 
 Step 2: CREATE EMAIL
-├── Template: [dropdown — pre-built templates]
-│   ├── Campaign Cancelled — Full Refund
-│   ├── Campaign Paused — Status Update
-│   ├── Campaign Resumed — Good News
-│   ├── Milestone Achieved — Progress Update
-│   ├── Campaign Completed — Thank You
-│   └── Custom Template
-├── Variables available (auto-populated per recipient):
-│   ├── {{donor_name}} — Donor's name
-│   ├── {{donation_amount}} — Their specific donation amount
-│   ├── {{campaign_title}} — Campaign title
-│   ├── {{campaign_category}} — Campaign category
-│   ├── {{cancellation_reason}} — Admin-specified reason
-│   ├── {{refund_amount}} — Refund amount
-│   ├── {{similar_campaigns}} — Auto-generated similar campaign cards
-│   └── {{support_channels}} — Support contact information
-├── Subject: [editable, pre-filled from template]
-├── Body: [rich text editor with variable insertion buttons]
-├── Preview: [renders with sample donor data]
-└── TEST: [Send test to admin email]
+â”œâ”€â”€ Template: [dropdown â€” pre-built templates]
+â”‚   â”œâ”€â”€ Campaign Cancelled â€” Full Refund
+â”‚   â”œâ”€â”€ Campaign Paused â€” Status Update
+â”‚   â”œâ”€â”€ Campaign Resumed â€” Good News
+â”‚   â”œâ”€â”€ Milestone Achieved â€” Progress Update
+â”‚   â”œâ”€â”€ Campaign Completed â€” Thank You
+â”‚   â””â”€â”€ Custom Template
+â”œâ”€â”€ Variables available (auto-populated per recipient):
+â”‚   â”œâ”€â”€ {{donor_name}} â€” Donor's name
+â”‚   â”œâ”€â”€ {{donation_amount}} â€” Their specific donation amount
+â”‚   â”œâ”€â”€ {{campaign_title}} â€” Campaign title
+â”‚   â”œâ”€â”€ {{campaign_category}} â€” Campaign category
+â”‚   â”œâ”€â”€ {{cancellation_reason}} â€” Admin-specified reason
+â”‚   â”œâ”€â”€ {{refund_amount}} â€” Refund amount
+â”‚   â”œâ”€â”€ {{similar_campaigns}} â€” Auto-generated similar campaign cards
+â”‚   â””â”€â”€ {{support_channels}} â€” Support contact information
+â”œâ”€â”€ Subject: [editable, pre-filled from template]
+â”œâ”€â”€ Body: [rich text editor with variable insertion buttons]
+â”œâ”€â”€ Preview: [renders with sample donor data]
+â””â”€â”€ TEST: [Send test to admin email]
 
 Step 3: REVIEW & SEND
-├── Preview: Final email with real data for first recipient
-├── Recipients: 45 donors
-├── Estimated send time: ~2 minutes (rate-limited)
-├── [Cancel] [Schedule for Later] [Send Now]
-└── Progress bar: "Sending... 23/45 complete"
+â”œâ”€â”€ Preview: Final email with real data for first recipient
+â”œâ”€â”€ Recipients: 45 donors
+â”œâ”€â”€ Estimated send time: ~2 minutes (rate-limited)
+â”œâ”€â”€ [Cancel] [Schedule for Later] [Send Now]
+â””â”€â”€ Progress bar: "Sending... 23/45 complete"
 
 Step 4: AUDIT
-├── Bulk email logged in audit trail
-├── Individual send status tracked: sent | failed | bounced
-├── Retry available for failed sends
-└── Full history in Admin > Communications > Sent
+â”œâ”€â”€ Bulk email logged in audit trail
+â”œâ”€â”€ Individual send status tracked: sent | failed | bounced
+â”œâ”€â”€ Retry available for failed sends
+â””â”€â”€ Full history in Admin > Communications > Sent
 ```
 
 ### 8.6 Re-Engagement CTA Logic
@@ -743,8 +743,8 @@ When generating "similar campaigns" for refund emails:
 
 ```
 Query Logic:
-1. Same category as cancelled campaign → up to 3 campaigns
-2. If < 3 same category, fill with same location → up to 3 total
+1. Same category as cancelled campaign â†’ up to 3 campaigns
+2. If < 3 same category, fill with same location â†’ up to 3 total
 3. If still < 3, fill with highest-activity verified campaigns
 4. Filter: ONLY fully_verified campaigns, status = active
 5. Sort by: fewest remaining to goal (most impactful donation)
@@ -753,19 +753,19 @@ Query Logic:
 
 ---
 
-## 9. Pillar 5 — Admin Autonomy & Campaign Governance
+## 9. Pillar 5 â€” Admin Autonomy & Campaign Governance
 
 ### 9.1 Admin Action Matrix
 
 | Action | Current State | Effect | Notification | Reversible? |
 |--------|--------------|--------|-------------|-------------|
-| **Publish** | draft → active | Campaign goes live | Campaigner: "Your campaign is live!" | Yes (can unpublish) |
-| **Pause** | active → paused | Donations disabled, public badge shows ⏸️ | Campaigner + opted-in donors | Yes |
-| **Resume** | paused → active | Donations re-enabled | Campaigner + opted-in donors | Yes |
-| **Suspend** | any → suspended | Donations disabled, investigation state | Campaigner: "Campaign suspended — respond within X days" | Yes (can reinstate) |
-| **Cancel** | any → cancelled | Permanent, triggers mass refund | All donors + campaigner | **No** |
-| **Complete** | active/LDZ → completed | Campaign finished successfully | All donors + campaigner | No (can archive) |
-| **Archive** | completed → archived | Moves to historical | Campaigner | Yes (can reinstate to draft) |
+| **Publish** | draft â†’ active | Campaign goes live | Campaigner: "Your campaign is live!" | Yes (can unpublish) |
+| **Pause** | active â†’ paused | Donations disabled, public badge shows â¸ï¸ | Campaigner + opted-in donors | Yes |
+| **Resume** | paused â†’ active | Donations re-enabled | Campaigner + opted-in donors | Yes |
+| **Suspend** | any â†’ suspended | Donations disabled, investigation state | Campaigner: "Campaign suspended â€” respond within X days" | Yes (can reinstate) |
+| **Cancel** | any â†’ cancelled | Permanent, triggers mass refund | All donors + campaigner | **No** |
+| **Complete** | active/LDZ â†’ completed | Campaign finished successfully | All donors + campaigner | No (can archive) |
+| **Archive** | completed â†’ archived | Moves to historical | Campaigner | Yes (can reinstate to draft) |
 | **Delete** | draft only (no donations) | Hard delete from database | Campaigner: "Campaign removed" | **No** |
 | **Request Info** | any | Sends info request to campaigner | Campaigner: in-app + email with deadline | N/A |
 | **Extend Deadline** | info_requested | Gives campaigner more time | Campaigner: "Deadline extended to [date]" | N/A |
@@ -779,37 +779,37 @@ When admin needs more information from a campaigner:
 ```
 Admin > Campaign > [Campaign] > Request Information
 
-┌─────────────────────────────────────────────────────┐
-│  REQUEST INFORMATION                                 │
-│                                                      │
-│  Campaign: "Help Sarah Fight Leukemia"               │
-│  Campaigner: John Smith (john@example.com)           │
-│                                                      │
-│  Request Type: [dropdown]                            │
-│  ├── Additional identity documents                   │
-│  ├── Updated medical reports                         │
-│  ├── Clarification on fund usage                     │
-│  ├── Proof of relationship to beneficiary            │
-│  ├── Updated cost estimates                          │
-│  ├── Progress evidence                               │
-│  └── Other (specify below)                           │
-│                                                      │
-│  Details: [text area]                                │
-│  "Please provide the most recent hospital invoice    │
-│   dated within the last 30 days showing the current  │
-│   treatment costs."                                  │
-│                                                      │
-│  Response Deadline: [7 days ▼]                       │
-│  ├── 3 days (urgent)                                │
-│  ├── 7 days (standard)                              │
-│  ├── 14 days (extended)                             │
-│  └── 30 days (complex)                              │
-│                                                      │
-│  ☑ Pause campaign until response received            │
-│  ☐ Allow campaign to remain active                   │
-│                                                      │
-│  [Cancel]  [Send Request]                            │
-└─────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  REQUEST INFORMATION                                 â”‚
+â”‚                                                      â”‚
+â”‚  Campaign: "Help Sarah Fight Leukemia"               â”‚
+â”‚  Campaigner: John Smith (john@example.com)           â”‚
+â”‚                                                      â”‚
+â”‚  Request Type: [dropdown]                            â”‚
+â”‚  â”œâ”€â”€ Additional identity documents                   â”‚
+â”‚  â”œâ”€â”€ Updated medical reports                         â”‚
+â”‚  â”œâ”€â”€ Clarification on fund usage                     â”‚
+â”‚  â”œâ”€â”€ Proof of relationship to beneficiary            â”‚
+â”‚  â”œâ”€â”€ Updated cost estimates                          â”‚
+â”‚  â”œâ”€â”€ Progress evidence                               â”‚
+â”‚  â””â”€â”€ Other (specify below)                           â”‚
+â”‚                                                      â”‚
+â”‚  Details: [text area]                                â”‚
+â”‚  "Please provide the most recent hospital invoice    â”‚
+â”‚   dated within the last 30 days showing the current  â”‚
+â”‚   treatment costs."                                  â”‚
+â”‚                                                      â”‚
+â”‚  Response Deadline: [7 days â–¼]                       â”‚
+â”‚  â”œâ”€â”€ 3 days (urgent)                                â”‚
+â”‚  â”œâ”€â”€ 7 days (standard)                              â”‚
+â”‚  â”œâ”€â”€ 14 days (extended)                             â”‚
+â”‚  â””â”€â”€ 30 days (complex)                              â”‚
+â”‚                                                      â”‚
+â”‚  â˜‘ Pause campaign until response received            â”‚
+â”‚  â˜ Allow campaign to remain active                   â”‚
+â”‚                                                      â”‚
+â”‚  [Cancel]  [Send Request]                            â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 **Campaigner receives**:
@@ -818,91 +818,91 @@ Admin > Campaign > [Campaign] > Request Information
 
 **Automated escalation**:
 - Deadline - 2 days: Reminder notification + email
-- Deadline reached: Warning notification: "Deadline passed — please respond immediately"
+- Deadline reached: Warning notification: "Deadline passed â€” please respond immediately"
 - Deadline + 7 days: Campaign auto-suspended, admin notified for decision
 - Deadline + 14 days: If still no response, admin prompted to cancel or extend
 
 **Campaigner response**:
 - Uploads requested documents/info through campaign dashboard
-- System: verification status → `documents_uploaded`, admin notified for re-review
+- System: verification status â†’ `documents_uploaded`, admin notified for re-review
 - Timestamp and response logged in audit trail
 
-### 9.3 Admin Dashboard — Campaign Governance View
+### 9.3 Admin Dashboard â€” Campaign Governance View
 
 A new **"Governance"** tab in admin campaign detail:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  CAMPAIGN GOVERNANCE — "Help Sarah Fight Leukemia"          │
-│                                                              │
-│  ┌─── Status ──────────────────┐ ┌─── Verification ────────┐│
-│  │ Current: Active  🟢         │ │ Level: Fully Verified 🟢 ││
-│  │ Since: Mar 18, 2026         │ │ Reviewed by: Admin J.    ││
-│  │ Published: Mar 18, 2026     │ │ Reviewed: Mar 18, 2026   ││
-│  └─────────────────────────────┘ └──────────────────────────┘│
-│                                                              │
-│  ┌─── Fund Release ────────────────────────────────────────┐│
-│  │ Phase 1: ✅ Released — $4,500 (30%) — Mar 25, 2026      ││
-│  │ Phase 2: ⏳ Pending — $6,000 (40%) — Evidence awaited   ││
-│  │ Phase 3: 🔒 Locked — $4,500 (30%) — Requires Phase 2   ││
-│  │ Total Released: $4,500 / $15,000 (30%)                  ││
-│  └──────────────────────────────────────────────────────────┘│
-│                                                              │
-│  ┌─── Info Requests ───────────────────────────────────────┐│
-│  │ Mar 20 — "Provide hospital admission letter" → ✅ Done  ││
-│  │ Apr 05 — "Updated treatment invoice" → ⏳ Due Apr 12    ││
-│  └──────────────────────────────────────────────────────────┘│
-│                                                              │
-│  ┌─── Actions ─────────────────────────────────────────────┐│
-│  │ [Pause] [Suspend] [Cancel] [Request Info] [Approve M2]  ││
-│  └──────────────────────────────────────────────────────────┘│
-│                                                              │
-│  ┌─── Audit Trail ─────────────────────────────────────────┐│
-│  │ Mar 27, 14:32 — Admin J. approved Phase 1 evidence      ││
-│  │ Mar 25, 09:15 — Campaigner uploaded Phase 1 evidence    ││
-│  │ Mar 18, 16:00 — Admin J. published campaign             ││
-│  │ Mar 18, 15:45 — Admin J. verified T2 (fully verified)   ││
-│  │ Mar 16, 10:20 — Admin J. verified T1 (identity)         ││
-│  │ Mar 15, 08:00 — Campaign created by John Smith          ││
-│  └──────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  CAMPAIGN GOVERNANCE â€” "Help Sarah Fight Leukemia"          â”‚
+â”‚                                                              â”‚
+â”‚  â”Œâ”€â”€â”€ Status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”Œâ”€â”€â”€ Verification â”€â”€â”€â”€â”€â”€â”€â”€â”â”‚
+â”‚  â”‚ Current: Active  ðŸŸ¢         â”‚ â”‚ Level: Fully Verified ðŸŸ¢ â”‚â”‚
+â”‚  â”‚ Since: Mar 18, 2026         â”‚ â”‚ Reviewed by: Admin J.    â”‚â”‚
+â”‚  â”‚ Published: Mar 18, 2026     â”‚ â”‚ Reviewed: Mar 18, 2026   â”‚â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜â”‚
+â”‚                                                              â”‚
+â”‚  â”Œâ”€â”€â”€ Fund Release â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”â”‚
+â”‚  â”‚ Phase 1: âœ… Released â€” $4,500 (30%) â€” Mar 25, 2026      â”‚â”‚
+â”‚  â”‚ Phase 2: â³ Pending â€” $6,000 (40%) â€” Evidence awaited   â”‚â”‚
+â”‚  â”‚ Phase 3: ðŸ”’ Locked â€” $4,500 (30%) â€” Requires Phase 2   â”‚â”‚
+â”‚  â”‚ Total Released: $4,500 / $15,000 (30%)                  â”‚â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜â”‚
+â”‚                                                              â”‚
+â”‚  â”Œâ”€â”€â”€ Info Requests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”â”‚
+â”‚  â”‚ Mar 20 â€” "Provide hospital admission letter" â†’ âœ… Done  â”‚â”‚
+â”‚  â”‚ Apr 05 â€” "Updated treatment invoice" â†’ â³ Due Apr 12    â”‚â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜â”‚
+â”‚                                                              â”‚
+â”‚  â”Œâ”€â”€â”€ Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”â”‚
+â”‚  â”‚ [Pause] [Suspend] [Cancel] [Request Info] [Approve M2]  â”‚â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜â”‚
+â”‚                                                              â”‚
+â”‚  â”Œâ”€â”€â”€ Audit Trail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”â”‚
+â”‚  â”‚ Mar 27, 14:32 â€” Admin J. approved Phase 1 evidence      â”‚â”‚
+â”‚  â”‚ Mar 25, 09:15 â€” Campaigner uploaded Phase 1 evidence    â”‚â”‚
+â”‚  â”‚ Mar 18, 16:00 â€” Admin J. published campaign             â”‚â”‚
+â”‚  â”‚ Mar 18, 15:45 â€” Admin J. verified T2 (fully verified)   â”‚â”‚
+â”‚  â”‚ Mar 16, 10:20 â€” Admin J. verified T1 (identity)         â”‚â”‚
+â”‚  â”‚ Mar 15, 08:00 â€” Campaign created by John Smith          â”‚â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
 
-## 10. Pillar 6 — Multi-Channel Human + AI Support
+## 10. Pillar 6 â€” Multi-Channel Human + AI Support
 
-### 10.1 Industry Benchmark — Support Channels
+### 10.1 Industry Benchmark â€” Support Channels
 
 | Platform | Rating | Email | Phone | Live Chat | WhatsApp | Social Media | Response SLA | Proactive Outreach | Review Response |
 |----------|--------|-------|-------|-----------|----------|-------------|--------------|-------------------|-----------------|
-| **WhyDonate** | **4.8★** | ✅ | ✅ (scheduled) | ✅ | ✅ | ✅ | < 1 hour (chat) | Partial | **100% neg reviews** |
-| **SpotFund** | **4.7★** | ✅ | ❌ | ❌ | ❌ | ❌ | < 15 min (email) | ✅ **Proactive emails** | 48% neg reviews |
-| Ketto | 4.0★ | ✅ | ✅ | ✅ | ✅ | Social | 4-8 hours | Partial | Unknown |
-| Milaap | 3.8★ | ✅ | ✅ | ✅ | ✅ | Social | 2-4 hours | ✅ Dedicated expert | Unknown |
-| GoFundMe | 3.2★ | ✅ | ❌ | ❌ | ❌ | Twitter (limited) | 24-48 hours | ❌ | Rare |
-| JustGiving | 2.9★ | ✅ | ✅ (UK hours) | ❌ | ❌ | Twitter, Facebook | 24 hours | ❌ | Rare |
-| GiveSendGo | 2.7★ | ✅ | ❌ | ❌ | ❌ | ❌ | 48-72 hours | ❌ | ❌ |
-| **LastDonor** | **Target: 4.8+★** | ✅ | ✅ | ✅ | ✅ | ✅ (all platforms) | **< 2 hours** | **✅ Full lifecycle** | **100% target** |
+| **WhyDonate** | **4.8â˜…** | âœ… | âœ… (scheduled) | âœ… | âœ… | âœ… | < 1 hour (chat) | Partial | **100% neg reviews** |
+| **SpotFund** | **4.7â˜…** | âœ… | âŒ | âŒ | âŒ | âŒ | < 15 min (email) | âœ… **Proactive emails** | 48% neg reviews |
+| Ketto | 4.0â˜… | âœ… | âœ… | âœ… | âœ… | Social | 4-8 hours | Partial | Unknown |
+| Milaap | 3.8â˜… | âœ… | âœ… | âœ… | âœ… | Social | 2-4 hours | âœ… Dedicated expert | Unknown |
+| GoFundMe | 3.2â˜… | âœ… | âŒ | âŒ | âŒ | Twitter (limited) | 24-48 hours | âŒ | Rare |
+| JustGiving | 2.9â˜… | âœ… | âœ… (UK hours) | âŒ | âŒ | Twitter, Facebook | 24 hours | âŒ | Rare |
+| GiveSendGo | 2.7â˜… | âœ… | âŒ | âŒ | âŒ | âŒ | 48-72 hours | âŒ | âŒ |
+| **LastDonor** | **Target: 4.8+â˜…** | âœ… | âœ… | âœ… | âœ… | âœ… (all platforms) | **< 2 hours** | **âœ… Full lifecycle** | **100% target** |
 
 **Key lessons from high-rated platforms:**
 
-1. **SpotFund's proactive model**: *"As soon as I created the funding page, someone from customer service emailed me and guided me through the process"* — This single practice is mentioned in ~30% of their 5-star reviews. LastDonor MUST replicate this.
+1. **SpotFund's proactive model**: *"As soon as I created the funding page, someone from customer service emailed me and guided me through the process"* â€” This single practice is mentioned in ~30% of their 5-star reviews. LastDonor MUST replicate this.
 
-2. **WhyDonate's named agent model**: Reviewers reference agents by name (Akshit, Vaibhav, Rushikesh, Sonali, Anirban) — creating personal accountability. *"I would like to express my sincere appreciation for Mr. Vaibhav's exceptional support"* — This transforms support from a cost center to a trust engine.
+2. **WhyDonate's named agent model**: Reviewers reference agents by name (Akshit, Vaibhav, Rushikesh, Sonali, Anirban) â€” creating personal accountability. *"I would like to express my sincere appreciation for Mr. Vaibhav's exceptional support"* â€” This transforms support from a cost center to a trust engine.
 
 3. **WhyDonate's 100% review response**: Every negative Trustpilot review gets a reply within 48 hours. Even negative reviewers update their scores. This is non-negotiable for LastDonor.
 
-4. **WhyDonate's WhatsApp after-hours**: *"My request was sent via WhatsApp after working hours. Nevertheless I received a confirmation the next morning"* — LastDonor should offer WhatsApp with 24/7 AI triage + guaranteed human follow-up within 4 hours.
+4. **WhyDonate's WhatsApp after-hours**: *"My request was sent via WhatsApp after working hours. Nevertheless I received a confirmation the next morning"* â€” LastDonor should offer WhatsApp with 24/7 AI triage + guaranteed human follow-up within 4 hours.
 
 ### 10.2 Support Channel Architecture
 
-#### Channel 1: Site Live Chat (Primary — AI + Human Escalation)
+#### Channel 1: Site Live Chat (Primary â€” AI + Human Escalation)
 
 | Aspect | Specification |
 |--------|--------------|
-| **Technology** | Intercom or Crisp (recommended: Crisp — open-source friendly + affordable) |
-| **Availability** | 24/7 AI chatbot; human agents 8am–10pm ET Mon–Sat |
+| **Technology** | Intercom or Crisp (recommended: Crisp â€” open-source friendly + affordable) |
+| **Availability** | 24/7 AI chatbot; human agents 8amâ€“10pm ET Monâ€“Sat |
 | **AI Layer** | Custom-trained GPT on LastDonor FAQ, campaign policies, verification process, refund policies |
 | **Escalation** | AI handles Tier 1 (FAQ, status checks, general info); escalates to human for Tier 2+ (disputes, verification questions, account issues) |
 | **Widget placement** | Bottom-right corner on all pages; auto-opens on error pages and post-donation |
@@ -916,12 +916,12 @@ A new **"Governance"** tab in admin campaign detail:
 |--------|--------------|
 | **Technology** | WhatsApp Business API via Twilio or 360dialog |
 | **Number** | Dedicated business number displayed on site, emails, and campaign pages |
-| **Availability** | 24/7 AI auto-responses; human agents 8am–10pm ET Mon–Sat |
+| **Availability** | 24/7 AI auto-responses; human agents 8amâ€“10pm ET Monâ€“Sat |
 | **Features** | |
-| — Inbound | Donors/campaigners can message directly; query routing to appropriate team |
-| — Outbound templates | Campaign status updates, verification reminders, milestone notifications |
-| — Rich messages | Campaign cards with images, buttons ("View Campaign", "Contact Support") |
-| — Authentication | Verify user identity via linked email/phone before sharing account details |
+| â€” Inbound | Donors/campaigners can message directly; query routing to appropriate team |
+| â€” Outbound templates | Campaign status updates, verification reminders, milestone notifications |
+| â€” Rich messages | Campaign cards with images, buttons ("View Campaign", "Contact Support") |
+| â€” Authentication | Verify user identity via linked email/phone before sharing account details |
 | **Integration** | Messages logged in `interactionLogs`, linked to user account if identifiable |
 | **SLA** | < 30 minutes during business hours; < 4 hours off-hours |
 
@@ -935,7 +935,7 @@ A new **"Governance"** tab in admin campaign detail:
 | **Features** | Auto-acknowledgment ("We received your message, reference #[X]"), template responses, escalation tagging |
 | **Integration** | Creates interaction log in CRM |
 | **SLA** | < 2 hours during business hours; < 8 hours off-hours |
-| **Automation** | AI categorization of incoming emails → auto-route to verification, refunds, or general team |
+| **Automation** | AI categorization of incoming emails â†’ auto-route to verification, refunds, or general team |
 
 #### Channel 4: Phone Support
 
@@ -943,14 +943,14 @@ A new **"Governance"** tab in admin campaign detail:
 |--------|--------------|
 | **Technology** | Twilio Voice or Vonage; VoIP-based numbers |
 | **Number** | Toll-free US number + local numbers for key markets; displayed on site footer and all emails |
-| **Availability** | 9am–6pm ET Mon–Fri (Phase 1); expand to 8am–10pm Mon–Sat (Phase 2) |
+| **Availability** | 9amâ€“6pm ET Monâ€“Fri (Phase 1); expand to 8amâ€“10pm Monâ€“Sat (Phase 2) |
 | **IVR Menu** | |
-| — Press 1 | "I'm a donor with a question about my donation" |
-| — Press 2 | "I'm a campaigner and need help with my campaign" |
-| — Press 3 | "I want to report a concern about a campaign" |
-| — Press 4 | "Other inquiries" |
+| â€” Press 1 | "I'm a donor with a question about my donation" |
+| â€” Press 2 | "I'm a campaigner and need help with my campaign" |
+| â€” Press 3 | "I want to report a concern about a campaign" |
+| â€” Press 4 | "Other inquiries" |
 | **Voicemail** | Off-hours: "Leave a message, we'll call back within 4 business hours" |
-| **Call recording** | With consent — stored for quality assurance and dispute resolution |
+| **Call recording** | With consent â€” stored for quality assurance and dispute resolution |
 | **Integration** | Creates interaction log in CRM with call duration, outcome, notes |
 | **SLA** | < 3 minutes hold time during business hours |
 
@@ -966,7 +966,7 @@ A new **"Governance"** tab in admin campaign detail:
 | Aspect | Specification |
 |--------|--------------|
 | **Technology** | Hootsuite or Sprout Social for unified inbox |
-| **Availability** | Monitored 9am–8pm ET Mon–Sat |
+| **Availability** | Monitored 9amâ€“8pm ET Monâ€“Sat |
 | **SLA** | Public mentions: < 1 hour; DMs: < 4 hours |
 | **Escalation** | Complaints or fraud reports immediately escalated to internal team |
 | **Integration** | Social interactions logged in CRM |
@@ -984,53 +984,53 @@ A new **"Governance"** tab in admin campaign detail:
 
 **Header** (all pages):
 ```
-📞 Need help? Call us: 1-800-XXX-XXXX | 💬 Chat with us | 📧 support@lastdonor.org
+ðŸ“ž Need help? Call us: 1-800-XXX-XXXX | ðŸ’¬ Chat with us | ðŸ“§ support@lastdonor.org
 ```
 
 **Footer** (all pages):
 ```
-┌─── Get Support ────────────────────────────────────┐
-│ 📞 Phone: 1-800-XXX-XXXX (Mon-Fri 9am-6pm ET)    │
-│ 💬 Live Chat: Available 24/7                        │
-│ 📧 Email: support@lastdonor.org                     │
-│ 📱 WhatsApp: +1-XXX-XXX-XXXX                       │
-│ 🐦 Twitter: @LastDonorOrg                           │
-│ 📘 Facebook: LastDonor.org                          │
-└────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€ Get Support â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ ðŸ“ž Phone: 1-800-XXX-XXXX (Mon-Fri 9am-6pm ET)    â”‚
+â”‚ ðŸ’¬ Live Chat: Available 24/7                        â”‚
+â”‚ ðŸ“§ Email: support@lastdonor.org                     â”‚
+â”‚ ðŸ“± WhatsApp: +1-XXX-XXX-XXXX                       â”‚
+â”‚ ðŸ¦ Twitter: @LastDonorOrg                           â”‚
+â”‚ ðŸ“˜ Facebook: LastDonor.org                          â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 **Campaign page** (sidebar):
 ```
-┌─── Questions about this campaign? ─────────────┐
-│ Our team verifies every campaign.               │
-│ If you have concerns, contact us:               │
-│ [💬 Chat Now] [📧 Email Us] [📞 Call Us]        │
-└─────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€ Questions about this campaign? â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Our team verifies every campaign.               â”‚
+â”‚ If you have concerns, contact us:               â”‚
+â”‚ [ðŸ’¬ Chat Now] [ðŸ“§ Email Us] [ðŸ“ž Call Us]        â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 **Post-donation confirmation**:
 ```
 Thank you for your donation!
 Questions? We're here for you:
-[💬 Chat] [📧 Email] [📞 Call] [📱 WhatsApp]
+[ðŸ’¬ Chat] [ðŸ“§ Email] [ðŸ“ž Call] [ðŸ“± WhatsApp]
 ```
 
 ### 10.5 Proactive Support Touchpoints
 
-Instead of waiting for users to reach out, implement proactive support. This is directly inspired by SpotFund's highest-praised practice — *"As soon as I created the funding page, someone from customer service emailed me and guided me through the process"* — and WhyDonate's personal agent model.
+Instead of waiting for users to reach out, implement proactive support. This is directly inspired by SpotFund's highest-praised practice â€” *"As soon as I created the funding page, someone from customer service emailed me and guided me through the process"* â€” and WhyDonate's personal agent model.
 
 | Trigger | Action | Channel | Inspired By |
 |---------|--------|---------|-------------|
 | New campaigner creates account | Welcome message with verification guide + assigned support agent by name | Email + in-app | SpotFund (proactive welcome email) |
 | Document upload stalled 48+ hours | "Need help uploading documents? I'm [Agent Name], here to help" | Email + chat prompt | SpotFund (proactive outreach) |
-| Milestone evidence overdue 7+ days | "We noticed your milestone is overdue — can we help?" | Email + WhatsApp | WhyDonate (WhatsApp follow-up) |
+| Milestone evidence overdue 7+ days | "We noticed your milestone is overdue â€” can we help?" | Email + WhatsApp | WhyDonate (WhatsApp follow-up) |
 | Donor's campaign cancelled | Proactive outreach: "Your refund is on the way" + alternative campaigns | Email | LastDonor original |
 | First-time donor | "Thank you! Here's what happens next" educational email | Email | Industry best practice |
 | Campaign reaches 50% | "Great progress! Here's how milestone fund release works" | Email to campaigner | SpotFund (campaign progress encouragement) |
 | Support ticket unresolved 24+ hours | Auto-escalation to senior agent + apology message to user | Internal + email | WhyDonate (< 48h resolution) |
 | Negative Trustpilot review posted | Respond within 24 hours with empathy + resolution pathway | Trustpilot | WhyDonate (100% response rate) |
 | Campaign first donation received | "Congratulations! You received your first donation from [name]" | Email + in-app | SpotFund (celebration touchpoint) |
-| Payout processed | "Your funds of $[amount] have been deposited — here's your receipt" | Email + SMS | SpotFund (payout confirmation) |
+| Payout processed | "Your funds of $[amount] have been deposited â€” here's your receipt" | Email + SMS | SpotFund (payout confirmation) |
 
 ---
 
@@ -1047,7 +1047,7 @@ ALTER TYPE verification_status ADD VALUE 'fully_verified';
 ALTER TYPE verification_status ADD VALUE 'info_requested';
 ALTER TYPE verification_status ADD VALUE 'rejected';
 ALTER TYPE verification_status ADD VALUE 'suspended';
--- Remove old values: 'unverified' → 'submitted_for_review', 'pending' → 'documents_uploaded', 'verified' → 'fully_verified'
+-- Remove old values: 'unverified' â†’ 'submitted_for_review', 'pending' â†’ 'documents_uploaded', 'verified' â†’ 'fully_verified'
 
 -- Expanded campaign status
 ALTER TYPE campaign_status ADD VALUE 'paused';
@@ -1330,164 +1330,164 @@ ALTER TABLE donations ADD COLUMN subscribed_to_updates BOOLEAN NOT NULL DEFAULT 
 
 ```
 POST   /api/v1/user-campaigns/[id]/verification/documents
-  — Upload verification document (campaigner)
-  — Body: multipart/form-data { file, documentType, description }
-  — Returns: { documentId, status }
+  â€” Upload verification document (campaigner)
+  â€” Body: multipart/form-data { file, documentType, description }
+  â€” Returns: { documentId, status }
 
 GET    /api/v1/user-campaigns/[id]/verification/status
-  — Get verification status + documents list (campaigner)
-  — Returns: { verificationStatus, documents[], reviewerNotes }
+  â€” Get verification status + documents list (campaigner)
+  â€” Returns: { verificationStatus, documents[], reviewerNotes }
 
 POST   /api/v1/user-campaigns/[id]/verification/submit
-  — Submit verification for review (campaigner)
-  — Transitions: submitted_for_review → documents_uploaded
-  — Notifies admin
+  â€” Submit verification for review (campaigner)
+  â€” Transitions: submitted_for_review â†’ documents_uploaded
+  â€” Notifies admin
 
 PATCH  /api/v1/admin/campaigns/[id]/verification
-  — Admin approve/reject verification
-  — Body: { action: 'approve_t1' | 'approve_t2' | 'reject' | 'request_info', notes, deadline? }
-  — Triggers notifications and status transitions
+  â€” Admin approve/reject verification
+  â€” Body: { action: 'approve_t1' | 'approve_t2' | 'reject' | 'request_info', notes, deadline? }
+  â€” Triggers notifications and status transitions
 
 GET    /api/v1/admin/verification-queue
-  — List campaigns pending verification review
-  — Returns: paginated campaigns with verification details + documents
-  — Filters: status, category, date range
+  â€” List campaigns pending verification review
+  â€” Returns: paginated campaigns with verification details + documents
+  â€” Filters: status, category, date range
 ```
 
 #### Milestone APIs
 
 ```
 POST   /api/v1/user-campaigns/[id]/milestones
-  — Define campaign milestones (campaigner, during campaign creation)
-  — Body: { milestones: [{ phase, title, description, evidenceType, fundPercentage, estimatedCompletion }] }
-  — Constraint: exactly 3 milestones, percentages sum to 100
+  â€” Define campaign milestones (campaigner, during campaign creation)
+  â€” Body: { milestones: [{ phase, title, description, evidenceType, fundPercentage, estimatedCompletion }] }
+  â€” Constraint: exactly 3 milestones, percentages sum to 100
 
 GET    /api/v1/user-campaigns/[id]/milestones
-  — Get milestone status (campaigner)
-  — Returns: milestones with evidence submissions, review status
+  â€” Get milestone status (campaigner)
+  â€” Returns: milestones with evidence submissions, review status
 
 POST   /api/v1/user-campaigns/[id]/milestones/[phase]/evidence
-  — Upload milestone evidence (campaigner)
-  — Body: multipart/form-data { files[], description }
-  — Returns: { evidenceId, status, attemptNumber }
+  â€” Upload milestone evidence (campaigner)
+  â€” Body: multipart/form-data { files[], description }
+  â€” Returns: { evidenceId, status, attemptNumber }
 
 PATCH  /api/v1/admin/campaigns/[id]/milestones/[phase]
-  — Admin approve/reject milestone evidence
-  — Body: { action: 'approve' | 'reject', notes }
-  — On approve: triggers fund release workflow
+  â€” Admin approve/reject milestone evidence
+  â€” Body: { action: 'approve' | 'reject', notes }
+  â€” On approve: triggers fund release workflow
 
 GET    /api/v1/admin/fund-release-queue
-  — List milestones awaiting evidence review
-  — Returns: paginated milestones with evidence, campaign details
+  â€” List milestones awaiting evidence review
+  â€” Returns: paginated milestones with evidence, campaign details
 ```
 
 #### Campaign Governance APIs
 
 ```
 PATCH  /api/v1/admin/campaigns/[id]/pause
-  — Pause campaign
-  — Body: { reason, notifyDonors: boolean }
-  — Disables donations, updates status badge, notifies subscribers
+  â€” Pause campaign
+  â€” Body: { reason, notifyDonors: boolean }
+  â€” Disables donations, updates status badge, notifies subscribers
 
 PATCH  /api/v1/admin/campaigns/[id]/resume
-  — Resume paused campaign
-  — Body: { notes }
-  — Re-enables donations, notifies subscribers
+  â€” Resume paused campaign
+  â€” Body: { notes }
+  â€” Re-enables donations, notifies subscribers
 
 PATCH  /api/v1/admin/campaigns/[id]/suspend
-  — Suspend campaign for investigation
-  — Body: { reason, internalNotes }
-  — Disables donations, shows suspended badge
+  â€” Suspend campaign for investigation
+  â€” Body: { reason, internalNotes }
+  â€” Disables donations, shows suspended badge
 
 POST   /api/v1/admin/campaigns/[id]/cancel
-  — Cancel campaign + trigger mass refund
-  — Body: { reason, notifyDonors: true, refundAll: true }
-  — Returns: { refundBatchId, donationsToRefund, totalAmount }
+  â€” Cancel campaign + trigger mass refund
+  â€” Body: { reason, notifyDonors: true, refundAll: true }
+  â€” Returns: { refundBatchId, donationsToRefund, totalAmount }
 
 POST   /api/v1/admin/campaigns/[id]/request-info
-  — Send information request to campaigner
-  — Body: { requestType, details, deadline, pauseCampaign }
-  — Creates notification + email to campaigner
+  â€” Send information request to campaigner
+  â€” Body: { requestType, details, deadline, pauseCampaign }
+  â€” Creates notification + email to campaigner
 
 GET    /api/v1/user-campaigns/[id]/info-requests
-  — List info requests for campaigner's campaign
-  — Returns: info requests with status, deadline
+  â€” List info requests for campaigner's campaign
+  â€” Returns: info requests with status, deadline
 
 POST   /api/v1/user-campaigns/[id]/info-requests/[requestId]/respond
-  — Campaigner responds to info request
-  — Body: multipart/form-data { responseText, files[] }
+  â€” Campaigner responds to info request
+  â€” Body: multipart/form-data { responseText, files[] }
 ```
 
 #### Donor Subscription APIs
 
 ```
 POST   /api/v1/campaigns/[slug]/subscribe
-  — Subscribe to campaign updates (donor)
-  — Body: { email } (or auto from session)
-  — Creates donor_campaign_subscription record
+  â€” Subscribe to campaign updates (donor)
+  â€” Body: { email } (or auto from session)
+  â€” Creates donor_campaign_subscription record
 
 DELETE /api/v1/campaigns/[slug]/subscribe
-  — Unsubscribe from campaign updates
-  — Body: { email, token } (token-based for guest unsubscribe)
+  â€” Unsubscribe from campaign updates
+  â€” Body: { email, token } (token-based for guest unsubscribe)
 ```
 
 #### Bulk Email APIs
 
 ```
 GET    /api/v1/admin/bulk-email/templates
-  — List available email templates
-  — Returns: template definitions with variable placeholders
+  â€” List available email templates
+  â€” Returns: template definitions with variable placeholders
 
 POST   /api/v1/admin/bulk-email/preview
-  — Preview email with sample data
-  — Body: { templateName, campaignId?, customSubject?, customBody? }
-  — Returns: rendered HTML preview
+  â€” Preview email with sample data
+  â€” Body: { templateName, campaignId?, customSubject?, customBody? }
+  â€” Returns: rendered HTML preview
 
 POST   /api/v1/admin/bulk-email/send
-  — Send bulk email to selected recipients
-  — Body: { templateName, campaignId, recipientFilter, customSubject?, customBody? }
-  — Returns: { bulkEmailId, recipientCount, estimatedSendTime }
+  â€” Send bulk email to selected recipients
+  â€” Body: { templateName, campaignId, recipientFilter, customSubject?, customBody? }
+  â€” Returns: { bulkEmailId, recipientCount, estimatedSendTime }
 
 GET    /api/v1/admin/bulk-email/[id]/status
-  — Check send progress
-  — Returns: { sent, failed, pending, status }
+  â€” Check send progress
+  â€” Returns: { sent, failed, pending, status }
 ```
 
 #### Refund Batch APIs
 
 ```
 POST   /api/v1/admin/refunds/batch
-  — Initiate batch refund (used by campaign cancellation)
-  — Body: { campaignId, reason, donationIds?: string[] }
-  — Returns: { batchId, totalDonations, totalAmount }
+  â€” Initiate batch refund (used by campaign cancellation)
+  â€” Body: { campaignId, reason, donationIds?: string[] }
+  â€” Returns: { batchId, totalDonations, totalAmount }
 
 GET    /api/v1/admin/refunds/batch/[id]
-  — Check refund batch progress
-  — Returns: { status, processed, failed, individual records }
+  â€” Check refund batch progress
+  â€” Returns: { status, processed, failed, individual records }
 ```
 
 ### 12.2 Modified Existing Endpoints
 
 ```
 POST /api/v1/user-campaigns
-  — MODIFIED: Now requires milestones array in body
-  — New field: milestones[] (3 items, see milestone definition)
-  — Campaign status: draft, verificationStatus: submitted_for_review
+  â€” MODIFIED: Now requires milestones array in body
+  â€” New field: milestones[] (3 items, see milestone definition)
+  â€” Campaign status: draft, verificationStatus: submitted_for_review
 
 PATCH /api/v1/admin/campaigns/[id]  
-  — MODIFIED: New status transitions added
-  — New: draft|active|last_donor_zone → paused
-  — New: paused → active (resume)
-  — New: any → suspended
-  — New: any → cancelled (triggers refund batch)
-  — New: suspended → active (reinstate)
+  â€” MODIFIED: New status transitions added
+  â€” New: draft|active|last_donor_zone â†’ paused
+  â€” New: paused â†’ active (resume)
+  â€” New: any â†’ suspended
+  â€” New: any â†’ cancelled (triggers refund batch)
+  â€” New: suspended â†’ active (reinstate)
 
 POST /api/v1/donations/create-intent
-  — MODIFIED: Accept subscribed_to_updates boolean
-  — Creates donor_campaign_subscription if opted in
+  â€” MODIFIED: Accept subscribed_to_updates boolean
+  â€” Creates donor_campaign_subscription if opted in
 
 POST /api/v1/donations/webhook  
-  — MODIFIED: On successful payment, if subscribed_to_updates, create subscription record
+  â€” MODIFIED: On successful payment, if subscribed_to_updates, create subscription record
 ```
 
 ---
@@ -1499,13 +1499,13 @@ POST /api/v1/donations/webhook
 | Template Name | Trigger | Recipients | Key Content |
 |--------------|---------|-----------|-------------|
 | `verificationDocumentsRequested` | Campaign submitted | Campaigner | "Upload your documents to verify your campaign" |
-| `verificationIdentityApproved` | T1 approved | Campaigner | "Identity verified — complete story verification" |
-| `verificationFullyApproved` | T2 approved | Campaigner | "Fully verified — your campaign can go live" |
+| `verificationIdentityApproved` | T1 approved | Campaigner | "Identity verified â€” complete story verification" |
+| `verificationFullyApproved` | T2 approved | Campaigner | "Fully verified â€” your campaign can go live" |
 | `verificationRejected` | Verification rejected | Campaigner | Rejection reason + how to resubmit |
 | `verificationInfoRequested` | Admin needs more info | Campaigner | What's needed + deadline + upload link |
-| `milestoneEvidenceApproved` | Milestone approved | Campaigner | "Phase [N] approved — $[amount] being released" |
+| `milestoneEvidenceApproved` | Milestone approved | Campaigner | "Phase [N] approved â€” $[amount] being released" |
 | `milestoneEvidenceRejected` | Milestone rejected | Campaigner | Rejection reason + how to resubmit |
-| `milestoneOverdueReminder` | Evidence overdue | Campaigner | "Your milestone evidence is overdue — please submit" |
+| `milestoneOverdueReminder` | Evidence overdue | Campaigner | "Your milestone evidence is overdue â€” please submit" |
 | `fundReleased` | Funds transferred | Campaigner | "$[amount] transferred to your bank account" |
 | `campaignPausedDonor` | Campaign paused | Subscribed donors | Pause reason + assurance funds are safe |
 | `campaignResumedDonor` | Campaign resumed | Subscribed donors | Good news + campaign active again |
@@ -1514,12 +1514,12 @@ POST /api/v1/donations/webhook
 | `milestoneAchievedDonor` | Milestone verified | Subscribed donors | What was accomplished + evidence summary |
 | `campaignCompletedDonor` | Campaign completed | Subscribed donors | Final outcome + impact summary + thank you |
 | `infoRequestReminder` | Deadline approaching | Campaigner | "X days remaining to provide requested information" |
-| `infoRequestExpired` | Deadline passed | Campaigner | "Your deadline has passed — campaign may be suspended" |
+| `infoRequestExpired` | Deadline passed | Campaigner | "Your deadline has passed â€” campaign may be suspended" |
 | `bulkRefundCompleted` | Batch refund done | Admin | Summary: X donors refunded, $Y total, Z failed |
 | `welcomeCampaigner` | New campaign created | Campaigner | Welcome + verification guide + support channels |
 | `welcomeDonor` | First donation | Donor | Thank you + what happens next + support channels |
 
-### 13.2 `campaignCancelledRefund` Email — Detailed Specification
+### 13.2 `campaignCancelledRefund` Email â€” Detailed Specification
 
 This is the most critical email template. Full specification:
 
@@ -1530,82 +1530,82 @@ From: LastDonor.org <support@lastdonor.org>
 Reply-To: support@lastdonor.org
 
 Body Structure:
-┌──────────────────────────────────────────────────────┐
-│  [LastDonor.org Logo]                                │
-│                                                       │
-│  Dear {{donor_name}},                                │
-│                                                       │
-│  We're writing to inform you that the campaign       │
-│  "{{campaign_title}}" has been cancelled.            │
-│                                                       │
-│  WHAT HAPPENED                                        │
-│  {{cancellation_reason_detail}}                       │
-│  [e.g., "After thorough review, our verification     │
-│  team found that the campaigner could not provide     │
-│  authentic supporting documents for their story."]    │
-│                                                       │
-│  YOUR REFUND                                          │
-│  Your donation of ${{donation_amount}} has been       │
-│  fully refunded to your original payment method.      │
-│  Please allow 5-10 business days for the refund       │
-│  to appear on your statement.                         │
-│                                                       │
-│  Refund Reference: {{refund_reference}}               │
-│                                                       │
-│  OUR COMMITMENT TO YOU                                │
-│  We take full responsibility for this situation.      │
-│  At LastDonor.org, your trust is our highest          │
-│  priority. We want you to know that your generous     │
-│  support will never go to an unverified cause.        │
-│  Every campaign on our platform undergoes rigorous    │
-│  document verification before launch.                 │
-│                                                       │
-│  ─────────────────────────────────────────            │
-│                                                       │
-│  YOU CAN STILL MAKE A DIFFERENCE                      │
-│  Here are verified campaigns in {{category}} that     │
-│  need your support:                                   │
-│                                                       │
-│  ┌────────────────────────────────────────┐           │
-│  │ [Campaign Hero Image]                  │           │
-│  │ {{similar_campaign_1_title}}           │           │
-│  │ ${{raised}} raised of ${{goal}}       │           │
-│  │ ✅ Fully Verified                      │           │
-│  │ [DONATE NOW — orange button]           │           │
-│  └────────────────────────────────────────┘           │
-│                                                       │
-│  ┌────────────────────────────────────────┐           │
-│  │ [Campaign Hero Image]                  │           │
-│  │ {{similar_campaign_2_title}}           │           │
-│  │ ${{raised}} raised of ${{goal}}       │           │
-│  │ ✅ Fully Verified                      │           │
-│  │ [DONATE NOW — orange button]           │           │
-│  └────────────────────────────────────────┘           │
-│                                                       │
-│  ┌────────────────────────────────────────┐           │
-│  │ [Campaign Hero Image]                  │           │
-│  │ {{similar_campaign_3_title}}           │           │
-│  │ ${{raised}} raised of ${{goal}}       │           │
-│  │ ✅ Fully Verified                      │           │
-│  │ [DONATE NOW — orange button]           │           │
-│  └────────────────────────────────────────┘           │
-│                                                       │
-│  [VIEW ALL VERIFIED CAMPAIGNS — teal button]          │
-│                                                       │
-│  ─────────────────────────────────────────            │
-│                                                       │
-│  NEED HELP?                                           │
-│  📞 Call us: 1-800-XXX-XXXX                          │
-│  💬 Live Chat: lastdonor.org/chat                    │
-│  📧 Email: support@lastdonor.org                     │
-│  📱 WhatsApp: +1-XXX-XXX-XXXX                       │
-│                                                       │
-│  With gratitude,                                      │
-│  The LastDonor.org Team                               │
-│                                                       │
-│  ─────────────────────────────────────────            │
-│  [Unsubscribe] | [Email Preferences] | [Privacy]     │
-└──────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  [LastDonor.org Logo]                                â”‚
+â”‚                                                       â”‚
+â”‚  Dear {{donor_name}},                                â”‚
+â”‚                                                       â”‚
+â”‚  We're writing to inform you that the campaign       â”‚
+â”‚  "{{campaign_title}}" has been cancelled.            â”‚
+â”‚                                                       â”‚
+â”‚  WHAT HAPPENED                                        â”‚
+â”‚  {{cancellation_reason_detail}}                       â”‚
+â”‚  [e.g., "After thorough review, our verification     â”‚
+â”‚  team found that the campaigner could not provide     â”‚
+â”‚  authentic supporting documents for their story."]    â”‚
+â”‚                                                       â”‚
+â”‚  YOUR REFUND                                          â”‚
+â”‚  Your donation of ${{donation_amount}} has been       â”‚
+â”‚  fully refunded to your original payment method.      â”‚
+â”‚  Please allow 5-10 business days for the refund       â”‚
+â”‚  to appear on your statement.                         â”‚
+â”‚                                                       â”‚
+â”‚  Refund Reference: {{refund_reference}}               â”‚
+â”‚                                                       â”‚
+â”‚  OUR COMMITMENT TO YOU                                â”‚
+â”‚  We take full responsibility for this situation.      â”‚
+â”‚  At LastDonor.org, your trust is our highest          â”‚
+â”‚  priority. We want you to know that your generous     â”‚
+â”‚  support will never go to an unverified cause.        â”‚
+â”‚  Every campaign on our platform undergoes rigorous    â”‚
+â”‚  document verification before launch.                 â”‚
+â”‚                                                       â”‚
+â”‚  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€            â”‚
+â”‚                                                       â”‚
+â”‚  YOU CAN STILL MAKE A DIFFERENCE                      â”‚
+â”‚  Here are verified campaigns in {{category}} that     â”‚
+â”‚  need your support:                                   â”‚
+â”‚                                                       â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”           â”‚
+â”‚  â”‚ [Campaign Hero Image]                  â”‚           â”‚
+â”‚  â”‚ {{similar_campaign_1_title}}           â”‚           â”‚
+â”‚  â”‚ ${{raised}} raised of ${{goal}}       â”‚           â”‚
+â”‚  â”‚ âœ… Fully Verified                      â”‚           â”‚
+â”‚  â”‚ [DONATE NOW â€” orange button]           â”‚           â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜           â”‚
+â”‚                                                       â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”           â”‚
+â”‚  â”‚ [Campaign Hero Image]                  â”‚           â”‚
+â”‚  â”‚ {{similar_campaign_2_title}}           â”‚           â”‚
+â”‚  â”‚ ${{raised}} raised of ${{goal}}       â”‚           â”‚
+â”‚  â”‚ âœ… Fully Verified                      â”‚           â”‚
+â”‚  â”‚ [DONATE NOW â€” orange button]           â”‚           â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜           â”‚
+â”‚                                                       â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”           â”‚
+â”‚  â”‚ [Campaign Hero Image]                  â”‚           â”‚
+â”‚  â”‚ {{similar_campaign_3_title}}           â”‚           â”‚
+â”‚  â”‚ ${{raised}} raised of ${{goal}}       â”‚           â”‚
+â”‚  â”‚ âœ… Fully Verified                      â”‚           â”‚
+â”‚  â”‚ [DONATE NOW â€” orange button]           â”‚           â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜           â”‚
+â”‚                                                       â”‚
+â”‚  [VIEW ALL VERIFIED CAMPAIGNS â€” teal button]          â”‚
+â”‚                                                       â”‚
+â”‚  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€            â”‚
+â”‚                                                       â”‚
+â”‚  NEED HELP?                                           â”‚
+â”‚  ðŸ“ž Call us: 1-800-XXX-XXXX                          â”‚
+â”‚  ðŸ’¬ Live Chat: lastdonor.org/chat                    â”‚
+â”‚  ðŸ“§ Email: support@lastdonor.org                     â”‚
+â”‚  ðŸ“± WhatsApp: +1-XXX-XXX-XXXX                       â”‚
+â”‚                                                       â”‚
+â”‚  With gratitude,                                      â”‚
+â”‚  The LastDonor.org Team                               â”‚
+â”‚                                                       â”‚
+â”‚  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€            â”‚
+â”‚  [Unsubscribe] | [Email Preferences] | [Privacy]     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### 13.3 Notification Type Additions
@@ -1650,38 +1650,38 @@ Add to existing `notificationTypeEnum`:
 ### 14.2 Verification Queue
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│  VERIFICATION QUEUE                                    [Filter ▼]  │
-│                                                                      │
-│  ┌─── Stats ────────────────────────────────────────────────────┐  │
-│  │ Awaiting Review: 12 │ In Progress: 3 │ Avg Review Time: 18h │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│                                                                      │
-│  # │ Campaign        │ Category │ Submitted │ Docs │ Status        │
-│  ──┼────────────────┼──────────┼───────────┼──────┼───────────────│
-│  1 │ Help Sarah...  │ Medical  │ 2h ago    │ 4/4  │ 🟡 Ready      │
-│  2 │ Rebuild Home   │ Disaster │ 5h ago    │ 3/5  │ ⚪ Incomplete  │
-│  3 │ School Fees    │ Education│ 1d ago    │ 3/3  │ 🟡 Ready      │
-│  4 │ Community Well │ Community│ 2d ago    │ 5/5  │ 🔵 T1 Done    │
-│                                                                      │
-│  [Click row → Opens verification review panel]                      │
-└─────────────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  VERIFICATION QUEUE                                    [Filter â–¼]  â”‚
+â”‚                                                                      â”‚
+â”‚  â”Œâ”€â”€â”€ Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚ Awaiting Review: 12 â”‚ In Progress: 3 â”‚ Avg Review Time: 18h â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â”‚                                                                      â”‚
+â”‚  # â”‚ Campaign        â”‚ Category â”‚ Submitted â”‚ Docs â”‚ Status        â”‚
+â”‚  â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”‚
+â”‚  1 â”‚ Help Sarah...  â”‚ Medical  â”‚ 2h ago    â”‚ 4/4  â”‚ ðŸŸ¡ Ready      â”‚
+â”‚  2 â”‚ Rebuild Home   â”‚ Disaster â”‚ 5h ago    â”‚ 3/5  â”‚ âšª Incomplete  â”‚
+â”‚  3 â”‚ School Fees    â”‚ Educationâ”‚ 1d ago    â”‚ 3/3  â”‚ ðŸŸ¡ Ready      â”‚
+â”‚  4 â”‚ Community Well â”‚ Communityâ”‚ 2d ago    â”‚ 5/5  â”‚ ðŸ”µ T1 Done    â”‚
+â”‚                                                                      â”‚
+â”‚  [Click row â†’ Opens verification review panel]                      â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### 14.3 Fund Release Queue
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│  FUND RELEASE QUEUE                                    [Filter ▼]  │
-│                                                                      │
-│  # │ Campaign       │ Phase │ Amount   │ Evidence │ Submitted │ Act │
-│  ──┼───────────────┼───────┼──────────┼──────────┼───────────┼─────│
-│  1 │ Help Sarah    │ 2/3   │ $6,000   │ 3 files  │ 1d ago    │ [▶] │
-│  2 │ Rebuild Home  │ 1/3   │ $4,500   │ 2 files  │ 3d ago    │ [▶] │
-│  3 │ School Fees   │ 3/3   │ $2,000   │ 4 files  │ 5d ago    │ [▶] │
-│                                                                      │
-│  [▶] = Review Evidence → Approve / Reject / Request More            │
-└─────────────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  FUND RELEASE QUEUE                                    [Filter â–¼]  â”‚
+â”‚                                                                      â”‚
+â”‚  # â”‚ Campaign       â”‚ Phase â”‚ Amount   â”‚ Evidence â”‚ Submitted â”‚ Act â”‚
+â”‚  â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”‚
+â”‚  1 â”‚ Help Sarah    â”‚ 2/3   â”‚ $6,000   â”‚ 3 files  â”‚ 1d ago    â”‚ [â–¶] â”‚
+â”‚  2 â”‚ Rebuild Home  â”‚ 1/3   â”‚ $4,500   â”‚ 2 files  â”‚ 3d ago    â”‚ [â–¶] â”‚
+â”‚  3 â”‚ School Fees   â”‚ 3/3   â”‚ $2,000   â”‚ 4 files  â”‚ 5d ago    â”‚ [â–¶] â”‚
+â”‚                                                                      â”‚
+â”‚  [â–¶] = Review Evidence â†’ Approve / Reject / Request More            â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
@@ -1733,9 +1733,9 @@ Add to existing `notificationTypeEnum`:
 | **W9** | Admin bulk email UI | /admin/communications page |
 | **W9** | Refund batch tracking | /admin/refunds page with progress monitoring |
 | **W10** | Re-engagement CTA engine | Similar campaign recommendation algorithm |
-| **W10** | Automated refund emails | Campaign cancellation → automatic refund + email with alternatives |
+| **W10** | Automated refund emails | Campaign cancellation â†’ automatic refund + email with alternatives |
 | **W10** | Trust badge integration | Verification badges, milestone progress, fund release indicators on campaign cards and pages |
-| **W11** | End-to-end testing | Full flow: create → verify → fund → milestone → complete |
+| **W11** | End-to-end testing | Full flow: create â†’ verify â†’ fund â†’ milestone â†’ complete |
 | **W11** | Security audit | Document storage, PII handling, access controls |
 
 ### Phase 4: Multi-Channel Support (Weeks 12-15)
@@ -1760,7 +1760,7 @@ Add to existing `notificationTypeEnum`:
 | **W17** | Performance optimization | Ensure refund batches, email sends, and verification queries are performant |
 | **W17** | Load testing | Simulate mass refund of 1000+ donations |
 | **W18** | Documentation | Internal SOP for verification reviewers, support agents |
-| **W18** | Launch | Feature flag rollout → public launch |
+| **W18** | Launch | Feature flag rollout â†’ public launch |
 
 ---
 
@@ -1813,16 +1813,16 @@ Add to existing `notificationTypeEnum`:
 | **Milestone evidence submission rate** | > 90% of Phase 1 milestones submitted within 30 days of estimated date | campaign_milestones table |
 | **Fund release accuracy** | 100% of releases match approved milestone amounts | fund_releases + campaign_milestones reconciliation |
 | **Refund processing time** | < 5 business days from cancellation to all refunds processed | refund_batches completed_at - started_at |
-| **Donor retention after refund** | > 25% of refunded donors donate to recommended campaign within 30 days | Track clicks on refund email CTAs → new donations |
-| **Support response time — chat** | < 5 minutes (human) during business hours | support_conversations created_at → first response |
-| **Support response time — email** | < 2 hours during business hours | Help Scout/Front metrics |
-| **Support response time — WhatsApp** | < 30 minutes during business hours | WhatsApp Business API metrics |
+| **Donor retention after refund** | > 25% of refunded donors donate to recommended campaign within 30 days | Track clicks on refund email CTAs â†’ new donations |
+| **Support response time â€” chat** | < 5 minutes (human) during business hours | support_conversations created_at â†’ first response |
+| **Support response time â€” email** | < 2 hours during business hours | Help Scout/Front metrics |
+| **Support response time â€” WhatsApp** | < 30 minutes during business hours | WhatsApp Business API metrics |
 | **Support satisfaction score** | > 4.5/5 CSAT | Post-conversation survey |
 | **Fraud detection rate** | 100% of fraudulent campaigns caught before fund release | Verification rejections / total verified |
 | **Donor trust score** (survey) | > 8/10 "I trust that my donation is used as promised" | Quarterly donor survey |
 | **Campaign transparency engagement** | > 40% of donors view at least one milestone update | Analytics on milestone update page views |
 | **Trustpilot review response rate** | 100% of negative reviews responded to within 24 hours (matching WhyDonate's 100% standard) | Trustpilot dashboard |
-| **Trustpilot rating target** | > 4.7★ within first year (matching SpotFund) | Trustpilot |
+| **Trustpilot rating target** | > 4.7â˜… within first year (matching SpotFund) | Trustpilot |
 | **Named agent recognition** | > 20% of positive reviews mention support agent by name (matching WhyDonate pattern) | Trustpilot review analysis |
 
 ### 17.2 Operational Metrics
@@ -1843,8 +1843,8 @@ Add to existing `notificationTypeEnum`:
 
 | Term | Definition |
 |------|-----------|
-| **T1** | Tier 1 — Identity Verified (government ID + selfie confirmed) |
-| **T2** | Tier 2 — Fully Verified (identity + story documents confirmed) |
+| **T1** | Tier 1 â€” Identity Verified (government ID + selfie confirmed) |
+| **T2** | Tier 2 â€” Fully Verified (identity + story documents confirmed) |
 | **Milestone** | A predefined checkpoint at which the campaigner must provide evidence of fund usage |
 | **Phase** | One of three fund release phases tied to milestones |
 | **Escrow** | Funds held by LastDonor (via Stripe) until milestone approval |
@@ -1862,13 +1862,13 @@ Add to existing `notificationTypeEnum`:
 A public-facing `/trust` page explaining the LastDonor Trust Guarantee:
 
 1. **Hero**: "Every Campaign Verified. Every Dollar Accountable. Every Donor Protected."
-2. **How Verification Works**: Visual 4-step process (Submit → Documents → Review → Verified badge)
+2. **How Verification Works**: Visual 4-step process (Submit â†’ Documents â†’ Review â†’ Verified badge)
 3. **Milestone-Based Fund Release**: Visual 3-phase diagram with evidence examples
-4. **Our Guarantee**: "If we cancel a campaign, you get a full refund — no questions asked."
+4. **Our Guarantee**: "If we cancel a campaign, you get a full refund â€” no questions asked."
 5. **Campaign Transparency**: Example of status badges, timeline, update visibility
 6. **Real Support, Real People**: Support channel showcase with response time guarantees
 7. **FAQ**: Common trust questions
-8. **Comparison**: "How we compare" table vs. GoFundMe, GiveSendGo, SpotFund, WhyDonate (factual, non-disparaging — highlight our verification + milestones as unique advantages even over SpotFund/WhyDonate)
+8. **Comparison**: "How we compare" table vs. GoFundMe, GiveSendGo, SpotFund, WhyDonate (factual, non-disparaging â€” highlight our verification + milestones as unique advantages even over SpotFund/WhyDonate)
 
 ---
 

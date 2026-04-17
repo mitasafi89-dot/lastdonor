@@ -1,12 +1,18 @@
-import NextAuth from 'next-auth';
+import NextAuth, { CredentialsSignin } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { db } from '@/db';
 import * as schema from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import bcrypt from 'bcryptjs';
 import type { UserRole } from '@/types';
+
+/* ---- Custom credential errors (code surfaces in client result.code) ---- */
+class NoAccountError extends CredentialsSignin { code = 'no_account'; }
+class OAuthOnlyError extends CredentialsSignin { code = 'oauth_only'; }
+class InvalidPasswordError extends CredentialsSignin { code = 'invalid_password'; }
+class AccountLockedError extends CredentialsSignin { code = 'account_locked'; }
+class PasswordResetRequiredError extends CredentialsSignin { code = 'password_reset_required'; }
 
 const SESSION_MAX_AGE: Record<UserRole, number> = {
   donor: 604800,    // 7 days
@@ -17,35 +23,66 @@ const SESSION_MAX_AGE: Record<UserRole, number> = {
 const LOCKOUT_THRESHOLD = 5;
 const LOCKOUT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
-const failedAttempts = new Map<string, { count: number; firstAttempt: number }>();
+async function checkAccountLocked(email: string): Promise<boolean> {
+  const [user] = await db
+    .select({
+      failedLoginCount: schema.users.failedLoginCount,
+      failedLoginWindowStart: schema.users.failedLoginWindowStart,
+    })
+    .from(schema.users)
+    .where(eq(schema.users.email, email))
+    .limit(1);
 
-function checkAccountLocked(email: string): boolean {
-  const record = failedAttempts.get(email);
-  if (!record) return false;
+  if (!user?.failedLoginWindowStart) return false;
 
-  const elapsed = Date.now() - record.firstAttempt;
+  const elapsed = Date.now() - user.failedLoginWindowStart.getTime();
   if (elapsed > LOCKOUT_WINDOW_MS) {
-    failedAttempts.delete(email);
+    // Window expired, reset
+    await db
+      .update(schema.users)
+      .set({ failedLoginCount: 0, failedLoginWindowStart: null })
+      .where(eq(schema.users.email, email));
     return false;
   }
 
-  return record.count >= LOCKOUT_THRESHOLD;
+  return user.failedLoginCount >= LOCKOUT_THRESHOLD;
 }
 
-function recordFailedAttempt(email: string): void {
-  const record = failedAttempts.get(email);
-  const now = Date.now();
+async function recordFailedAttempt(email: string): Promise<void> {
+  const [user] = await db
+    .select({
+      failedLoginCount: schema.users.failedLoginCount,
+      failedLoginWindowStart: schema.users.failedLoginWindowStart,
+    })
+    .from(schema.users)
+    .where(eq(schema.users.email, email))
+    .limit(1);
 
-  if (!record || now - record.firstAttempt > LOCKOUT_WINDOW_MS) {
-    failedAttempts.set(email, { count: 1, firstAttempt: now });
+  if (!user) return;
+
+  const now = new Date();
+
+  if (!user.failedLoginWindowStart || now.getTime() - user.failedLoginWindowStart.getTime() > LOCKOUT_WINDOW_MS) {
+    // Start a new window
+    await db
+      .update(schema.users)
+      .set({ failedLoginCount: 1, failedLoginWindowStart: now })
+      .where(eq(schema.users.email, email));
     return;
   }
 
-  record.count += 1;
+  // Increment within the existing window
+  await db
+    .update(schema.users)
+    .set({ failedLoginCount: user.failedLoginCount + 1 })
+    .where(eq(schema.users.email, email));
 }
 
-function clearFailedAttempts(email: string): void {
-  failedAttempts.delete(email);
+async function clearFailedAttempts(email: string): Promise<void> {
+  await db
+    .update(schema.users)
+    .set({ failedLoginCount: 0, failedLoginWindowStart: null })
+    .where(eq(schema.users.email, email));
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -58,7 +95,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: 'jwt' },
   pages: {
     signIn: '/login',
-    newUser: '/register',
+  },
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production'
+        ? '__Secure-next-auth.session-token'
+        : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+    callbackUrl: {
+      name: process.env.NODE_ENV === 'production'
+        ? '__Secure-next-auth.callback-url'
+        : 'next-auth.callback-url',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+    csrfToken: {
+      name: process.env.NODE_ENV === 'production'
+        ? '__Host-next-auth.csrf-token'
+        : 'next-auth.csrf-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
   },
   providers: [
     Google({
@@ -76,35 +147,46 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (!email || !password) return null;
 
-        if (checkAccountLocked(email)) {
-          throw new Error('Account temporarily locked. Try again in 15 minutes.');
+        if (await checkAccountLocked(email)) {
+          throw new AccountLockedError();
         }
 
-        const [user] = await db
-          .select()
-          .from(schema.users)
-          .where(eq(schema.users.email, email))
-          .limit(1);
+        try {
+          const [user] = await db
+            .select()
+            .from(schema.users)
+            .where(eq(schema.users.email, email))
+            .limit(1);
 
-        if (!user?.passwordHash) {
-          recordFailedAttempt(email);
+          if (!user) throw new NoAccountError();
+          if (!user.passwordHash) throw new OAuthOnlyError();
+
+          const { verifyPassword, verifyLegacyPassword } = await import('@/lib/password');
+          const valid = await verifyPassword(password, user.passwordHash);
+          if (!valid) {
+            // Check if this is a legacy (unpeppered) hash - correct password
+            // but hash was created before the pepper was introduced.
+            const isLegacyHash = await verifyLegacyPassword(password, user.passwordHash);
+            if (isLegacyHash) {
+              throw new PasswordResetRequiredError();
+            }
+            await recordFailedAttempt(email);
+            throw new InvalidPasswordError();
+          }
+
+          await clearFailedAttempts(email);
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.avatarUrl,
+          };
+        } catch (err) {
+          if (err instanceof CredentialsSignin) throw err;
+          console.error('[auth] authorize error:', err);
           return null;
         }
-
-        const valid = await bcrypt.compare(password, user.passwordHash);
-        if (!valid) {
-          recordFailedAttempt(email);
-          return null;
-        }
-
-        clearFailedAttempts(email);
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.avatarUrl,
-        };
       },
     }),
   ],
@@ -112,12 +194,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user?.id) {
         token.id = user.id;
-        const [dbUser] = await db
-          .select({ role: schema.users.role })
-          .from(schema.users)
-          .where(eq(schema.users.id, user.id))
-          .limit(1);
-        token.role = dbUser?.role ?? 'donor';
+        try {
+          const [dbUser] = await db
+            .select({ role: schema.users.role })
+            .from(schema.users)
+            .where(eq(schema.users.id, user.id))
+            .limit(1);
+          token.role = dbUser?.role ?? 'donor';
+        } catch {
+          token.role = 'donor';
+        }
       }
       return token;
     },

@@ -2,13 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import {
-  BanknotesIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  ExclamationTriangleIcon,
-  XCircleIcon,
-} from '@heroicons/react/24/outline';
 
 type Withdrawal = {
   id: string;
@@ -23,13 +16,13 @@ type Withdrawal = {
   processedAt: string | null;
 };
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: typeof ClockIcon }> = {
-  requested: { label: 'Requested', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400', icon: ClockIcon },
-  approved: { label: 'Approved', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400', icon: CheckCircleIcon },
-  processing: { label: 'Processing', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400', icon: ClockIcon },
-  completed: { label: 'Completed', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400', icon: CheckCircleIcon },
-  rejected: { label: 'Rejected', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400', icon: XCircleIcon },
-  failed: { label: 'Failed', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400', icon: ExclamationTriangleIcon },
+const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+  requested: { label: 'Requested', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' },
+  approved: { label: 'Approved', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
+  processing: { label: 'Processing', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400' },
+  completed: { label: 'Completed', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
+  rejected: { label: 'Rejected', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
+  failed: { label: 'Failed', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
 };
 
 const FILTER_OPTIONS = ['all', 'requested', 'approved', 'processing', 'completed', 'rejected', 'failed'] as const;
@@ -93,7 +86,6 @@ export default function WithdrawalsClient({ withdrawals }: { withdrawals: Withdr
       {/* Withdrawals list */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
-          <BanknotesIcon className="h-10 w-10 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground">
             {withdrawals.length === 0 ? 'No withdrawal requests yet' : 'No withdrawals match the selected filter'}
           </p>
@@ -102,7 +94,6 @@ export default function WithdrawalsClient({ withdrawals }: { withdrawals: Withdr
         <div className="space-y-3">
           {filtered.map((w) => {
             const cfg = STATUS_CONFIG[w.status] ?? STATUS_CONFIG.requested;
-            const StatusIcon = cfg.icon;
             return (
               <div
                 key={w.id}
@@ -130,8 +121,7 @@ export default function WithdrawalsClient({ withdrawals }: { withdrawals: Withdr
                   <span className="text-lg font-bold text-foreground">
                     ${(w.amount / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </span>
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.color}`}>
-                    <StatusIcon className="h-3.5 w-3.5" />
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.color}`}>
                     {cfg.label}
                   </span>
                 </div>

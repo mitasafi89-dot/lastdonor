@@ -1,4 +1,4 @@
-# LastDonor.org — Competitive Analysis & Funding Breakdown
+# LastDonor.org - Competitive Analysis & Funding Breakdown
 
 **Version**: 0.1  
 **Date**: March 20, 2026  
@@ -10,10 +10,10 @@
 
 We compete in two overlapping markets:
 
-1. **Crowdfunding Platforms** — GoFundMe, GiveSendGo, GlobalGiving (open platforms where anyone can create a fundraiser)
-2. **Cause-Specific Nonprofits** — Wounded Warrior Project, American Red Cross, St. Jude, Tunnel to Towers, Gary Sinise Foundation, Team Rubicon, Direct Relief (organizations that run their own programs in specific verticals)
+1. **Crowdfunding Platforms** - GoFundMe, GiveSendGo, GlobalGiving (open platforms where anyone can create a fundraiser)
+2. **Cause-Specific Nonprofits** - Wounded Warrior Project, American Red Cross, St. Jude, Tunnel to Towers, Gary Sinise Foundation, Team Rubicon, Direct Relief (organizations that run their own programs in specific verticals)
 
-LastDonor is **hybrid** — a platform like GoFundMe, but editorially curated like a cause-specific nonprofit. This is our unique position.
+LastDonor is **hybrid** - a platform like GoFundMe, but editorially curated like a cause-specific nonprofit. This is our unique position.
 
 ---
 
@@ -39,7 +39,7 @@ LastDonor is **hybrid** — a platform like GoFundMe, but editorially curated li
 
 | Category | Est. % of Volume | Est. Annual $ | Notes |
 |---|---|---|---|
-| **Medical** | ~33% | ~$2.5B | Largest category — surgeries, cancer, hospital bills, chronic illness, mental health |
+| **Medical** | ~33% | ~$2.5B | Largest category - surgeries, cancer, hospital bills, chronic illness, mental health |
 | **Memorial / Funeral** | ~15% | ~$1.1B | Funeral costs, burial, memorial funds for families of deceased |
 | **Emergency** | ~14% | ~$1.0B | House fires, sudden crises, car accidents, evictions, job loss |
 | **Charity / Nonprofit** | ~10% | ~$750M | Fastest-growing category in 2025; nonprofits fundraising on platform |
@@ -63,7 +63,7 @@ LastDonor is **hybrid** — a platform like GoFundMe, but editorially curated li
 - **Social challenges**: 80,000+ organizers activated; 6M+ miles logged
 
 #### GoFundMe Weaknesses (Our Opportunity)
-- **No curation**: Anyone can post anything — scams, fake stories, low-quality campaigns
+- **No curation**: Anyone can post anything - scams, fake stories, low-quality campaigns
 - **No editorial verification**: Stories aren't fact-checked against official sources
 - **Platform fees**: Tips + processing = donors often pay 10-15% more than intended
 - **Oversaturation**: Millions of campaigns means individual stories get lost
@@ -89,7 +89,7 @@ LastDonor is **hybrid** — a platform like GoFundMe, but editorially curated li
 
 | Category | Focus Level | Notes |
 |---|---|---|
-| **Legal** | HIGH | Legal defense funds — highly visible on platform |
+| **Legal** | HIGH | Legal defense funds - highly visible on platform |
 | **Medical** | HIGH | Surgery, treatment, hospital bills |
 | **Memorial** | HIGH | Funeral and memorial funds |
 | **Family** | HIGH | Family emergencies, housing, adoption |
@@ -105,7 +105,7 @@ LastDonor is **hybrid** — a platform like GoFundMe, but editorially curated li
 #### GiveSendGo Strengths
 - 0% platform fee (truly free)
 - Faith-based community (prayer button, prayer team calls you)
-- "Freedom fundraising" — doesn't deplatform controversial causes
+- "Freedom fundraising" - doesn't deplatform controversial causes
 - Monthly "Give Back" program donates to active campaigns
 - Real-time live donation feed on homepage
 
@@ -148,10 +148,10 @@ LastDonor is **hybrid** — a platform like GoFundMe, but editorially curated li
 | **TOTAL (est.)** | 100% | ~$100M/yr | |
 
 #### GlobalGiving Weaknesses (Our Opportunity)
-- International/developing world focus — not domestic US individuals
+- International/developing world focus - not domestic US individuals
 - Organization-based, not individual-based (can't help a specific family)
 - High fees (5-12%)
-- Slow, grant-based model — not urgent/reactive
+- Slow, grant-based model - not urgent/reactive
 - Very small compared to GoFundMe
 
 ---
@@ -173,7 +173,7 @@ LastDonor is **hybrid** — a platform like GoFundMe, but editorially curated li
 
 | Program Area | Est. % of Revenue | Est. Annual $ | What It Funds |
 |---|---|---|---|
-| **Biomedical Services (Blood)** | ~45% | ~$1.58B | Blood collection, testing, distribution — largest blood supplier in US |
+| **Biomedical Services (Blood)** | ~45% | ~$1.58B | Blood collection, testing, distribution - largest blood supplier in US |
 | **Disaster Relief** | ~22% | ~$770M | Shelter, meals, case management for hurricanes, fires, floods, tornadoes |
 | **Service to Armed Forces** | ~8% | ~$280M | Military family communication, veteran support, emergency financial assistance |
 | **Training & Education** | ~7% | ~$245M | CPR/First Aid certification, swim lessons, disaster preparedness |
@@ -184,9 +184,9 @@ LastDonor is **hybrid** — a platform like GoFundMe, but editorially curated li
 | **TOTAL** | 100% | ~$3.5B | |
 
 #### Overlap with LastDonor
-- Disaster relief (22% of their work) — we cover this
-- Military/Armed Forces (8%) — we cover this
-- Community services (4%) — we cover this
+- Disaster relief (22% of their work) - we cover this
+- Military/Armed Forces (8%) - we cover this
+- Community services (4%) - we cover this
 - TOTAL overlap: ~34% of their cause areas
 
 ---
@@ -217,7 +217,7 @@ LastDonor is **hybrid** — a platform like GoFundMe, but editorially curated li
 - Medical/families area: St. Jude covers ONLY pediatric catastrophic diseases
 - Our opportunity: We cover families with ANY medical crisis (adult cancer, surgeries, accidents, rare diseases)
 - We also cover funeral costs, which St. Jude does not
-- We're not a hospital — we fund families, not research
+- We're not a hospital - we fund families, not research
 
 ---
 
@@ -247,9 +247,9 @@ LastDonor is **hybrid** — a platform like GoFundMe, but editorially curated li
 | **TOTAL** | 100% | ~$400M | |
 
 #### Overlap with LastDonor
-- 100% military/veteran focus — we cover this cause (~35% of our campaigns)
+- 100% military/veteran focus - we cover this cause (~35% of our campaigns)
 - WWP focuses on programs & services, not direct financial assistance to individual families
-- Our opportunity: We fund SPECIFIC families with specific crises — not programs. A widow who needs $15K for rent is not WWP's model.
+- Our opportunity: We fund SPECIFIC families with specific crises - not programs. A widow who needs $15K for rent is not WWP's model.
 
 ---
 
@@ -278,8 +278,8 @@ LastDonor is **hybrid** — a platform like GoFundMe, but editorially curated li
 | **TOTAL** | 100% | ~$300M | |
 
 #### Overlap with LastDonor
-- Military families (Gold Star, severely injured) — ~70% of their work overlaps with our `military` + `veterans` categories
-- First responders — ~8% overlaps with our first responder campaigns
+- Military families (Gold Star, severely injured) - ~70% of their work overlaps with our `military` + `veterans` categories
+- First responders - ~8% overlaps with our first responder campaigns
 - They do BIG commitments (full homes, mortgages). We do smaller, faster crisis response (rent, bills, emergencies)
 
 ---
@@ -302,7 +302,7 @@ LastDonor is **hybrid** — a platform like GoFundMe, but editorially curated li
 | **Home Modifications** | ~10% | ~$4M | Ramps, kitchens, bathrooms for accessibility |
 | **Mobility Devices & Vehicles** | ~8% | ~$3.2M | Wheelchairs, adapted vehicles for wounded heroes |
 | **First Responder Support** | ~10% | ~$4M | Equipment, training for fire/police/EMS |
-| **Fallen Hero Families** | ~10% | ~$4M | Snowball Express — annual retreat for families of fallen |
+| **Fallen Hero Families** | ~10% | ~$4M | Snowball Express - annual retreat for families of fallen |
 | **Mental Wellness** | ~8% | ~$3.2M | Mental health partnerships for military & first responders |
 | **Lt. Dan Band / Entertainment** | ~8% | ~$3.2M | Free concerts on military bases and for first responders |
 | **Education Programs** | ~5% | ~$2M | WWII museum trips, next-gen education |
@@ -311,8 +311,8 @@ LastDonor is **hybrid** — a platform like GoFundMe, but editorially curated li
 | **TOTAL** | 100% | ~$40M | |
 
 #### Overlap with LastDonor
-- Military/veteran (70% of their work) — overlaps with our military categories
-- First responders (20%) — overlaps with our community/first responder campaigns
+- Military/veteran (70% of their work) - overlaps with our military categories
+- First responders (20%) - overlaps with our community/first responder campaigns
 - They do PROGRAMS, not individual crisis funding. We fund specific families.
 
 ---
@@ -341,8 +341,8 @@ LastDonor is **hybrid** — a platform like GoFundMe, but editorially curated li
 | **TOTAL** | 100% | ~$100M | |
 
 #### Overlap with LastDonor
-- Disaster relief (65% of work) — overlaps with our `disaster` category
-- Veteran engagement (12%) — overlaps with our `veterans` category
+- Disaster relief (65% of work) - overlaps with our `disaster` category
+- Veteran engagement (12%) - overlaps with our `veterans` category
 - They provide LABOR (volunteer cleanup), not money. We provide money to affected families.
 
 ---
@@ -371,13 +371,13 @@ LastDonor is **hybrid** — a platform like GoFundMe, but editorially curated li
 | **TOTAL** | 100% | ~$2B | Most is goods, not cash |
 
 #### Overlap with LastDonor
-- Medical focus — overlaps with our `medical` category
-- Disaster response — overlaps with our `disaster` category
+- Medical focus - overlaps with our `medical` category
+- Disaster response - overlaps with our `disaster` category
 - They provide SUPPLIES to health facilities. We provide money to individuals.
 
 ---
 
-## 4. Funding by Cause Area — Ranked by Total Annual Market
+## 4. Funding by Cause Area - Ranked by Total Annual Market
 
 ### Annual Funding Flow by Cause (US Charitable Giving + Crowdfunding)
 
@@ -385,16 +385,16 @@ Ranked by total annual funding flowing through each cause area:
 
 | Rank | Cause Area | Est. Annual Market | Biggest Players | Gap Severity | LastDonor Category |
 |---|---|---|---|---|---|
-| **1** | **Medical / Health** | **~$50B+** | St. Jude ($3.5B), Direct Relief ($2B), GoFundMe (~$2.5B) | HIGH — nobody verifies individual adult medical campaigns | `medical` |
-| **2** | **Housing / Homelessness** | **~$8B+** | Habitat for Humanity ($2B+), HUD, local orgs | HIGH — nobody crowdfunds verified individual housing crises | `community` |
-| **3** | **Disaster Relief** | **~$5B+** | Red Cross ($770M), Direct Relief ($400M), GoFundMe ($330M), Team Rubicon ($50M) | HIGH — nobody auto-generates verified campaigns within hours | `disaster` |
-| **4** | **Community / General** | **~$3B+** | United Way ($3.3B), GoFundMe ($375M), community foundations | MEDIUM — United Way funds orgs, not individuals | `community` |
-| **5** | **Military / Veterans** | **~$2.5B+** | WWP ($400M), T2T ($300M), Gary Sinise ($40M), VA grants | HIGH — crowded at top, empty at bottom ($5K-$25K gap) | `military`, `veterans` |
-| **6** | **Funeral / Bereavement** | **~$1.1B+** | GoFundMe Memorial (~$1.1B), virtually no dedicated nonprofits | **CRITICAL** — zero dedicated nonprofits, zero curation | `memorial` |
-| **7** | **Monthly Bills / Essential Expenses** | **~$500M+** (growing 20%/yr) | GoFundMe only (fastest-growing category) | **CRITICAL** — no competitor even names this category | `essential-needs` |
-| **8** | **First Responders** | **~$500M+** | T2T ($24M), NFFF (~$15M), Gary Sinise ($4M) | **CRITICAL** — total dedicated funding <$50M nationwide | `first-responders` |
-| **9** | **Crime Victims / Accidents** | **~$400M+** | GoFundMe Emergency (portion), VOCA grants | HIGH — no verified individual campaigns exist | `community` |
-| **10** | **Domestic Violence Survivors** | **~$300M+** | DV shelters (safety only), GoFundMe (unverified) | HIGH — shelters provide safety, nobody funds financial rebuilding | `community` |
+| **1** | **Medical / Health** | **~$50B+** | St. Jude ($3.5B), Direct Relief ($2B), GoFundMe (~$2.5B) | HIGH - nobody verifies individual adult medical campaigns | `medical` |
+| **2** | **Housing / Homelessness** | **~$8B+** | Habitat for Humanity ($2B+), HUD, local orgs | HIGH - nobody crowdfunds verified individual housing crises | `community` |
+| **3** | **Disaster Relief** | **~$5B+** | Red Cross ($770M), Direct Relief ($400M), GoFundMe ($330M), Team Rubicon ($50M) | HIGH - nobody auto-generates verified campaigns within hours | `disaster` |
+| **4** | **Community / General** | **~$3B+** | United Way ($3.3B), GoFundMe ($375M), community foundations | MEDIUM - United Way funds orgs, not individuals | `community` |
+| **5** | **Military / Veterans** | **~$2.5B+** | WWP ($400M), T2T ($300M), Gary Sinise ($40M), VA grants | HIGH - crowded at top, empty at bottom ($5K-$25K gap) | `military`, `veterans` |
+| **6** | **Funeral / Bereavement** | **~$1.1B+** | GoFundMe Memorial (~$1.1B), virtually no dedicated nonprofits | **CRITICAL** - zero dedicated nonprofits, zero curation | `memorial` |
+| **7** | **Monthly Bills / Essential Expenses** | **~$500M+** (growing 20%/yr) | GoFundMe only (fastest-growing category) | **CRITICAL** - no competitor even names this category | `essential-needs` |
+| **8** | **First Responders** | **~$500M+** | T2T ($24M), NFFF (~$15M), Gary Sinise ($4M) | **CRITICAL** - total dedicated funding <$50M nationwide | `first-responders` |
+| **9** | **Crime Victims / Accidents** | **~$400M+** | GoFundMe Emergency (portion), VOCA grants | HIGH - no verified individual campaigns exist | `community` |
+| **10** | **Domestic Violence Survivors** | **~$300M+** | DV shelters (safety only), GoFundMe (unverified) | HIGH - shelters provide safety, nobody funds financial rebuilding | `community` |
 
 ### Key Insight: Gap Severity vs. Market Size
 
@@ -453,7 +453,7 @@ The biggest gaps are NOT in the biggest markets. The most **exploitable** gaps a
 
 ---
 
-## 6. Gap Analysis — Where LastDonor Wins
+## 6. Gap Analysis - Where LastDonor Wins
 
 ### 6.1 Structural Gaps (How the Industry Fails People)
 
@@ -473,13 +473,13 @@ Nonprofits like Red Cross and T2T make BIG investments ($200K homes, $50M disast
 - **Current solutions**: Only unverified GoFundMe campaigns
 
 #### Gap 3: The "Adult Medical" Void
-St. Jude = pediatric only. Direct Relief = supplies to hospitals. GoFundMe Medical = anyone can post anything. **Nobody curates and verifies adult medical campaigns** — the 40-year-old with sudden cancer, the uninsured car accident victim, the single parent needing surgery.
+St. Jude = pediatric only. Direct Relief = supplies to hospitals. GoFundMe Medical = anyone can post anything. **Nobody curates and verifies adult medical campaigns** - the 40-year-old with sudden cancer, the uninsured car accident victim, the single parent needing surgery.
 
 - **Market size**: ~$2.5B/yr on GoFundMe alone
 - **Verification rate**: ~0% (GoFundMe Guarantee is reactive, not proactive)
 - **Current solutions**: ZERO verified platforms
 
-#### Gap 4: Funeral Costs — $1.1B with Zero Curation
+#### Gap 4: Funeral Costs - $1.1B with Zero Curation
 The average funeral costs $7,000–$12,000. Families in crisis often can't afford it. This drives ~$1.1B/yr on GoFundMe alone. **There is literally no dedicated nonprofit for funeral cost assistance.** This is the single widest-open niche in charitable giving.
 
 - **Average funeral cost**: $7,848 (NFDA 2024)
@@ -487,7 +487,7 @@ The average funeral costs $7,000–$12,000. Families in crisis often can't affor
 - **Dedicated nonprofits**: ZERO
 - **Current solutions**: Only unverified GoFundMe Memorial campaigns
 
-#### Gap 5: Monthly Bills / Essential Expenses — The Invisible Crisis
+#### Gap 5: Monthly Bills / Essential Expenses - The Invisible Crisis
 GoFundMe's 2nd fastest-growing category (+20% YoY). Rent, utilities, food for families hit by job loss, illness, or disability. **No competitor even has a name for this category.** It's growing because the need is growing and nobody else serves it.
 
 - **Growth rate**: +20% year-over-year
@@ -496,7 +496,7 @@ GoFundMe's 2nd fastest-growing category (+20% YoY). Rent, utilities, food for fa
 - **Dedicated competitors**: ZERO
 
 #### Gap 6: Crime Victim / Accident Families
-When someone is shot, hit by a drunk driver, or killed in a workplace accident — the family faces immediate financial devastation. GoFundMe has some of these but unverified. **No nonprofit specifically serves accident/crime victim families with verified individual campaigns.**
+When someone is shot, hit by a drunk driver, or killed in a workplace accident - the family faces immediate financial devastation. GoFundMe has some of these but unverified. **No nonprofit specifically serves accident/crime victim families with verified individual campaigns.**
 
 - **Annual violent crime victims (US)**: ~1.2 million
 - **Annual car accident injuries**: ~2.3 million
@@ -512,8 +512,8 @@ DV shelters provide physical safety but **not financial rebuilding.** A woman es
 - **What shelters DON'T provide**: First month's rent, security deposit, furnishings, car repair
 - **Dedicated financial rebuilding platforms**: ZERO
 
-#### Gap 8: Transparency — Universal Gap Across All Causes
-Not a single competitor — not GoFundMe ($40B raised), not Red Cross ($3.5B/yr), not WWP ($400M) — publicly tracks every dollar from donor to recipient. **This is the broadest competitive gap in the entire charitable sector.**
+#### Gap 8: Transparency - Universal Gap Across All Causes
+Not a single competitor - not GoFundMe ($40B raised), not Red Cross ($3.5B/yr), not WWP ($400M) - publicly tracks every dollar from donor to recipient. **This is the broadest competitive gap in the entire charitable sector.**
 
 - **Number of major platforms with full transparency tracking**: ZERO
 - **Red Cross Haiti controversy**: $500M raised, couldn't account for spending
@@ -557,13 +557,13 @@ Based on funding data and gap analysis, our original 5 categories (`troops`, `ve
 
 | Original Category | Problem | Revised Category | Why |
 |---|---|---|---|
-| `troops` | Too narrow — active duty only | `military` | Covers active duty, KIA families, deployed family needs |
-| `veterans` | Separate from troops but same audience | `veterans` | Keep — distinct needs (PTSD, homelessness, VA benefits gap) |
-| `families` | Too vague — what kind of families? | `medical` | Renamed — medical is the #1 funded cause at $50B+/yr |
-| `disaster` | Good as-is | `disaster` | Keep — $5B+ market, speed is our edge |
+| `troops` | Too narrow - active duty only | `military` | Covers active duty, KIA families, deployed family needs |
+| `veterans` | Separate from troops but same audience | `veterans` | Keep - distinct needs (PTSD, homelessness, VA benefits gap) |
+| `families` | Too vague - what kind of families? | `medical` | Renamed - medical is the #1 funded cause at $50B+/yr |
+| `disaster` | Good as-is | `disaster` | Keep - $5B+ market, speed is our edge |
 | `community` | Catch-all dumping ground | Split into 3 below | Was hiding our biggest gaps |
-| (didn't exist) | First responders had no home | `first-responders` | NEW — $500M+ market with near-zero competitors |
-| (didn't exist) | Funeral costs lumped into community | `memorial` | NEW — $1.1B market with ZERO dedicated nonprofits |
+| (didn't exist) | First responders had no home | `first-responders` | NEW - $500M+ market with near-zero competitors |
+| (didn't exist) | Funeral costs lumped into community | `memorial` | NEW - $1.1B market with ZERO dedicated nonprofits |
 | (didn't exist) | DV, accidents, housing lumped together | `community` | Retained but now focused: housing, DV, accidents, crime victims |
 
 ### 7.2 New Category Structure (8 Categories)
@@ -574,10 +574,10 @@ Based on funding data and gap analysis, our original 5 categories (`troops`, `ve
 | 2 | `disaster` | Disaster Relief | #3 ($5B+) | ~$330M crowdfunding | HIGH | House fire, hurricane, tornado, flood, wildfire, earthquake |
 | 3 | `military` | Military Families | #5 ($2.5B+) | ~$700M individual aid | HIGH | KIA family support, deployment hardship, military spouse crisis |
 | 4 | `veterans` | Veterans | #5 ($2.5B+) | ~$400M services | HIGH | Benefits gap, homeless veterans, wounded warrior needs |
-| 5 | `memorial` | Memorial & Funeral | #6 ($1.1B+) | ~$1.1B crowdfunding | **CRITICAL** | Funeral costs, burial, memorial funds — ZERO competitors |
+| 5 | `memorial` | Memorial & Funeral | #6 ($1.1B+) | ~$1.1B crowdfunding | **CRITICAL** | Funeral costs, burial, memorial funds - ZERO competitors |
 | 6 | `first-responders` | First Responders | #8 ($500M+) | ~$50M dedicated | **CRITICAL** | Injured firefighter, fallen officer family, EMT medical bills |
 | 7 | `community` | Community & Crisis | #4 ($3B+) | ~$375M crowdfunding | MEDIUM | Housing, DV survivors, crime victims, accidents, job loss |
-| 8 | `essential-needs` | Essential Needs | #7 ($500M+) | ~$150M (+20%/yr) | **CRITICAL** | Rent, utilities, food, car repair — the invisible crisis |
+| 8 | `essential-needs` | Essential Needs | #7 ($500M+) | ~$150M (+20%/yr) | **CRITICAL** | Rent, utilities, food, car repair - the invisible crisis |
 
 ### 7.3 Category Distribution Targets (Campaign Mix)
 
@@ -608,7 +608,7 @@ The DB schema `campaigns.category` field needs to be updated:
 
 ## 8. Strategic Takeaways
 
-### 8.1 Medical Is the Biggest Category — Lead With It
+### 8.1 Medical Is the Biggest Category - Lead With It
 
 GoFundMe's #1 category by far is Medical. It generates ~$2.5B/year in crowdfunding alone. Our new `medical` category replaces the vague `families` label. This is where the money is and where trust matters most.
 
@@ -626,7 +626,7 @@ GoFundMe raised $330M for disasters in 2025 alone. Our automated news-to-campaig
 
 ### 8.5 Military Is Crowded at the Top, Empty at the Bottom
 
-WWP ($400M), T2T ($300M), Gary Sinise ($40M) — all doing PROGRAMS and HOMES. NOBODY is doing "$5K to help Sgt. Johnson's family pay rent after he was killed." We fill the gap between losing a loved one and getting VA benefits.
+WWP ($400M), T2T ($300M), Gary Sinise ($40M) - all doing PROGRAMS and HOMES. NOBODY is doing "$5K to help Sgt. Johnson's family pay rent after he was killed." We fill the gap between losing a loved one and getting VA benefits.
 
 ### 8.6 Essential Needs = The Invisible Category Nobody Claims
 
@@ -634,7 +634,7 @@ Fastest-growing GoFundMe segment (+20% YoY). Rent, utilities, food for families 
 
 ### 8.7 Transparency Is a Weapon
 
-Not a single competitor tracks every dollar publicly. GoFundMe doesn't. Red Cross infamously botched Haiti transparency. This is our single biggest trust differentiator — and it applies to ALL categories.
+Not a single competitor tracks every dollar publicly. GoFundMe doesn't. Red Cross infamously botched Haiti transparency. This is our single biggest trust differentiator - and it applies to ALL categories.
 
 ### 8.8 The "Too Small" Crisis = Our Entire Model
 
@@ -649,7 +649,7 @@ The $3,000-$25,000 range is too small for big nonprofits, too important for fami
 | Advantage | Why It's Defensible |
 |---|---|
 | **Editorial verification** | Requires human + AI editorial pipeline; GoFundMe's model can't scale this |
-| **Auto-generated campaigns from news** | Our proprietary AI pipeline — no competitor does this |
+| **Auto-generated campaigns from news** | Our proprietary AI pipeline - no competitor does this |
 | **Last Donor gamification** | Branded mechanic; competitors would have to redesign their entire UX |
 | **100% transparency tracking** | Would require competitors to fundamentally rebuild their payment architecture |
 | **501(c)(3) status on every campaign** | GoFundMe and GiveSendGo are for-profit; can't provide tax receipts on individual campaigns |

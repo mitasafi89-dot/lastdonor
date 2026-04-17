@@ -1,14 +1,12 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { DM_Serif_Display, DM_Sans, DM_Mono } from 'next/font/google';
-import { Suspense } from 'react';
 import { Toaster } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Providers } from '@/components/Providers';
 import { SkipToContent } from '@/components/layout/SkipToContent';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
-import { NavigationProgress } from '@/components/layout/NavigationProgress';
 
 const dmSerifDisplay = DM_Serif_Display({
   weight: '400',
@@ -35,7 +33,7 @@ export const metadata: Metadata = {
   title: {
     template: '%s | LastDonor.org',
     default:
-      'LastDonor.org — Donate to Real People in Need | 100% Transparent Charity',
+      'LastDonor.org - Donate to Real People in Need | 100% Transparent Charity',
   },
   description:
     'Verified fundraising campaigns for military families, veterans, first responders, disaster victims, and people in crisis. 100% transparent. You\u2019re the reason it\u2019s done.',
@@ -49,7 +47,7 @@ export const metadata: Metadata = {
         url: '/api/v1/og/page?title=LastDonor.org&subtitle=Crowdfunding+built+on+trust.+0%25+platform+fees.+Every+campaign+verified.',
         width: 1200,
         height: 630,
-        alt: 'LastDonor.org — Donate to Real People in Need',
+        alt: 'LastDonor.org - Donate to Real People in Need',
       },
     ],
   },
@@ -78,6 +76,12 @@ export default function RootLayout({
       )}
     >
       <head>
+        {/* Preconnect to critical third-party origins */}
+        <link rel="preconnect" href="https://js.stripe.com" />
+        <link rel="dns-prefetch" href="https://js.stripe.com" />
+        <link rel="preconnect" href="https://ntnrcedafgmeyajmzvga.supabase.co" />
+        <link rel="dns-prefetch" href="https://ntnrcedafgmeyajmzvga.supabase.co" />
+        <link rel="dns-prefetch" href="https://plausible.io" />
         {/* Prevent dark-mode flash by applying theme before paint */}
         <script
           dangerouslySetInnerHTML={{
@@ -91,10 +95,12 @@ export default function RootLayout({
         />
       </head>
       <body className="flex min-h-screen flex-col bg-background font-body text-foreground antialiased">
+        <noscript>
+          <div className="bg-yellow-50 px-4 py-3 text-center text-sm text-yellow-900 dark:bg-yellow-900/30 dark:text-yellow-200">
+            JavaScript is required to donate and interact with campaigns. Please enable JavaScript to continue.
+          </div>
+        </noscript>
         <Providers>
-          <Suspense fallback={null}>
-            <NavigationProgress />
-          </Suspense>
           <SkipToContent />
           <Navbar />
           <main id="main-content" className="flex-1">

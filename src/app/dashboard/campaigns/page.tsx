@@ -9,7 +9,7 @@ import { CampaignsListClient } from '@/components/dashboard/CampaignsListClient'
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'My Campaigns — Dashboard — LastDonor.org',
+  title: 'My Campaigns - Dashboard - LastDonor.org',
   robots: { index: false },
 };
 

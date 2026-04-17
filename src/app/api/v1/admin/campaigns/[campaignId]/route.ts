@@ -27,7 +27,7 @@ const ALLOWED_TRANSITIONS: Record<CampaignStatus, CampaignStatus[]> = {
 };
 
 /**
- * PATCH /api/v1/admin/campaigns/[campaignId] — Update campaign status
+ * PATCH /api/v1/admin/campaigns/[campaignId] - Update campaign status
  */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   const requestId = randomUUID();
@@ -111,7 +111,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       .where(eq(campaigns.id, campaignId))
       .limit(1);
 
-    // Notify donors asynchronously — do not block the response
+    // Notify donors asynchronously - do not block the response
     notifyCampaignStatusChange({
       campaignId,
       campaignTitle: campaign.title,
@@ -135,7 +135,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 }
 
 /**
- * DELETE /api/v1/admin/campaigns/[campaignId] — Delete a campaign
+ * DELETE /api/v1/admin/campaigns/[campaignId] - Delete a campaign
  * Only allowed for draft campaigns with no real donations.
  * Campaigns with real donations are archived instead.
  */
@@ -171,7 +171,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Check for real donations — cannot hard-delete campaigns with real money
+    // Check for real donations - cannot hard-delete campaigns with real money
     const [realDonationCount] = await db
       .select({ count: sql<number>`count(*)::int` })
       .from(donations)
@@ -209,7 +209,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
 
       return NextResponse.json({
         ok: true,
-        data: { id: campaignId, action: 'archived', reason: `Campaign has ${realDonationCount.count} donation(s) — archived instead of deleted for financial integrity.` },
+        data: { id: campaignId, action: 'archived', reason: `Campaign has ${realDonationCount.count} donation(s) - archived instead of deleted for financial integrity.` },
       });
     }
 

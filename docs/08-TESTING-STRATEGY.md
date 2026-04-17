@@ -1,4 +1,4 @@
-# LastDonor.org — Testing Strategy
+# LastDonor.org - Testing Strategy
 
 **Document ID**: LD-TEST-001
 **Version**: 0.1
@@ -97,9 +97,9 @@ describe('getCampaignPhase', () => {
 
 ### 3.3 Component Testing Rules
 
-- Use React Testing Library. Query by role, label, text — not by class name or test ID (unless necessary).
+- Use React Testing Library. Query by role, label, text - not by class name or test ID (unless necessary).
 - Test what the user sees, not internal state.
-- Mock API calls with MSW (Mock Service Worker) — not by stubbing fetch.
+- Mock API calls with MSW (Mock Service Worker) - not by stubbing fetch.
 - Snapshot tests only for static components (logo, footer). Never for dynamic components.
 
 ---
@@ -120,9 +120,9 @@ describe('getCampaignPhase', () => {
 ### 4.2 Test Database Strategy
 
 - **Separate test database** on Supabase (not production, not development).
-- **Migrations run before test suite** — test DB always matches production schema.
-- **Each test file gets a clean state** — truncate tables in `beforeEach` or use transactions that roll back.
-- **Seed data** — standardized test fixtures:
+- **Migrations run before test suite** - test DB always matches production schema.
+- **Each test file gets a clean state** - truncate tables in `beforeEach` or use transactions that roll back.
+- **Seed data** - standardized test fixtures:
 
 ```typescript
 // test/fixtures/campaigns.ts
@@ -319,7 +319,7 @@ Expected:
 
 ### 7.2 When Load Tests Run
 
-- **Not in CI** — too slow and requires infrastructure.
+- **Not in CI** - too slow and requires infrastructure.
 - **Before launch**: Full load test against staging environment.
 - **Before any major campaign launch**: Verify capacity for expected traffic spike.
 - **Quarterly**: Regression check.

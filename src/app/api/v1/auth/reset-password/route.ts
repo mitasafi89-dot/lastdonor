@@ -3,8 +3,9 @@ import { db } from '@/db';
 import { users, verificationTokens } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
-import bcrypt from 'bcryptjs';
+import { hashPassword } from '@/lib/password';
 import type { ApiError } from '@/types/api';
+import { resetPasswordApiSchema } from '@/lib/validators/user';
 
 /**
  * POST /api/v1/auth/reset-password
@@ -16,23 +17,15 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const email = (body.email as string)?.trim()?.toLowerCase();
-    const token = body.token as string;
-    const password = body.password as string;
-
-    if (!email || !token || !password) {
+    const parsed = resetPasswordApiSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { ok: false, error: { code: 'VALIDATION_ERROR', message: 'Email, token, and new password are required', requestId } } satisfies ApiError,
+        { ok: false, error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0]?.message ?? 'Invalid input', requestId } } satisfies ApiError,
         { status: 400 },
       );
     }
 
-    if (password.length < 8) {
-      return NextResponse.json(
-        { ok: false, error: { code: 'VALIDATION_ERROR', message: 'Password must be at least 8 characters', field: 'password', requestId } } satisfies ApiError,
-        { status: 400 },
-      );
-    }
+    const { email, token, password } = parsed.data;
 
     // Look up the token
     const [record] = await db
@@ -71,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash new password and update user
-    const passwordHash = await bcrypt.hash(password, 12);
+    const passwordHash = await hashPassword(password);
 
     await db
       .update(users)

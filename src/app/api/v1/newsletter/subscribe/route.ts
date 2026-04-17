@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     if (existing) {
       if (!existing.unsubscribedAt) {
-        // Already actively subscribed — idempotent success
+        // Already actively subscribed - idempotent success
         return NextResponse.json({ ok: true, data: { status: 'already_subscribed' } });
       }
 
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         from: 'LastDonor.org <noreply@lastdonor.org>',
         to: email,
         subject: 'Welcome to LastDonor.org',
-        text: `Thank you for subscribing to LastDonor.org!\n\nYou'll receive updates about campaigns making a real difference in people's lives.\n\nEvery dollar has a name behind it.\n\n— The LastDonor.org Team`,
+        text: `Thank you for subscribing to LastDonor.org!\n\nYou'll receive updates about campaigns making a real difference in people's lives.\n\nEvery dollar has a name behind it.\n\n- The LastDonor.org Team`,
       });
     } catch {
       // Don't fail the subscription if email fails

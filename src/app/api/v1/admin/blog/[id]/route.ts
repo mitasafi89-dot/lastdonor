@@ -11,7 +11,7 @@ import type { ApiError } from '@/types/api';
 type RouteParams = { params: Promise<{ id: string }> };
 
 /**
- * GET /api/v1/admin/blog/[id] — get a single blog post for editing
+ * GET /api/v1/admin/blog/[id] - get a single blog post for editing
  */
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   const requestId = randomUUID();
@@ -55,7 +55,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 }
 
 /**
- * PATCH /api/v1/admin/blog/[id] — update a blog post
+ * PATCH /api/v1/admin/blog/[id] - update a blog post
  */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   const requestId = randomUUID();
@@ -168,7 +168,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 }
 
 /**
- * DELETE /api/v1/admin/blog/[id] — delete a blog post
+ * DELETE /api/v1/admin/blog/[id] - delete a blog post
  */
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   const requestId = randomUUID();

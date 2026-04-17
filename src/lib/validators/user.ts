@@ -1,25 +1,60 @@
 import { z } from 'zod';
 
+/**
+ * Shared password schema for registration and password reset.
+ * Requirements: 10+ chars, uppercase, lowercase, digit, max 128 chars.
+ * Max 128 prevents bcrypt DoS (bcrypt truncates at 72 bytes but we
+ * cap at 128 to avoid wasting memory on hashing enormous payloads).
+ */
+export const passwordSchema = z
+  .string()
+  .min(10, 'Password must be at least 10 characters')
+  .max(128, 'Password must be under 128 characters')
+  .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
+  .regex(/[a-z]/, 'Must contain at least one lowercase letter')
+  .regex(/[0-9]/, 'Must contain at least one digit');
+
 export const registerSchema = z.object({
-  email: z.string().email(),
-  password: z
-    .string()
-    .min(10, 'Password must be at least 10 characters')
-    .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Must contain at least one digit'),
-  name: z.string().min(1).max(100),
+  email: z.string().trim().toLowerCase().email('Enter a valid email address'),
+  password: passwordSchema,
+  name: z.string().trim().min(1, 'Name is required').max(100, 'Name must be under 100 characters'),
 });
 
 export const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  email: z.string().trim().toLowerCase().email('Enter a valid email address'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+export const resetPasswordSchema = z
+  .object({
+    email: z.string().trim().toLowerCase().email('Enter a valid email address'),
+    token: z.string().min(1, 'Reset token is required'),
+    password: passwordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+/** Server-side schema for the reset-password API (no confirmPassword). */
+export const resetPasswordApiSchema = z.object({
+  email: z.string().trim().toLowerCase().email('Enter a valid email address'),
+  token: z.string().min(1, 'Reset token is required'),
+  password: passwordSchema,
+});
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email('Enter a valid email address'),
 });
 
 export const updateProfileSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
-  location: z.string().max(100).optional(),
-  avatarUrl: z.string().url().optional(),
+  name: z.string().trim().min(1, 'Name is required').max(100, 'Name must be under 100 characters').optional(),
+  location: z.string().trim().max(100, 'Location must be under 100 characters').optional(),
+  avatarUrl: z.string().url('Enter a valid URL').refine(
+    (url) => /^https?:\/\//i.test(url),
+    'Only http and https URLs are allowed'
+  ).optional(),
 });
 
 export const userPreferencesSchema = z.object({
@@ -34,5 +69,7 @@ export const userPreferencesSchema = z.object({
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 export type UserPreferences = z.infer<typeof userPreferencesSchema>;

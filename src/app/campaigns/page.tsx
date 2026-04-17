@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { ShieldCheckIcon } from '@heroicons/react/24/solid';
 import { db } from '@/db';
 import { campaigns } from '@/db/schema';
 import { eq, and, or, desc, asc, sql, ilike, gte } from 'drizzle-orm';
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
   title: 'Campaigns',
   description:
     'Browse verified fundraising campaigns for people who need help right now. Medical bills, emergencies, memorials, education, and more. Every campaign is verified by a real person.',
+  alternates: { canonical: '/campaigns' },
   openGraph: {
     title: 'Campaigns | LastDonor.org',
     description:
@@ -27,6 +29,8 @@ export const metadata: Metadata = {
     ],
   },
 };
+
+export const revalidate = 300; // ISR: refresh every 5 minutes
 
 const VALID_CATEGORIES: CampaignCategory[] = [
   'medical', 'memorial', 'emergency', 'charity', 'education', 'animal',
@@ -120,8 +124,8 @@ export default async function CampaignsPage({ searchParams }: PageProps) {
 
   const conditions = and(...filterParts)!;
 
-  // Build order
-  const orderBy = (() => {
+  // Build order - always include a tiebreaker (id) so offset pagination is deterministic
+  const primaryOrder = (() => {
     switch (sort) {
       case 'most_funded':
         return desc(campaigns.raisedAmount);
@@ -135,28 +139,43 @@ export default async function CampaignsPage({ searchParams }: PageProps) {
     }
   })();
 
-  // Fetch campaigns
-  const results = await db
-    .select({
-      id: campaigns.id,
-      slug: campaigns.slug,
-      title: campaigns.title,
-      heroImageUrl: campaigns.heroImageUrl,
-      subjectName: campaigns.subjectName,
-      subjectHometown: campaigns.subjectHometown,
-      campaignOrganizer: campaigns.campaignOrganizer,
-      category: campaigns.category,
-      raisedAmount: campaigns.raisedAmount,
-      goalAmount: campaigns.goalAmount,
-      donorCount: campaigns.donorCount,
-      location: campaigns.location,
-      status: campaigns.status,
-      publishedAt: campaigns.publishedAt,
-    })
-    .from(campaigns)
-    .where(conditions)
-    .orderBy(orderBy)
-    .limit(PAGE_SIZE + 1);
+  // Fetch campaigns + counts in parallel. Counts drive the social-proof header.
+  const [results, activeCountRow, completedCountRow] = await Promise.all([
+    db
+      .select({
+        id: campaigns.id,
+        slug: campaigns.slug,
+        title: campaigns.title,
+        heroImageUrl: campaigns.heroImageUrl,
+        subjectName: campaigns.subjectName,
+        subjectHometown: campaigns.subjectHometown,
+        campaignOrganizer: campaigns.campaignOrganizer,
+        category: campaigns.category,
+        raisedAmount: campaigns.raisedAmount,
+        goalAmount: campaigns.goalAmount,
+        donorCount: campaigns.donorCount,
+        location: campaigns.location,
+        status: campaigns.status,
+        publishedAt: campaigns.publishedAt,
+      })
+      .from(campaigns)
+      .where(conditions)
+      .orderBy(primaryOrder, asc(campaigns.id))
+      .limit(PAGE_SIZE + 1),
+    db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(campaigns)
+      .where(
+        or(eq(campaigns.status, 'active'), eq(campaigns.status, 'last_donor_zone')),
+      ),
+    db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(campaigns)
+      .where(or(eq(campaigns.status, 'completed'), eq(campaigns.status, 'archived'))),
+  ]);
+
+  const activeCount = Number(activeCountRow[0]?.count ?? 0);
+  const completedCount = Number(completedCountRow[0]?.count ?? 0);
 
   const hasMore = results.length > PAGE_SIZE;
   const displayedCampaigns = hasMore ? results.slice(0, PAGE_SIZE) : results;
@@ -173,17 +192,52 @@ export default async function CampaignsPage({ searchParams }: PageProps) {
           </h2>
         ) : (
           <>
-            <div className="mb-6 flex flex-wrap items-baseline justify-between gap-4">
-              <h1 className="font-display text-2xl font-bold text-foreground">Verified Campaigns</h1>
-              <Link
-                href="/completed-campaigns"
-                className="text-sm font-medium text-primary hover:text-primary/80"
+            {/* Header: emotional headline + social-proof count + trust anchor.
+                Psychology: Anchoring (concrete number), Authority (verified), Zero-Knowledge Proof. */}
+            <header className="mb-6">
+              <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                Verified Fundraisers Raising Money Right Now
+              </h1>
+              <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+                <ShieldCheckIcon className="h-4 w-4 text-brand-teal" aria-hidden="true" />
+                <span>
+                  <span className="font-semibold text-foreground tabular-nums">{activeCount.toLocaleString('en-US')}</span>{' '}active {activeCount === 1 ? 'campaign' : 'campaigns'}
+                </span>
+                <span aria-hidden="true" className="text-border">·</span>
+                <span>Each one reviewed by a real person before going live</span>
+              </p>
+            </header>
+
+            {/* Status tabs: Gestalt Enclosure + Similarity. Active-first ordering (Serial Position). */}
+            <div
+              role="tablist"
+              aria-label="Campaign status"
+              className="mb-6 inline-flex rounded-full border border-border bg-muted/50 p-1 text-sm font-semibold"
+            >
+              <span
+                role="tab"
+                aria-selected="true"
+                className="rounded-full bg-background px-4 py-1.5 text-foreground shadow-[--shadow-elevation-1]"
               >
-                View completed campaigns
+                Active
+                <span className="ml-1.5 tabular-nums text-muted-foreground">
+                  {activeCount.toLocaleString('en-US')}
+                </span>
+              </span>
+              <Link
+                role="tab"
+                aria-selected="false"
+                href="/completed-campaigns"
+                className="rounded-full px-4 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Completed
+                <span className="ml-1.5 tabular-nums">
+                  {completedCount.toLocaleString('en-US')}
+                </span>
               </Link>
             </div>
 
-            {/* Filters & sort — search page only */}
+            {/* Filters & sort - search page only */}
             <CampaignFilters
               activeCategory={categoryFilter}
               activeSort={sort}

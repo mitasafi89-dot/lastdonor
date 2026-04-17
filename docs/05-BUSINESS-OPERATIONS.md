@@ -1,4 +1,4 @@
-# LastDonor.org — Business & Operations Plan
+# LastDonor.org - Business & Operations Plan
 
 **Version**: 0.1 (Pre-Development)
 **Date**: March 19, 2026
@@ -14,14 +14,14 @@
 |-----------|------|------|---------|
 | **501(c)(3) Nonprofit** | Tax-deductible donations, grants eligible, maximum donor trust | IRS application process (3-6 months), board required, public financial reporting | **Recommended** |
 | **Fiscal Sponsorship** | Launch immediately under an existing nonprofit's umbrella, no IRS wait | Sponsor takes 5-10% fee, less control, dependency on sponsor | Good interim option while 501(c)(3) is pending |
-| **501(c)(4) Social Welfare** | More political flexibility | Donations NOT tax-deductible — kills donor incentive | Not recommended for fundraising |
+| **501(c)(4) Social Welfare** | More political flexibility | Donations NOT tax-deductible - kills donor incentive | Not recommended for fundraising |
 | **LLC / For-profit** | Simplest to set up | Zero donor trust. No tax deduction. Red flag for donors. | Not viable |
 
 ### Recommended Path
 1. **Week 1**: Incorporate as a nonprofit corporation in your state
 2. **Week 2-4**: Apply for 501(c)(3) status with IRS (Form 1023 or 1023-EZ)
 3. **While pending**: Use a fiscal sponsor to accept tax-deductible donations immediately
-4. **Month 3-6**: Receive 501(c)(3) determination letter — donations are retroactively tax-deductible from incorporation date
+4. **Month 3-6**: Receive 501(c)(3) determination letter - donations are retroactively tax-deductible from incorporation date
 
 ### Board of Directors (Required for 501(c)(3))
 - Minimum 3 board members (varies by state)
@@ -48,9 +48,9 @@ This is the #1 question donors will ask: **"Where does my money actually go?"**
 | **Operations** | Platform maintenance, content production, payment processing fees | 10% |
 
 ### Disbursement Rules
-1. **No more than 10% to operations** — this is the promise. It's aggressive but it's a trust differentiator. (Most charities spend 15-25% on overhead.)
-2. **Never send cash directly to individuals** — always pay vendors, landlords, medical providers, or partner organizations. This prevents fraud and protects the charity.
-3. **Every disbursement documented** — receipt, photo, confirmation from recipient. Published in impact report.
+1. **No more than 10% to operations** - this is the promise. It's aggressive but it's a trust differentiator. (Most charities spend 15-25% on overhead.)
+2. **Never send cash directly to individuals** - always pay vendors, landlords, medical providers, or partner organizations. This prevents fraud and protects the charity.
+3. **Every disbursement documented** - receipt, photo, confirmation from recipient. Published in impact report.
 4. **Underspend on a campaign**: If a campaign raises more than needed, excess rolls into a general fund for similar causes. Disclosed to donors.
 5. **Campaign doesn't reach goal**: Funds already collected are still disbursed to the cause. Campaigns are not all-or-nothing. Disclosed clearly on each campaign page.
 
@@ -98,7 +98,7 @@ LastDonor is a nonprofit. Revenue comes from:
 
 ### Platform Fees
 - **Stripe processing**: 2.9% + $0.30 per transaction (unavoidable)
-- **LastDonor platform fee**: 0% — we take no platform cut. This is the trust differentiator.
+- **LastDonor platform fee**: 0% - we take no platform cut. This is the trust differentiator.
 - Stripe fees are disclosed to donors: "Your $50 donation: $48.25 goes to the cause, $1.75 covers payment processing."
 
 ---
@@ -115,7 +115,7 @@ LastDonor is a nonprofit. Revenue comes from:
 
 ### What We Publish Monthly
 ```
-MONTHLY TRANSPARENCY REPORT — [Month Year]
+MONTHLY TRANSPARENCY REPORT - [Month Year]
 
 Total donations received:     $XX,XXX
 Payment processing fees:      $X,XXX (X%)
@@ -144,7 +144,7 @@ This level of transparency is rare. It becomes a competitive advantage.
 | **Gift substantiation** | No goods/services provided in exchange for donation (or disclose value if so) | Stated on donation receipt |
 | **Unrelated business income** | If you earn non-donation revenue (ads, merch), it may be taxable | Track separately, report on Form 990-T if applicable |
 | **State solicitation renewals** | Annual renewal in registered states | Annually per state schedule |
-| **PCI compliance** | Payment card data security | Handled by Stripe — never store card data |
+| **PCI compliance** | Payment card data security | Handled by Stripe - never store card data |
 | **Privacy policy** | CCPA (California), state privacy laws | Published on site from day 1 |
 | **CAN-SPAM** | Unsubscribe option in all emails, physical address in footer | Built into email system |
 
@@ -157,8 +157,8 @@ This level of transparency is rare. It becomes a competitive advantage.
 | April | Prepare IRS Form 990 |
 | May | File Form 990 (if fiscal year = calendar year) |
 | June | Mid-year financial review |
-| July | Board meeting — review first half performance |
-| October | Board meeting — review year, set next year budget |
+| July | Board meeting - review first half performance |
+| October | Board meeting - review year, set next year budget |
 | December | Year-end giving campaign, prepare for annual close |
 
 ---
@@ -167,7 +167,7 @@ This level of transparency is rare. It becomes a competitive advantage.
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|------------|
-| **Fraudulent campaign requests** | Medium | High — destroys trust if one bad story gets through | Verify every story against official sources (DoD, news). Never publish based on social media alone. |
+| **Fraudulent campaign requests** | Medium | High - destroys trust if one bad story gets through | Verify every story against official sources (DoD, news). Never publish based on social media alone. |
 | **Funds misuse accusation** | Low | Critical | Radical transparency. Publish every receipt. Monthly reports. Annual audit. |
 | **Donor data breach** | Low | High | Stripe handles payment data. Minimal PII stored. Supabase encryption. Regular security audits. |
 | **Negative press** | Medium | High | Corrections policy. Respond within 24 hours. Own mistakes publicly. |
@@ -184,15 +184,15 @@ This level of transparency is rare. It becomes a competitive advantage.
 |------|---------|--------|-------|
 | Vercel hosting | $20 | $240 | Pro plan |
 | Supabase | $25 | $300 | Pro plan |
-| Domain (lastdonor.org) | — | $12 | Annual |
+| Domain (lastdonor.org) | - | $12 | Annual |
 | Cloudflare | $0 | $0 | Free plan sufficient |
 | Resend (email) | $0-20 | $0-240 | Free tier covers early volume |
 | Plausible analytics | $9 | $108 | 10k monthly pageviews plan |
 | Stripe fees | ~3% of donations | Variable | Passed through transparently |
 | Sentry | $0 | $0 | Free tier for small projects |
-| State registrations | — | $500-2,000 | Varies by number of states |
-| 501(c)(3) filing | — | $275-600 | One-time (Form 1023-EZ: $275) |
-| Legal/accounting | — | $1,000-3,000 | Annual Form 990 prep, basic legal |
+| State registrations | - | $500-2,000 | Varies by number of states |
+| 501(c)(3) filing | - | $275-600 | One-time (Form 1023-EZ: $275) |
+| Legal/accounting | - | $1,000-3,000 | Annual Form 990 prep, basic legal |
 | **Total fixed costs** | **~$100** | **~$2,500-5,000** | Excluding legal/compliance |
 
 The platform itself is cheap to run. The real costs are legal compliance and content production labor.
@@ -237,7 +237,7 @@ The platform itself is cheap to run. The real costs are legal compliance and con
 - [ ] Outreach to 10-20 military/veteran/first responder community influencers
 - [ ] Outreach to 5-10 local news outlets
 - [ ] Reddit posts in relevant communities (r/military, r/veterans, r/charity, r/firefighting, r/ems, r/nursing)
-- [ ] Personal networks activated — everyone shares launch
+- [ ] Personal networks activated - everyone shares launch
 
 ---
 

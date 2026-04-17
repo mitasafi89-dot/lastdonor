@@ -52,7 +52,7 @@ interface AdminDashboardProps {
 export function AdminDashboard({ stats }: AdminDashboardProps) {
   return (
     <div className="space-y-8">
-      {/* CDS page header — productive heading-03 + body-01 subtitle */}
+      {/* CDS page header - productive heading-03 + body-01 subtitle */}
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -60,7 +60,7 @@ export function AdminDashboard({ stats }: AdminDashboardProps) {
         </p>
       </div>
 
-      {/* CDS stat tiles — 4-column grid, $spacing-05 gap, layered containers */}
+      {/* CDS stat tiles - 4-column grid, $spacing-05 gap, layered containers */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatTile
           value={stats.today.donationCount}
@@ -84,7 +84,7 @@ export function AdminDashboard({ stats }: AdminDashboardProps) {
         />
       </div>
 
-      {/* CDS Data Table — Pending Review */}
+      {/* CDS Data Table - Pending Review */}
       {stats.pendingCampaigns.length > 0 && (
         <section>
           <div className="flex items-center gap-3">
@@ -135,7 +135,7 @@ export function AdminDashboard({ stats }: AdminDashboardProps) {
         </section>
       )}
 
-      {/* CDS Data Table — Active Campaigns */}
+      {/* CDS Data Table - Active Campaigns */}
       <section>
         <h2 className="text-sm font-semibold">Active campaigns</h2>
         {stats.activeCampaigns.length === 0 ? (
@@ -190,7 +190,7 @@ export function AdminDashboard({ stats }: AdminDashboardProps) {
         )}
       </section>
 
-      {/* CDS Data Table — Recent Donations */}
+      {/* CDS Data Table - Recent Donations */}
       <section>
         <h2 className="text-sm font-semibold">Recent donations</h2>
         {stats.recentDonations.length === 0 ? (
@@ -232,7 +232,7 @@ export function AdminDashboard({ stats }: AdminDashboardProps) {
   );
 }
 
-/* CDS Stat Tile — layered container with productive type */
+/* CDS Stat Tile - layered container with productive type */
 function StatTile({ value, label, detail }: { value: number; label: string; detail: string }) {
   return (
     <div className="rounded-lg border border-border bg-background px-4 py-4">
@@ -243,7 +243,7 @@ function StatTile({ value, label, detail }: { value: number; label: string; deta
   );
 }
 
-/* CDS Empty State — minimal, contextual, left-aligned */
+/* CDS Empty State - minimal, contextual, left-aligned */
 function EmptyState({ message }: { message: string }) {
   return (
     <div className="mt-4 rounded-lg border border-dashed border-border px-6 py-10 text-center">

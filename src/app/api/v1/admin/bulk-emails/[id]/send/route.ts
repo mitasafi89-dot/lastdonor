@@ -4,6 +4,7 @@ import { bulkEmails, donations, auditLogs } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import { resend } from '@/lib/resend';
+import { bulkOpSemaphore } from '@/lib/concurrency-limiter';
 import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
 import type { UserRole } from '@/types';
@@ -15,7 +16,7 @@ type RouteParams = { params: Promise<{ id: string }> };
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * GET /api/v1/admin/bulk-emails/[id]/send — Check send status of a bulk email.
+ * GET /api/v1/admin/bulk-emails/[id]/send - Check send status of a bulk email.
  */
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   const requestId = randomUUID();
@@ -69,7 +70,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 }
 
 /**
- * POST /api/v1/admin/bulk-emails/[id]/send — Trigger sending a draft bulk email.
+ * POST /api/v1/admin/bulk-emails/[id]/send - Trigger sending a draft bulk email.
  *
  * Resolves recipients from the associated campaign's donation records,
  * interpolates {{variables}} per recipient, and sends emails via Resend.
@@ -118,38 +119,47 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     // Resolve unique recipients
     const recipients = await resolveRecipients(email.campaignId);
 
+    // Acquire semaphore to prevent pool exhaustion from concurrent bulk sends
+    const releaseSemaphore = await bulkOpSemaphore.acquire();
+
     let sentCount = 0;
     let failedCount = 0;
 
-    for (const recipient of recipients) {
-      const interpolatedSubject = interpolate(email.subject, recipient);
-      const interpolatedBody = interpolate(email.bodyHtml, recipient);
+    try {
+      // Phase 1: Send all emails OUTSIDE any DB connection hold.
+      // Collect results in memory, persist in batches.
+      for (const recipient of recipients) {
+        const interpolatedSubject = interpolate(email.subject, recipient);
+        const interpolatedBody = interpolate(email.bodyHtml, recipient);
 
-      try {
-        const { error: sendError } = await resend.emails.send({
-          from: FROM_ADDRESS,
-          to: recipient.email,
-          subject: interpolatedSubject,
-          html: interpolatedBody,
-        });
+        try {
+          const { error: sendError } = await resend.emails.send({
+            from: FROM_ADDRESS,
+            to: recipient.email,
+            subject: interpolatedSubject,
+            html: interpolatedBody,
+          });
 
-        if (sendError) {
+          if (sendError) {
+            failedCount++;
+            console.error(`[bulk-email] Failed to send to ${recipient.email}:`, sendError);
+          } else {
+            sentCount++;
+          }
+        } catch {
           failedCount++;
-          console.error(`[bulk-email] Failed to send to ${recipient.email}:`, sendError);
-        } else {
-          sentCount++;
         }
-      } catch {
-        failedCount++;
-      }
 
-      // Update progress periodically (every 10 emails)
-      if ((sentCount + failedCount) % 10 === 0) {
-        await db.update(bulkEmails).set({ sentCount, failedCount }).where(eq(bulkEmails.id, id));
+        // Update progress periodically (every 25 emails) - brief DB touch
+        if ((sentCount + failedCount) % 25 === 0) {
+          await db.update(bulkEmails).set({ sentCount, failedCount }).where(eq(bulkEmails.id, id));
+        }
       }
+    } finally {
+      releaseSemaphore();
     }
 
-    // Final update
+    // Phase 2: Final DB update (single write)
     const finalStatus = failedCount === 0 ? 'completed' : (sentCount === 0 ? 'failed' : 'completed');
     await db.update(bulkEmails).set({
       sentCount,

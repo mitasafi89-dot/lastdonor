@@ -2,8 +2,13 @@
 
 import Link from 'next/link';
 import { ProgressBar } from '@/components/campaign/ProgressBar';
-import { centsToDollars } from '@/lib/utils/currency';
+import { centsToDollarsWhole } from '@/lib/utils/currency';
 import { cn } from '@/lib/utils';
+import {
+  LockClosedIcon,
+  HeartIcon,
+  ShieldCheckIcon,
+} from '@heroicons/react/24/solid';
 
 interface SidebarDonationSummaryProps {
   raisedAmount: number;
@@ -23,41 +28,49 @@ export function SidebarDonationSummary({
   return (
     <div
       className={cn(
-        'space-y-4 rounded-xl border border-border bg-card p-6',
+        'space-y-5 rounded-2xl border border-border bg-card p-6',
         className,
       )}
     >
-      {/* Progress */}
-      <ProgressBar raisedAmount={raisedAmount} goalAmount={goalAmount} />
-
-      <div className="flex items-baseline justify-between">
-        <div>
-          <span className="font-mono text-2xl font-bold text-card-foreground">
-            {centsToDollars(raisedAmount)}
+      <div>
+        <div className="flex items-baseline gap-2">
+          <span className="font-mono text-3xl font-bold tabular-nums text-card-foreground">
+            {centsToDollarsWhole(raisedAmount)}
           </span>
-          <span className="ml-1 text-sm text-muted-foreground">raised</span>
+          <span className="text-sm text-muted-foreground">raised</span>
         </div>
-        <span className="text-sm text-muted-foreground">
-          of {centsToDollars(goalAmount)}
-        </span>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          of {centsToDollarsWhole(goalAmount)} goal
+        </p>
       </div>
+
+      <ProgressBar raisedAmount={raisedAmount} goalAmount={goalAmount} />
 
       <p className="text-sm text-muted-foreground">
         {donorCount.toLocaleString()} {donorCount === 1 ? 'donor' : 'donors'}
       </p>
 
-      {/* Primary CTA */}
       <Link
         href={donateHref}
-        className="block w-full rounded-full bg-accent py-3.5 text-center text-base font-semibold text-accent-foreground shadow-sm transition-all hover:bg-accent/90 hover:shadow-md active:scale-[0.98]"
+        className="btn-press block w-full rounded-full bg-accent py-3.5 text-center text-base font-bold text-accent-foreground shadow-md transition-all hover:bg-accent/90"
       >
         Donate now
       </Link>
 
-      {/* Trust line */}
-      <p className="text-center text-xs text-muted-foreground">
-        Secure donation via Stripe. 100% goes to the cause.
-      </p>
+      <ul className="grid grid-cols-3 gap-2 text-[10.5px] font-medium text-muted-foreground">
+        <li className="flex flex-col items-center gap-1 text-center">
+          <LockClosedIcon className="h-4 w-4" aria-hidden="true" />
+          <span>Stripe secured</span>
+        </li>
+        <li className="flex flex-col items-center gap-1 text-center">
+          <HeartIcon className="h-4 w-4" aria-hidden="true" />
+          <span>100% delivered</span>
+        </li>
+        <li className="flex flex-col items-center gap-1 text-center">
+          <ShieldCheckIcon className="h-4 w-4" aria-hidden="true" />
+          <span>Human verified</span>
+        </li>
+      </ul>
     </div>
   );
 }

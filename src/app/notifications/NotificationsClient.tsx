@@ -66,7 +66,7 @@ const TYPE_META: Record<string, { icon: React.ElementType; severity: Severity }>
   new_message:                { icon: ChatBubbleLeftIcon,     severity: 'info' },
   message_flagged:            { icon: FlagIcon,               severity: 'warning' },
   campaign_donation_received: { icon: GiftIcon,               severity: 'success' },
-  campaign_milestone:         { icon: CheckCircleIcon,        severity: 'success' },
+  campaign_milestone:         { icon: CheckCircleIcon,        severity: 'success' },  // Donor count milestones
   campaign_message_received:  { icon: EnvelopeIcon,           severity: 'info' },
   withdrawal_processed:       { icon: BanknotesIcon,          severity: 'success' },
   campaign_submitted:         { icon: DocumentCheckIcon,      severity: 'info' },
@@ -76,9 +76,9 @@ const TYPE_META: Record<string, { icon: React.ElementType; severity: Severity }>
   campaign_cancelled:         { icon: XMarkIcon,              severity: 'warning' },
   info_request:               { icon: ExclamationCircleIcon,  severity: 'warning' },
   info_request_reminder:      { icon: ClockIcon,              severity: 'warning' },
-  milestone_approved:         { icon: CheckCircleIcon,        severity: 'success' },
-  milestone_rejected:         { icon: XCircleIcon,            severity: 'warning' },
-  fund_released:              { icon: CurrencyDollarIcon,     severity: 'success' },
+  milestone_approved:         { icon: CheckCircleIcon,        severity: 'success' },  // Legacy: renders historical notifications
+  milestone_rejected:         { icon: XCircleIcon,            severity: 'warning' },  // Legacy: renders historical notifications
+  fund_released:              { icon: CurrencyDollarIcon,     severity: 'success' },  // Legacy: renders historical notifications
   verification_approved:      { icon: ShieldCheckIcon,        severity: 'success' },
   verification_rejected:      { icon: XCircleIcon,            severity: 'warning' },
   bulk_refund_processed:      { icon: ArrowPathIcon,          severity: 'info' },
@@ -285,7 +285,7 @@ export function NotificationsClient({
                     )}
                   </p>
 
-                  {/* Message — hidden on mobile, shown below icon row */}
+                  {/* Message - hidden on mobile, shown below icon row */}
                   <p className="col-span-2 mt-1 text-sm text-muted-foreground line-clamp-2 sm:col-span-1 sm:mt-0">
                     {n.message}
                   </p>

@@ -63,11 +63,10 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const TEMPLATE_LABELS: Record<string, string> = {
-  campaign_cancelled_refund: 'Campaign Cancelled — Full Refund',
-  campaign_paused_update: 'Campaign Paused — Status Update',
-  campaign_resumed_update: 'Campaign Resumed — Good News',
-  milestone_achieved_update: 'Milestone Achieved — Progress Update',
-  campaign_completed_thanks: 'Campaign Completed — Thank You',
+  campaign_cancelled_refund: 'Campaign Cancelled - Full Refund',
+  campaign_paused_update: 'Campaign Paused - Status Update',
+  campaign_resumed_update: 'Campaign Resumed - Good News',
+  campaign_completed_thanks: 'Campaign Completed - Thank You',
   custom: 'Custom Template',
 };
 

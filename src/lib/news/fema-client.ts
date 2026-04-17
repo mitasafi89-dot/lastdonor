@@ -55,7 +55,7 @@ export async function fetchFemaDeclarations(): Promise<NormalizedNewsItem[]> {
       items.push({
         title: decl.declarationTitle,
         url: `https://www.fema.gov/disaster/${decl.disasterNumber}`,
-        summary: `${decl.incidentType} — ${decl.declarationType} declaration for ${decl.designatedArea}, ${decl.state}`,
+        summary: `${decl.incidentType} - ${decl.declarationType} declaration for ${decl.designatedArea}, ${decl.state}`,
         source: 'FEMA',
         publishedAt: new Date(decl.declarationDate),
         category: 'disaster',

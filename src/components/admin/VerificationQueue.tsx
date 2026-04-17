@@ -56,7 +56,7 @@ interface VerificationItem {
   verificationStatus: string;
   verificationNotes: string | null;
   verificationReviewedAt: string | null;
-  veriffSessionId: string | null;
+  stripeVerificationId: string | null;
   goalAmount: number;
   raisedAmount: number;
   creatorId: string | null;
@@ -297,7 +297,7 @@ export function VerificationQueue({ initialItems, stats }: VerificationQueueProp
               }
             : item,
         ));
-        toast.success(`Campaign "${reviewTarget.title}" — ${ACTION_LABELS[reviewAction]} complete`);
+        toast.success(`Campaign "${reviewTarget.title}" - ${ACTION_LABELS[reviewAction]} complete`);
       } else {
         const data = await res.json();
         toast.error(data.error?.message || 'Review action failed');
@@ -440,9 +440,9 @@ export function VerificationQueue({ initialItems, stats }: VerificationQueueProp
                           <Badge variant={STATUS_VARIANT[item.verificationStatus] ?? 'outline'} className="text-[11px]">
                             {STATUS_LABELS[item.verificationStatus] ?? item.verificationStatus}
                           </Badge>
-                          {item.veriffSessionId && (
+                          {item.stripeVerificationId && (
                             <Badge variant="outline" className="text-[10px] border-blue-300 text-blue-600 dark:border-blue-700 dark:text-blue-400">
-                              Veriff
+                              Stripe ID
                             </Badge>
                           )}
                         </div>

@@ -5,6 +5,7 @@ import { donations } from '@/db/schema';
 import { eq, gte, and, sql } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
+import { logError } from '@/lib/errors';
 
 /**
  * Donor segmentation API.
@@ -16,18 +17,18 @@ import type { ApiError } from '@/types/api';
  * The UNION of both is the complete donor set.
  *
  * Predefined segments (via ?segment=...):
- *   all              — every donor (registered + guest)
- *   champions        — donorScore >= 81 (registered only)
- *   major_donors     — totalDonated >= $500 (50000 cents)
- *   recurring        — has recurring donation in last year
- *   new_donors       — first donation in last 30 days
- *   at_risk          — last donation between 180 and 365 days ago
- *   lapsed           — last donation > 365 days ago
+ *   all              - every donor (registered + guest)
+ *   champions        - donorScore >= 81 (registered only)
+ *   major_donors     - totalDonated >= $500 (50000 cents)
+ *   recurring        - has recurring donation in last year
+ *   new_donors       - first donation in last 30 days
+ *   at_risk          - last donation between 180 and 365 days ago
+ *   lapsed           - last donation > 365 days ago
  *
  * Custom filters:
- *   minDonated, maxDonated — lifetime donation range (cents)
- *   search                 — name/email search
- *   limit, offset          — pagination
+ *   minDonated, maxDonated - lifetime donation range (cents)
+ *   search                 - name/email search
+ *   limit, offset          - pagination
  */
 
 /**
@@ -87,6 +88,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  try {
   const params = request.nextUrl.searchParams;
   const segment = params.get('segment');
   const limit = Math.min(parseInt(params.get('limit') ?? '50', 10) || 50, 200);
@@ -217,4 +219,11 @@ export async function GET(request: NextRequest) {
       offset,
     },
   });
+  } catch (err) {
+    logError(err, 'admin-donor-segments', { requestId });
+    return NextResponse.json(
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to load donor segments', requestId } } satisfies ApiError,
+      { status: 500 },
+    );
+  }
 }

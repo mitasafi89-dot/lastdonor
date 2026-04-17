@@ -7,7 +7,7 @@ import { DonationsList } from '@/components/admin/DonationsList';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Donations — Admin — LastDonor.org',
+  title: 'Donations - Admin - LastDonor.org',
   robots: { index: false },
 };
 

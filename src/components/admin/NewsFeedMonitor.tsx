@@ -56,7 +56,7 @@ type SortDir = 'asc' | 'desc';
 /* ─── Relevance bar ─── */
 
 function RelevanceIndicator({ score }: { score: number | null }) {
-  if (score == null) return <span className="text-xs text-muted-foreground">—</span>;
+  if (score == null) return <span className="text-xs text-muted-foreground">-</span>;
   const pct = Math.min(score, 100);
   const color =
     pct >= 70 ? 'bg-green-500' : pct >= 40 ? 'bg-yellow-500' : 'bg-red-400';
@@ -192,7 +192,7 @@ export function NewsFeedMonitor({ items, sources, categories, counts }: NewsFeed
         },
       });
     } catch {
-      toast.error('Network error — could not reach the server');
+      toast.error('Network error - could not reach the server');
     } finally {
       setPublishingItems((prev) => {
         const next = new Set(prev);
@@ -396,7 +396,7 @@ export function NewsFeedMonitor({ items, sources, categories, counts }: NewsFeed
                             {item.category.replace(/-/g, ' ')}
                           </Badge>
                         ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
+                          <span className="text-xs text-muted-foreground">-</span>
                         )}
                       </td>
 

@@ -7,7 +7,7 @@ import { ActivityCenter } from '@/components/admin/ActivityCenter';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Activity Center — Admin — LastDonor.org',
+  title: 'Activity Center - Admin - LastDonor.org',
   robots: { index: false },
 };
 

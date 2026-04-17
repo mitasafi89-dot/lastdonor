@@ -113,7 +113,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       severity: 'info',
     });
 
-    // Notify all admins — fire-and-forget; failure must not block the response
+    // Notify all admins - fire-and-forget; failure must not block the response
     Promise.all([
       db.select({ docCount: count() }).from(verificationDocuments).where(eq(verificationDocuments.campaignId, campaignId)),
       db.select({ name: users.name }).from(users).where(eq(users.id, session.user.id!)).limit(1),

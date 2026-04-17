@@ -10,6 +10,48 @@
 import { stripe } from '@/lib/stripe';
 import type Stripe from 'stripe';
 
+// ─── Platform Availability Check ─────────────────────────────────────────────
+
+let _connectAvailable: boolean | null = null;
+let _connectCheckedAt = 0;
+const CONNECT_CHECK_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Probes whether Stripe Connect is enabled on the platform account.
+ * Caches the result for 5 minutes to avoid redundant API calls.
+ *
+ * Stripe throws an error when you try to list connected accounts on a
+ * platform that hasn't completed the Connect platform profile. This
+ * function catches that specific error and returns false.
+ */
+export async function isConnectAvailable(): Promise<boolean> {
+  const now = Date.now();
+  if (_connectAvailable !== null && now - _connectCheckedAt < CONNECT_CHECK_TTL_MS) {
+    return _connectAvailable;
+  }
+
+  try {
+    await stripe.accounts.list({ limit: 1 });
+    _connectAvailable = true;
+  } catch (err) {
+    if (
+      err instanceof Error &&
+      (err.message.includes('signed up for Connect') ||
+        err.message.includes('Connect platform profile') ||
+        err.message.includes('not have access to the Accounts resource'))
+    ) {
+      _connectAvailable = false;
+    } else {
+      // Unexpected error (network, auth, etc.) - don't cache, assume available
+      // so the real error surfaces when user attempts action.
+      return true;
+    }
+  }
+
+  _connectCheckedAt = now;
+  return _connectAvailable;
+}
+
 // ─── Account Creation ────────────────────────────────────────────────────────
 
 /**
@@ -182,16 +224,20 @@ export async function createTransfer(
   currency: string,
   destinationAccountId: string,
   metadata: Record<string, string>,
+  idempotencyKey?: string,
 ): Promise<TransferResult> {
-  const transfer = await stripe.transfers.create({
-    amount,
-    currency,
-    destination: destinationAccountId,
-    metadata: {
-      ...metadata,
-      platform: 'lastdonor',
+  const transfer = await stripe.transfers.create(
+    {
+      amount,
+      currency,
+      destination: destinationAccountId,
+      metadata: {
+        ...metadata,
+        platform: 'lastdonor',
+      },
     },
-  });
+    idempotencyKey ? { idempotencyKey } : undefined,
+  );
 
   return {
     transferId: transfer.id,

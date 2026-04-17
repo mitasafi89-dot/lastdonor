@@ -1,254 +1,151 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { campaigns } from '@/db/schema';
 import { eq, and, or, desc, asc, sql, ilike, gte } from 'drizzle-orm';
 import { createCampaignSchema } from '@/lib/validators/campaign';
-import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import { sanitizeHtml } from '@/lib/utils/sanitize';
-import { randomUUID } from 'crypto';
-import type { ApiResponse, ApiError } from '@/types/api';
-import type { CampaignCategory } from '@/types';
+import { withApiHandler } from '@/lib/api-handler';
+import {
+  parsePagination,
+  paginatedResponse,
+  parseBody,
+  requireAuthRole,
+  isValidCategory,
+  resolveSortOrder,
+} from '@/lib/api-helpers';
 
-const MAX_LIMIT = 50;
-const DEFAULT_LIMIT = 20;
+const SORT_MAP = {
+  most_funded: desc(campaigns.raisedAmount),
+  least_funded: asc(campaigns.raisedAmount),
+  closing_soon: desc(sql`(${campaigns.raisedAmount}::float / NULLIF(${campaigns.goalAmount}, 0))`),
+  newest: desc(campaigns.publishedAt),
+};
 
-const VALID_CATEGORIES: CampaignCategory[] = [
-  'medical', 'memorial', 'emergency', 'charity', 'education', 'animal',
-  'environment', 'business', 'community', 'competition', 'creative', 'event',
-  'faith', 'family', 'sports', 'travel', 'volunteer', 'wishes',
-  'military', 'veterans', 'first-responders', 'disaster', 'essential-needs',
-];
+export const GET = withApiHandler(async (request, { requestId: _requestId }) => {
+  const { searchParams } = request.nextUrl;
+  const { limit, offset } = parsePagination(searchParams);
+  const categoryParam = searchParams.get('category');
+  const sortParam = searchParams.get('sort');
 
-export async function GET(request: NextRequest) {
-  const requestId = randomUUID();
+  // Build filters
+  const statusParam = searchParams.get('status');
+  const statusFilter = statusParam === 'completed'
+    ? eq(campaigns.status, 'completed')
+    : or(eq(campaigns.status, 'active'), eq(campaigns.status, 'last_donor_zone'))!;
 
-  try {
-    const { searchParams } = request.nextUrl;
-    const categoryParam = searchParams.get('category');
-    const sortParam = searchParams.get('sort') ?? 'newest';
-    const cursorParam = searchParams.get('cursor');
-    const limitParam = parseInt(searchParams.get('limit') ?? String(DEFAULT_LIMIT), 10);
-    const limit = Math.min(Math.max(1, isNaN(limitParam) ? DEFAULT_LIMIT : limitParam), MAX_LIMIT);
+  const filterParts = [statusFilter];
 
-    // Cursor is an offset encoded as string
-    const offset = cursorParam ? parseInt(cursorParam, 10) : 0;
-    if (isNaN(offset) || offset < 0) {
-      const errorBody: ApiError = {
-        ok: false,
-        error: { code: 'VALIDATION_ERROR', message: 'Invalid cursor', requestId },
-      };
-      return NextResponse.json(errorBody, { status: 400 });
-    }
-
-    // Build filters
-    const statusParam = searchParams.get('status');
-    const statusFilter = statusParam === 'completed'
-      ? eq(campaigns.status, 'completed')
-      : or(
-          eq(campaigns.status, 'active'),
-          eq(campaigns.status, 'last_donor_zone'),
-        )!;
-
-    const filterParts = [statusFilter];
-
-    if (VALID_CATEGORIES.includes(categoryParam as CampaignCategory)) {
-      filterParts.push(eq(campaigns.category, categoryParam as CampaignCategory));
-    }
-
-    // Text search across key fields
-    const qParam = searchParams.get('q')?.trim().slice(0, 100);
-    if (qParam) {
-      const pattern = `%${qParam}%`;
-      filterParts.push(
-        or(
-          ilike(campaigns.title, pattern),
-          ilike(campaigns.subjectName, pattern),
-          ilike(campaigns.location, pattern),
-          ilike(campaigns.subjectHometown, pattern),
-        )!,
-      );
-    }
-
-    // Location-specific filter
-    const locationParam = searchParams.get('location')?.trim().slice(0, 100);
-    if (locationParam) {
-      const locPattern = `%${locationParam}%`;
-      filterParts.push(
-        or(
-          ilike(campaigns.location, locPattern),
-          ilike(campaigns.subjectHometown, locPattern),
-        )!,
-      );
-    }
-
-    // Close to target: ≥90% funded
-    if (searchParams.get('close_to_target') === '1') {
-      filterParts.push(
-        gte(
-          sql`(${campaigns.raisedAmount}::float / NULLIF(${campaigns.goalAmount}, 0))`,
-          0.9,
-        ),
-      );
-    }
-
-    const conditions = and(...filterParts)!;
-
-    // Build ordering
-    const orderBy = (() => {
-      switch (sortParam) {
-        case 'most_funded':
-          return desc(campaigns.raisedAmount);
-        case 'least_funded':
-          return asc(campaigns.raisedAmount);
-        case 'closing_soon':
-          return desc(sql`(${campaigns.raisedAmount}::float / NULLIF(${campaigns.goalAmount}, 0))`);
-        default:
-          return desc(campaigns.raisedAmount);
-      }
-    })();
-
-    const results = await db
-      .select({
-        id: campaigns.id,
-        title: campaigns.title,
-        slug: campaigns.slug,
-        status: campaigns.status,
-        heroImageUrl: campaigns.heroImageUrl,
-        category: campaigns.category,
-        location: campaigns.location,
-        subjectName: campaigns.subjectName,
-        subjectHometown: campaigns.subjectHometown,
-        campaignOrganizer: campaigns.campaignOrganizer,
-        goalAmount: campaigns.goalAmount,
-        raisedAmount: campaigns.raisedAmount,
-        donorCount: campaigns.donorCount,
-        publishedAt: campaigns.publishedAt,
-      })
-      .from(campaigns)
-      .where(conditions)
-      .orderBy(orderBy)
-      .offset(offset)
-      .limit(limit + 1);
-
-    const hasMore = results.length > limit;
-    const data = hasMore ? results.slice(0, limit) : results;
-    const nextCursor = hasMore ? String(offset + limit) : undefined;
-
-    const response: ApiResponse<typeof data> = {
-      ok: true,
-      data,
-      meta: { cursor: nextCursor, hasMore },
-    };
-
-    return NextResponse.json(response);
-  } catch (error) {
-    console.error('[GET /api/v1/campaigns]', error);
-    const body: ApiError = {
-      ok: false,
-      error: {
-        code: 'INTERNAL_ERROR',
-        message: 'Failed to fetch campaigns',
-        requestId,
-      },
-    };
-    return NextResponse.json(body, { status: 500 });
+  if (isValidCategory(categoryParam)) {
+    filterParts.push(eq(campaigns.category, categoryParam));
   }
-}
 
-export async function POST(request: NextRequest) {
-  const requestId = randomUUID();
-
-  try {
-    await requireRole(['editor', 'admin']);
-
-    const body = await request.json();
-    const parsed = createCampaignSchema.safeParse(body);
-
-    if (!parsed.success) {
-      const firstError = parsed.error.errors[0];
-      const errorBody: ApiError = {
-        ok: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: firstError.message,
-          field: firstError.path.join('.'),
-          requestId,
-        },
-      };
-      return NextResponse.json(errorBody, { status: 400 });
-    }
-
-    const data = parsed.data;
-
-    // Check for slug uniqueness
-    const [existing] = await db
-      .select({ id: campaigns.id })
-      .from(campaigns)
-      .where(eq(campaigns.slug, data.slug))
-      .limit(1);
-
-    if (existing) {
-      const errorBody: ApiError = {
-        ok: false,
-        error: {
-          code: 'CONFLICT',
-          message: 'A campaign with this slug already exists',
-          field: 'slug',
-          requestId,
-        },
-      };
-      return NextResponse.json(errorBody, { status: 409 });
-    }
-
-    // Sanitize HTML
-    const sanitizedStoryHtml = sanitizeHtml(data.storyHtml);
-
-    const [campaign] = await db
-      .insert(campaigns)
-      .values({
-        title: data.title,
-        slug: data.slug,
-        category: data.category,
-        heroImageUrl: data.heroImageUrl,
-        photoCredit: data.photoCredit ?? null,
-        subjectName: data.subjectName,
-        subjectHometown: data.subjectHometown ?? null,
-        storyHtml: sanitizedStoryHtml,
-        goalAmount: data.goalAmount,
-        impactTiers: data.impactTiers,
-        status: data.status,
-        publishedAt: data.status === 'active' ? new Date() : null,
-      })
-      .returning();
-
-    // Audit log would be inserted here (Phase 3 / admin system)
-
-    const response: ApiResponse<typeof campaign> = {
-      ok: true,
-      data: campaign,
-    };
-
-    return NextResponse.json(response, { status: 201 });
-  } catch (error) {
-    if (error instanceof UnauthorizedError) {
-      const body: ApiError = {
-        ok: false,
-        error: { code: 'UNAUTHORIZED', message: 'Authentication required', requestId },
-      };
-      return NextResponse.json(body, { status: 401 });
-    }
-    if (error instanceof ForbiddenError) {
-      const body: ApiError = {
-        ok: false,
-        error: { code: 'FORBIDDEN', message: 'Insufficient permissions', requestId },
-      };
-      return NextResponse.json(body, { status: 403 });
-    }
-    console.error('[POST /api/v1/campaigns]', error);
-    const body: ApiError = {
-      ok: false,
-      error: { code: 'INTERNAL_ERROR', message: 'Failed to create campaign', requestId },
-    };
-    return NextResponse.json(body, { status: 500 });
+  const qParam = searchParams.get('q')?.trim().slice(0, 100);
+  if (qParam) {
+    const pattern = `%${qParam}%`;
+    filterParts.push(
+      or(
+        ilike(campaigns.title, pattern),
+        ilike(campaigns.subjectName, pattern),
+        ilike(campaigns.location, pattern),
+        ilike(campaigns.subjectHometown, pattern),
+      )!,
+    );
   }
-}
+
+  const locationParam = searchParams.get('location')?.trim().slice(0, 100);
+  if (locationParam) {
+    const locPattern = `%${locationParam}%`;
+    filterParts.push(
+      or(
+        ilike(campaigns.location, locPattern),
+        ilike(campaigns.subjectHometown, locPattern),
+      )!,
+    );
+  }
+
+  if (searchParams.get('close_to_target') === '1') {
+    filterParts.push(
+      gte(
+        sql`(${campaigns.raisedAmount}::float / NULLIF(${campaigns.goalAmount}, 0))`,
+        0.9,
+      ),
+    );
+  }
+
+  const primaryOrder = resolveSortOrder(sortParam, SORT_MAP, 'newest');
+
+  const results = await db
+    .select({
+      id: campaigns.id,
+      title: campaigns.title,
+      slug: campaigns.slug,
+      status: campaigns.status,
+      heroImageUrl: campaigns.heroImageUrl,
+      category: campaigns.category,
+      location: campaigns.location,
+      subjectName: campaigns.subjectName,
+      subjectHometown: campaigns.subjectHometown,
+      campaignOrganizer: campaigns.campaignOrganizer,
+      goalAmount: campaigns.goalAmount,
+      raisedAmount: campaigns.raisedAmount,
+      donorCount: campaigns.donorCount,
+      publishedAt: campaigns.publishedAt,
+    })
+    .from(campaigns)
+    .where(and(...filterParts))
+    .orderBy(primaryOrder, asc(campaigns.id))
+    .offset(offset)
+    .limit(limit + 1);
+
+  const response = paginatedResponse(results, limit, offset);
+
+  // Add cache headers for public listing
+  response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+  return response;
+});
+
+export const POST = withApiHandler(async (request, { requestId, session }) => {
+  const authResult = requireAuthRole(session, ['editor', 'admin'], requestId);
+  if ('error' in authResult) return authResult.error;
+
+  const bodyResult = await parseBody(request, createCampaignSchema, requestId);
+  if ('error' in bodyResult) return bodyResult.error;
+
+  const data = bodyResult.data;
+
+  // Check for slug uniqueness
+  const [existing] = await db
+    .select({ id: campaigns.id })
+    .from(campaigns)
+    .where(eq(campaigns.slug, data.slug))
+    .limit(1);
+
+  if (existing) {
+    const { apiError } = await import('@/lib/errors');
+    return apiError('CONFLICT', 'A campaign with this slug already exists', requestId, {
+      field: 'slug',
+    });
+  }
+
+  const sanitizedStoryHtml = sanitizeHtml(data.storyHtml);
+
+  const [campaign] = await db
+    .insert(campaigns)
+    .values({
+      title: data.title,
+      slug: data.slug,
+      category: data.category,
+      heroImageUrl: data.heroImageUrl,
+      photoCredit: data.photoCredit ?? null,
+      subjectName: data.subjectName,
+      subjectHometown: data.subjectHometown ?? null,
+      storyHtml: sanitizedStoryHtml,
+      goalAmount: data.goalAmount,
+      impactTiers: data.impactTiers,
+      status: data.status,
+      publishedAt: data.status === 'active' ? new Date() : null,
+    })
+    .returning();
+
+  return NextResponse.json({ ok: true, data: campaign }, { status: 201 });
+});

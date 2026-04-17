@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(error, { status: 400 });
   }
 
-  // Rate limit check — must happen after auth but before any answer verification
+  // Rate limit check - must happen after auth but before any answer verification
   const rateCheck = checkRateLimit(session.user.id);
   if (!rateCheck.allowed) {
     const retryAfterSec = Math.ceil(rateCheck.retryAfterMs / 1000);

@@ -62,6 +62,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Stripe PaymentIntent
+    // Generate server-side idempotency key if client omits one
+    const idempotencyKey = data.idempotencyKey ?? `${data.campaignId}:${data.donorEmail}:${data.amount}:${Math.floor(Date.now() / 60_000)}`;
     const paymentIntent = await stripe.paymentIntents.create(
       {
         amount: data.amount,
@@ -77,9 +79,7 @@ export async function POST(request: NextRequest) {
           subscribedToUpdates: String(data.subscribedToUpdates),
         },
       },
-      data.idempotencyKey
-        ? { idempotencyKey: data.idempotencyKey }
-        : undefined,
+      { idempotencyKey },
     );
 
     const response: ApiResponse<{

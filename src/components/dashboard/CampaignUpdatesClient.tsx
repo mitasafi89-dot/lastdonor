@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatDate } from '@/lib/utils/dates';
 import { toast } from 'sonner';
+import { sanitizeHtml } from '@/lib/utils/sanitize';
 
 interface Update {
   id: string;
@@ -43,7 +44,7 @@ export function CampaignUpdatesClient({
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        throw new Error(data?.error?.message ?? 'Failed to post update');
+        throw new Error(data?.error?.code === 'VALIDATION_ERROR' ? (data?.error?.message ?? 'Failed to post update') : 'Failed to post update');
       }
 
       toast.success('Update posted successfully.');
@@ -145,7 +146,7 @@ export function CampaignUpdatesClient({
                     {upd.bodyHtml && (
                       <div
                         className="prose prose-sm mt-3 max-w-none text-muted-foreground dark:prose-invert"
-                        dangerouslySetInnerHTML={{ __html: upd.bodyHtml }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(upd.bodyHtml) }}
                       />
                     )}
                   </div>

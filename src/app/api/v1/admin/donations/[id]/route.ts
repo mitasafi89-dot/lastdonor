@@ -14,7 +14,7 @@ type RouteParams = { params: Promise<{ id: string }> };
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * GET /api/v1/admin/donations/[id] — Get donation detail
+ * GET /api/v1/admin/donations/[id] - Get donation detail
  */
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   const requestId = randomUUID();
@@ -76,7 +76,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 }
 
 /**
- * PATCH /api/v1/admin/donations/[id] — Mark donation as refunded
+ * PATCH /api/v1/admin/donations/[id] - Mark donation as refunded
  */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   const requestId = randomUUID();
@@ -109,7 +109,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Refunds are irreversible — Stripe cannot un-refund money
+    // Refunds are irreversible - Stripe cannot un-refund money
     if (body.refunded === false) {
       return NextResponse.json(
         { ok: false, error: { code: 'VALIDATION_ERROR', message: 'Refunds cannot be reversed', requestId } } satisfies ApiError,
@@ -157,36 +157,38 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    await db.update(donations).set({ refunded: body.refunded }).where(eq(donations.id, id));
+    await db.transaction(async (tx) => {
+      await tx.update(donations).set({ refunded: body.refunded }).where(eq(donations.id, id));
 
-    // Update campaign raised amount and donor count
-    if (donation.source === 'real') {
-      const amountDelta = body.refunded ? -donation.amount : donation.amount;
-      const countDelta = body.refunded ? -1 : 1;
+      // Update campaign raised amount and donor count
+      if (donation.source === 'real') {
+        const amountDelta = body.refunded ? -donation.amount : donation.amount;
+        const countDelta = body.refunded ? -1 : 1;
 
-      await db.update(campaigns).set({
-        raisedAmount: sql`GREATEST(${campaigns.raisedAmount} + ${amountDelta}, 0)`,
-        donorCount: sql`GREATEST(${campaigns.donorCount} + ${countDelta}, 0)`,
-        updatedAt: new Date(),
-      }).where(eq(campaigns.id, donation.campaignId));
-    }
+        await tx.update(campaigns).set({
+          raisedAmount: sql`GREATEST(${campaigns.raisedAmount} + ${amountDelta}, 0)`,
+          donorCount: sql`GREATEST(${campaigns.donorCount} + ${countDelta}, 0)`,
+          updatedAt: new Date(),
+        }).where(eq(campaigns.id, donation.campaignId));
+      }
 
-    await db.insert(auditLogs).values({
-      eventType: 'donation.refunded',
-      actorId: session.user?.id ?? null,
-      actorRole: session.user?.role as UserRole,
-      targetType: 'donation',
-      targetId: id,
-      severity: 'warning',
-      details: {
-        amount: donation.amount,
-        donorEmail: donation.donorEmail,
-        campaignId: donation.campaignId,
-        source: donation.source,
-      },
+      await tx.insert(auditLogs).values({
+        eventType: 'donation.refunded',
+        actorId: session.user?.id ?? null,
+        actorRole: session.user?.role as UserRole,
+        targetType: 'donation',
+        targetId: id,
+        severity: 'warning',
+        details: {
+          amount: donation.amount,
+          donorEmail: donation.donorEmail,
+          campaignId: donation.campaignId,
+          source: donation.source,
+        },
+      });
     });
 
-    // Notify the donor (fire-and-forget — never block the admin response)
+    // Notify the donor (fire-and-forget - never block the admin response)
     const [cam] = await db
       .select({ title: campaigns.title, slug: campaigns.slug })
       .from(campaigns)

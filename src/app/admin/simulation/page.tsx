@@ -9,7 +9,7 @@ import { calculateAutoVolume } from '@/lib/seed/phase-out';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Simulation Controls — Admin — LastDonor.org',
+  title: 'Simulation Controls - Admin - LastDonor.org',
   robots: { index: false },
 };
 

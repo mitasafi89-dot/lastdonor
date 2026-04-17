@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { RefundBatchDashboard } from '@/components/admin/RefundBatchDashboard';
 
 export const metadata: Metadata = {
-  title: 'Refund Batches — Admin — LastDonor.org',
+  title: 'Refund Batches - Admin - LastDonor.org',
   robots: { index: false },
 };
 

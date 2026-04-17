@@ -4,14 +4,16 @@ import { calculateAutoVolume } from '@/lib/seed/phase-out';
 import { db } from '@/db';
 import { auditLogs } from '@/db/schema';
 import { getSetting } from '@/lib/settings.server';
+import { logError, safeCronError } from '@/lib/errors';
+import { verifyCronAuth } from '@/lib/cron-auth';
+import { randomUUID } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
 
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  if (!verifyCronAuth(request.headers.get('authorization'))) {
+    return NextResponse.json({ ok: false, error: { code: 'UNAUTHORIZED', message: 'Invalid cron authorization.' } }, { status: 401 });
   }
 
   // Guard: only run if simulation is enabled via settings
@@ -56,14 +58,17 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ ok: true, data: result });
   } catch (error) {
+    const requestId = randomUUID();
+    logError(error, { requestId, route: '/api/v1/cron/simulate-donations', method: 'GET' });
+
     await db.insert(auditLogs).values({
       eventType: 'cron.simulate_donations',
       severity: 'error',
-      details: { error: error instanceof Error ? error.message : String(error) },
-    });
+      details: { error: safeCronError(error), requestId },
+    }).catch(() => {});
 
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : 'Unknown error' },
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Donation simulation processing failed.', requestId } },
       { status: 500 },
     );
   }

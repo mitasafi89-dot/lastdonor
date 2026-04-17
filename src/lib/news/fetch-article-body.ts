@@ -1,11 +1,11 @@
 /**
  * Fetch the full article body text from a URL.
- * Uses a simple HTML-to-text approach — no external dependencies.
+ * Uses a simple HTML-to-text approach - no external dependencies.
  * Falls back gracefully to the provided summary if fetching or parsing fails.
  */
 
 const FETCH_TIMEOUT_MS = 8000;
-const MAX_BODY_LENGTH = 5000; // chars — enough context for entity extraction
+const MAX_BODY_LENGTH = 5000; // chars - enough context for entity extraction
 
 /**
  * Fetch the full article text from a news URL.
@@ -36,7 +36,7 @@ export async function fetchArticleBody(
 
     const html = await res.text();
 
-    // Try structured data first (ld+json) — most reliable source
+    // Try structured data first (ld+json) - most reliable source
     const ldBody = extractFromLdJson(html);
     if (ldBody && ldBody.length > fallback.length + 50) return ldBody;
 
@@ -77,7 +77,7 @@ function extractArticleText(html: string): string {
 
   const source = articleMatch ? articleMatch[0] : cleaned;
 
-  // Extract text from <p> tags — the most reliable content signal
+  // Extract text from <p> tags - the most reliable content signal
   const paragraphs: string[] = [];
   const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
   let match;
@@ -130,7 +130,7 @@ function extractFromLdJson(html: string): string | null {
         }
       }
     } catch {
-      // Invalid JSON — skip
+      // Invalid JSON - skip
     }
   }
   return null;

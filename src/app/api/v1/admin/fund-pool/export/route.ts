@@ -7,7 +7,7 @@ import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
 
 /**
- * GET /api/v1/admin/fund-pool/export — Export fund pool data as CSV.
+ * GET /api/v1/admin/fund-pool/export - Export fund pool data as CSV.
  */
 export async function GET(_request: NextRequest) {
   const requestId = randomUUID();

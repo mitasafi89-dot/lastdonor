@@ -8,6 +8,7 @@ import {
   createExpressAccount,
   createOnboardingLink,
   getAccountStatus,
+  isConnectAvailable,
 } from '@/lib/stripe-connect';
 import { randomUUID } from 'crypto';
 import type { ApiResponse, ApiError } from '@/types/api';
@@ -113,13 +114,28 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Fail fast if Stripe Connect is not enabled on this platform
+    const connectAvailable = await isConnectAvailable();
+    if (!connectAvailable) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: {
+            code: 'CONNECT_NOT_ENABLED' as const,
+            message: 'Stripe Connect has not been activated on this platform. The platform administrator needs to complete the Connect platform profile in the Stripe Dashboard.',
+            requestId,
+          },
+        } satisfies ApiError,
+        { status: 503 },
+      );
+    }
+
     // Create the Express account
     const account = await createExpressAccount(
       session.user.id,
       session.user.email!,
       parsed.data.country,
     );
-
     // Store on user
     await db
       .update(users)
@@ -148,10 +164,20 @@ export async function POST(request: NextRequest) {
 
     // Surface actionable Stripe errors to the client
     let message = 'Failed to create Stripe Connect account';
+    let code: ApiError['error']['code'] = 'INTERNAL_ERROR';
     if (err instanceof Error && 'type' in err) {
       const stripeErr = err as { type: string; message: string; code?: string };
-      if (stripeErr.message?.includes("signed up for Connect")) {
-        message = 'Stripe Connect is not enabled on this platform. Please contact support.';
+      if (
+        stripeErr.message?.includes('signed up for Connect') ||
+        stripeErr.message?.includes('Connect platform profile') ||
+        stripeErr.message?.includes('not have access to the Accounts resource')
+      ) {
+        code = 'CONNECT_NOT_ENABLED';
+        message = 'Stripe Connect has not been activated on this platform. The platform administrator needs to complete the Connect platform profile in the Stripe Dashboard.';
+        console.error(
+          '[POST /api/v1/user/stripe-connect] Stripe Connect not enabled.',
+          'Go to https://dashboard.stripe.com/settings/connect to complete the platform profile.',
+        );
       } else if (stripeErr.type === 'StripeAuthenticationError') {
         message = 'Payment service configuration error. Please contact support.';
       } else if (stripeErr.code === 'country_unsupported') {
@@ -160,8 +186,8 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { ok: false, error: { code: 'INTERNAL_ERROR', message, requestId } } satisfies ApiError,
-      { status: 500 },
+      { ok: false, error: { code, message, requestId } } satisfies ApiError,
+      { status: code === 'CONNECT_NOT_ENABLED' ? 503 : 500 },
     );
   }
 }

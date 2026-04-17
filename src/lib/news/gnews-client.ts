@@ -187,7 +187,7 @@ export async function fetchGNewsArticles(
     const keywords = KEYWORD_SETS[category];
     if (!keywords?.length) continue;
 
-    // Rotate through keywords — pick the least recently used keyword
+    // Rotate through keywords - pick the least recently used keyword
     const keyword = await selectNextKeyword(category, keywords);
 
     const params = new URLSearchParams({
@@ -203,7 +203,9 @@ export async function fetchGNewsArticles(
     }
 
     try {
-      const response = await fetch(`${GNEWS_BASE_URL}?${params.toString()}`);
+      const response = await fetch(`${GNEWS_BASE_URL}?${params.toString()}`, {
+        signal: AbortSignal.timeout(15_000),
+      });
       if (!response.ok) {
         console.error(`GNews API error for "${keyword}": ${response.status}`);
         continue;
@@ -269,7 +271,7 @@ async function selectNextKeyword(
     if (neverUsed.length > 0) {
       selected = neverUsed[0];
     } else {
-      // All keywords have been used — pick the one used longest ago
+      // All keywords have been used - pick the one used longest ago
       selected = keywords.reduce((oldest, k) => {
         const kTime = usageMap.get(k)?.getTime() ?? 0;
         const oTime = usageMap.get(oldest)?.getTime() ?? 0;
@@ -292,7 +294,7 @@ async function selectNextKeyword(
 
     return selected;
   } catch {
-    // DB error — fall back to random selection (don't block pipeline)
+    // DB error - fall back to random selection (don't block pipeline)
     return keywords[Math.floor(Math.random() * keywords.length)];
   }
 }

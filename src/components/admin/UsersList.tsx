@@ -107,7 +107,7 @@ export function UsersList({ initialUsers, roleBreakdown, totalUsers }: UsersList
       });
       const body = await res.json();
       if (!res.ok) {
-        setActionError(body?.error?.message ?? 'Failed to change role');
+        setActionError(body?.error?.code === 'VALIDATION_ERROR' ? (body?.error?.message ?? 'Failed to change role') : 'Failed to change role');
         return;
       }
       setUsers((prev) =>
@@ -129,7 +129,7 @@ export function UsersList({ initialUsers, roleBreakdown, totalUsers }: UsersList
       const res = await fetch(`/api/v1/admin/users/${deleteTarget.id}`, { method: 'DELETE' });
       const body = await res.json();
       if (!res.ok) {
-        setActionError(body?.error?.message ?? 'Failed to delete user');
+        setActionError(body?.error?.code === 'VALIDATION_ERROR' ? (body?.error?.message ?? 'Failed to delete user') : 'Failed to delete user');
         return;
       }
       setUsers((prev) => prev.filter((u) => u.id !== deleteTarget.id));

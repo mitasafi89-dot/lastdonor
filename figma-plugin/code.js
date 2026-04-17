@@ -1,4 +1,4 @@
-// LastDonor Design Token Importer — Figma Plugin
+// LastDonor Design Token Importer - Figma Plugin
 // Run this once inside Figma to create all design variables and color styles.
 
 // =============================================================================

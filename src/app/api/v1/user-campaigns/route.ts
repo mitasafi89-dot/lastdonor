@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { campaigns, campaignMilestones, users, auditLogs } from '@/db/schema';
-import { eq, and, desc, sql, inArray } from 'drizzle-orm';
+import { campaigns, users, auditLogs } from '@/db/schema';
+import { eq, and, desc, sql, inArray, gte } from 'drizzle-orm';
 import { createUserCampaignSchema } from '@/lib/validators/user-campaign';
-import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { notifyAdminsCampaignSubmitted, notifyWelcomeCampaigner } from '@/lib/notifications';
 import { sanitizeHtml } from '@/lib/utils/sanitize';
 import { generateSlug } from '@/lib/utils/slug';
+import { handleApiError } from '@/lib/errors';
 import { randomUUID } from 'crypto';
 import type { ApiResponse, ApiError } from '@/types/api';
 import type { CampaignOrganizer } from '@/types';
 
 /**
- * GET /api/v1/user-campaigns — List authenticated user's own campaigns
+ * GET /api/v1/user-campaigns - List authenticated user's own campaigns
  */
 export async function GET(_request: NextRequest) {
   const requestId = randomUUID();
@@ -44,22 +45,15 @@ export async function GET(_request: NextRequest) {
     const response: ApiResponse<typeof result> = { ok: true, data: result };
     return NextResponse.json(response);
   } catch (error) {
-    if (error instanceof UnauthorizedError) {
-      return NextResponse.json(
-        { ok: false, error: { code: 'UNAUTHORIZED', message: 'Sign in required', requestId } } satisfies ApiError,
-        { status: 401 },
-      );
-    }
-    console.error('[GET /api/v1/user-campaigns]', error);
-    return NextResponse.json(
-      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to fetch campaigns', requestId } } satisfies ApiError,
-      { status: 500 },
-    );
+    return handleApiError(error, requestId, {
+      route: '/api/v1/user-campaigns',
+      method: 'GET',
+    });
   }
 }
 
 /**
- * POST /api/v1/user-campaigns — Create a new user campaign
+ * POST /api/v1/user-campaigns - Create a new user campaign
  */
 export async function POST(request: NextRequest) {
   const requestId = randomUUID();
@@ -96,6 +90,25 @@ export async function POST(request: NextRequest) {
     }
 
     const data = parsed.data;
+
+    // Idempotency: reject duplicate submissions with same title within 60 seconds
+    const recentWindow = new Date(Date.now() - 60_000);
+    const [duplicate] = await db
+      .select({ id: campaigns.id, slug: campaigns.slug })
+      .from(campaigns)
+      .where(
+        and(
+          eq(campaigns.creatorId, userId),
+          eq(campaigns.title, data.title),
+          gte(campaigns.createdAt, recentWindow),
+        ),
+      )
+      .limit(1);
+
+    if (duplicate) {
+      const response: ApiResponse<typeof duplicate> = { ok: true, data: duplicate };
+      return NextResponse.json(response, { status: 200 });
+    }
 
     // Build organizer identity from authenticated user
     const RELATION_LABELS: Record<string, string> = {
@@ -135,14 +148,6 @@ export async function POST(request: NextRequest) {
         .join(''),
     );
 
-    // Evidence types are auto-assigned per phase:
-    // Phase 1: written update, Phase 2: photo + update, Phase 3: photo + receipts optional
-    const PHASE_EVIDENCE_TYPES: Record<number, string> = {
-      1: 'document',
-      2: 'photo',
-      3: 'photo',
-    };
-
     const [campaign] = await db.transaction(async (tx) => {
       const result = await tx
         .insert(campaigns)
@@ -151,7 +156,9 @@ export async function POST(request: NextRequest) {
           slug,
           category: data.category,
           heroImageUrl: data.heroImageUrl,
+          galleryImages: data.galleryImages ?? [],
           photoCredit: data.photoCredit ?? null,
+          youtubeUrl: data.youtubeUrl ?? null,
           subjectName: data.subjectName,
           subjectHometown: data.subjectHometown,
           storyHtml,
@@ -164,7 +171,6 @@ export async function POST(request: NextRequest) {
           creatorId: userId,
           beneficiaryRelation: data.beneficiaryRelation,
           verificationStatus: 'unverified',
-          milestoneFundRelease: true,
           publishedAt: new Date(),
         })
         .returning({
@@ -173,19 +179,6 @@ export async function POST(request: NextRequest) {
           title: campaigns.title,
           status: campaigns.status,
         });
-
-      // Insert milestones for milestone-based fund release
-      const milestoneRows = data.milestones.map((m, index) => ({
-        campaignId: result[0].id,
-        phase: index + 1,
-        title: m.title,
-        description: m.description,
-        evidenceType: PHASE_EVIDENCE_TYPES[index + 1],
-        fundPercentage: m.fundPercentage,
-        fundAmount: Math.round(data.goalAmount * m.fundPercentage / 100),
-      }));
-
-      await tx.insert(campaignMilestones).values(milestoneRows);
 
       // Increment user's campaigns_created counter
       await tx
@@ -212,7 +205,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Notify admins (FYI — campaign is live, no review needed)
+    // Notify admins (FYI - campaign is live, no review needed)
     notifyAdminsCampaignSubmitted({
       campaignId: campaign.id,
       campaignTitle: data.title,
@@ -233,22 +226,9 @@ export async function POST(request: NextRequest) {
     const response: ApiResponse<typeof campaign> = { ok: true, data: campaign };
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
-    if (error instanceof UnauthorizedError) {
-      return NextResponse.json(
-        { ok: false, error: { code: 'UNAUTHORIZED', message: 'Sign in required', requestId } } satisfies ApiError,
-        { status: 401 },
-      );
-    }
-    if (error instanceof ForbiddenError) {
-      return NextResponse.json(
-        { ok: false, error: { code: 'FORBIDDEN', message: 'Insufficient permissions', requestId } } satisfies ApiError,
-        { status: 403 },
-      );
-    }
-    console.error('[POST /api/v1/user-campaigns]', error);
-    return NextResponse.json(
-      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to create campaign', requestId } } satisfies ApiError,
-      { status: 500 },
-    );
+    return handleApiError(error, requestId, {
+      route: '/api/v1/user-campaigns',
+      method: 'POST',
+    });
   }
 }

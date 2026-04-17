@@ -191,7 +191,7 @@ export function BlogEditor({ mode, postId, defaultValues }: BlogEditorProps) {
         </div>
       </div>
 
-      {/* Body HTML — full width */}
+      {/* Body HTML - full width */}
       <div>
         <Label>Body HTML</Label>
         <Tabs defaultValue="edit" onValueChange={(v) => v === 'preview' && handleShowPreview()}>

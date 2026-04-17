@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: 'Terms of Service',
   description:
     'Terms of service for LastDonor.org. Plain language, no tricks. Here is what you agree to when you use the platform.',
+  alternates: { canonical: '/terms' },
   openGraph: {
     title: 'Terms of Service | LastDonor.org',
     description:
@@ -28,7 +29,7 @@ export default function TermsPage() {
         Terms of Service
       </h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Last updated: January 1, 2025
+        Last updated: April 1, 2026
       </p>
 
       <p className="mt-4 text-muted-foreground leading-relaxed">

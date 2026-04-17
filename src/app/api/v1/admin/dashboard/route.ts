@@ -5,6 +5,7 @@ import { donations, newsletterSubscribers } from '@/db/schema';
 import { eq, sql, gte, and } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
+import { logError } from '@/lib/errors';
 
 export async function GET() {
   const requestId = randomUUID();
@@ -19,6 +20,7 @@ export async function GET() {
     return NextResponse.json(error, { status: 403 });
   }
 
+  try {
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -96,4 +98,12 @@ export async function GET() {
       dailyDonations,
     },
   });
+  } catch (err) {
+    logError(err, 'admin-dashboard', { requestId });
+    const error: ApiError = {
+      ok: false,
+      error: { code: 'INTERNAL_ERROR', message: 'Failed to load dashboard data', requestId },
+    };
+    return NextResponse.json(error, { status: 500 });
+  }
 }

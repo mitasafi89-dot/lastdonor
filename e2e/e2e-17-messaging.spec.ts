@@ -40,7 +40,7 @@ test.describe('E2E-17: Campaign Messaging', () => {
     const formVisible = await messageForm.isVisible({ timeout: 3000 }).catch(() => false);
     const promptVisible = await signInPrompt.isVisible({ timeout: 3000 }).catch(() => false);
 
-    // At least one should be present — either the form (if logged in) or the prompt
+    // At least one should be present - either the form (if logged in) or the prompt
     expect(formVisible || promptVisible).toBe(true);
   });
 
@@ -57,7 +57,7 @@ test.describe('E2E-17: Campaign Messaging', () => {
     // If the message form is visible (user is authenticated via session)
     const messageTextarea = page.getByLabel(/support message/i);
     const formVisible = await messageTextarea.isVisible({ timeout: 5000 }).catch(() => false);
-    test.skip(!formVisible, 'Message form not visible — user may not be authenticated');
+    test.skip(!formVisible, 'Message form not visible - user may not be authenticated');
 
     // Verify form elements
     await expect(messageTextarea).toBeVisible();

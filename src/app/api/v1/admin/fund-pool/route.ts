@@ -10,7 +10,7 @@ const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;
 
 /**
- * GET /api/v1/admin/fund-pool — List fund pool allocations with summary.
+ * GET /api/v1/admin/fund-pool - List fund pool allocations with summary.
  */
 export async function GET(request: NextRequest) {
   const requestId = randomUUID();

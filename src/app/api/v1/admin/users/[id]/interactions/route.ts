@@ -7,6 +7,7 @@ import { randomUUID } from 'crypto';
 import { createInteractionSchema } from '@/lib/validators/donor';
 import type { ApiError } from '@/types/api';
 import type { UserRole } from '@/types';
+import { logError } from '@/lib/errors';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     );
   }
 
+  try {
   const interactions = await db
     .select({
       id: interactionLogs.id,
@@ -51,6 +53,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
     .limit(50);
 
   return NextResponse.json({ ok: true, data: interactions });
+  } catch (err) {
+    logError(err, 'admin-interactions-get', { requestId, userId: id });
+    return NextResponse.json(
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to load interactions', requestId } } satisfies ApiError,
+      { status: 500 },
+    );
+  }
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -93,6 +102,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     );
   }
 
+  try {
   // Verify donor exists
   const [donor] = await db
     .select({ id: users.id })
@@ -130,6 +140,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
   });
 
   return NextResponse.json({ ok: true, data: created }, { status: 201 });
+  } catch (err) {
+    logError(err, 'admin-interactions-create', { requestId, donorId });
+    return NextResponse.json(
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to log interaction', requestId } } satisfies ApiError,
+      { status: 500 },
+    );
+  }
 }
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
@@ -154,6 +171,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     );
   }
 
+  try {
   const [existing] = await db
     .select({ id: interactionLogs.id, donorId: interactionLogs.donorId })
     .from(interactionLogs)
@@ -180,4 +198,11 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   });
 
   return NextResponse.json({ ok: true, data: { deleted: interactionId } });
+  } catch (err) {
+    logError(err, 'admin-interactions-delete', { requestId, donorId, interactionId });
+    return NextResponse.json(
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to delete interaction', requestId } } satisfies ApiError,
+      { status: 500 },
+    );
+  }
 }

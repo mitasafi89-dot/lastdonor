@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: 'Privacy Policy',
   description:
     'How LastDonor.org handles your data. Short version: we never sell it, we never share it for profit, and we use privacy-focused analytics that do not track you.',
+  alternates: { canonical: '/privacy' },
   openGraph: {
     title: 'Privacy Policy | LastDonor.org',
     description:
@@ -28,7 +29,7 @@ export default function PrivacyPage() {
         Privacy Policy
       </h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Last updated: January 1, 2025
+        Last updated: April 1, 2026
       </p>
 
       <p className="mt-4 text-muted-foreground leading-relaxed">

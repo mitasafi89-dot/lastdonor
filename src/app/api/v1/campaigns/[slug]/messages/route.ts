@@ -1,197 +1,148 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { campaigns, campaignMessages, users } from '@/db/schema';
 import { publicMessageSelect } from '@/db/public-select';
 import { eq, and, desc, gte, sql, or } from 'drizzle-orm';
-import { randomUUID } from 'crypto';
-import { auth } from '@/lib/auth';
+import { withApiHandler } from '@/lib/api-handler';
+import { parsePagination, requireAuth, redactAnonymousDonor, parseBody } from '@/lib/api-helpers';
+import { apiError } from '@/lib/errors';
 import { messageSchema } from '@/lib/validators/message';
-import type { ApiResponse, ApiError } from '@/types/api';
 
-interface Params {
-  params: Promise<{ slug: string }>;
-}
-
-const MAX_LIMIT = 50;
-const DEFAULT_LIMIT = 20;
 const RATE_LIMIT_PER_DAY = 5;
+const DEDUP_WINDOW_MS = 30_000;
 
-export async function GET(request: NextRequest, { params }: Params) {
-  const requestId = randomUUID();
-  const { slug } = await params;
+export const GET = withApiHandler(async (request, { requestId, params }) => {
+  const slug = params!.slug;
 
-  try {
-    const [campaign] = await db
-      .select({ id: campaigns.id })
-      .from(campaigns)
-      .where(
-        and(
-          eq(campaigns.slug, slug),
-          or(
-            eq(campaigns.status, 'active'),
-            eq(campaigns.status, 'last_donor_zone'),
-            eq(campaigns.status, 'completed'),
-          ),
+  const [campaign] = await db
+    .select({ id: campaigns.id })
+    .from(campaigns)
+    .where(
+      and(
+        eq(campaigns.slug, slug),
+        or(
+          eq(campaigns.status, 'active'),
+          eq(campaigns.status, 'last_donor_zone'),
+          eq(campaigns.status, 'completed'),
         ),
-      )
-      .limit(1);
+      ),
+    )
+    .limit(1);
 
-    if (!campaign) {
-      const body: ApiError = {
-        ok: false,
-        error: {
-          code: 'NOT_FOUND',
-          message: 'Campaign not found',
-          requestId,
-        },
-      };
-      return NextResponse.json(body, { status: 404 });
-    }
-
-    const { searchParams } = request.nextUrl;
-    const cursorParam = parseInt(searchParams.get('cursor') ?? '0', 10);
-    const cursor = isNaN(cursorParam) || cursorParam < 0 ? 0 : cursorParam;
-    const limitParam = parseInt(searchParams.get('limit') ?? String(DEFAULT_LIMIT), 10);
-    const limit = Math.min(Math.max(1, isNaN(limitParam) ? DEFAULT_LIMIT : limitParam), MAX_LIMIT);
-
-    const messages = await db
-      .select(publicMessageSelect)
-      .from(campaignMessages)
-      .where(
-        and(
-          eq(campaignMessages.campaignId, campaign.id),
-          eq(campaignMessages.hidden, false),
-        ),
-      )
-      .orderBy(desc(campaignMessages.createdAt))
-      .offset(cursor)
-      .limit(limit + 1);
-
-    const hasMore = messages.length > limit;
-    const data = messages.slice(0, limit).map((m) => ({
-      ...m,
-      donorName: m.isAnonymous ? 'Anonymous' : m.donorName,
-      donorLocation: m.isAnonymous ? null : m.donorLocation,
-    }));
-
-    const body: ApiResponse<typeof data> = {
-      ok: true,
-      data,
-      meta: { cursor: hasMore ? String(cursor + limit) : undefined, hasMore },
-    };
-    return NextResponse.json(body);
-  } catch {
-    const body: ApiError = {
-      ok: false,
-      error: { code: 'INTERNAL_ERROR', message: 'Internal server error', requestId },
-    };
-    return NextResponse.json(body, { status: 500 });
+  if (!campaign) {
+    return apiError('NOT_FOUND', 'Campaign not found.', requestId);
   }
-}
 
-export async function POST(request: NextRequest, { params }: Params) {
-  const requestId = randomUUID();
-  const { slug } = await params;
+  const { limit, offset } = parsePagination(request.nextUrl.searchParams);
 
-  try {
-    const session = await auth();
-    if (!session?.user) {
-      const body: ApiError = {
-        ok: false,
-        error: { code: 'UNAUTHORIZED', message: 'Authentication required', requestId },
-      };
-      return NextResponse.json(body, { status: 401 });
-    }
+  const messages = await db
+    .select(publicMessageSelect)
+    .from(campaignMessages)
+    .where(
+      and(
+        eq(campaignMessages.campaignId, campaign.id),
+        eq(campaignMessages.hidden, false),
+      ),
+    )
+    .orderBy(desc(campaignMessages.createdAt))
+    .offset(offset)
+    .limit(limit + 1);
 
-    const rawBody = await request.json();
-    const parsed = messageSchema.safeParse(rawBody);
-    if (!parsed.success) {
-      const body: ApiError = {
-        ok: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: parsed.error.issues[0]?.message ?? 'Invalid input',
-          requestId,
-        },
-      };
-      return NextResponse.json(body, { status: 400 });
-    }
+  const hasMore = messages.length > limit;
+  const data = messages.slice(0, limit).map(redactAnonymousDonor);
 
-    const [campaign] = await db
-      .select({ id: campaigns.id, status: campaigns.status })
-      .from(campaigns)
-      .where(eq(campaigns.slug, slug))
-      .limit(1);
+  return NextResponse.json({
+    ok: true,
+    data,
+    meta: { cursor: hasMore ? String(offset + limit) : undefined, hasMore },
+  });
+});
 
-    if (!campaign || !['active', 'last_donor_zone', 'completed'].includes(campaign.status)) {
-      const body: ApiError = {
-        ok: false,
-        error: { code: 'NOT_FOUND', message: 'Campaign not found', requestId },
-      };
-      return NextResponse.json(body, { status: 404 });
-    }
+export const POST = withApiHandler(async (request, { requestId, session, params }) => {
+  const slug = params!.slug;
 
-    // Rate limiting: 5 messages per user per campaign per day
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const [recentCount] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(campaignMessages)
-      .where(
-        and(
-          eq(campaignMessages.campaignId, campaign.id),
-          eq(campaignMessages.userId, session.user.id),
-          gte(campaignMessages.createdAt, oneDayAgo),
-        ),
-      );
+  const auth = requireAuth(session, requestId);
+  if ('error' in auth) return auth.error;
 
-    if (recentCount.count >= RATE_LIMIT_PER_DAY) {
-      const body: ApiError = {
-        ok: false,
-        error: {
-          code: 'RATE_LIMITED',
-          message: 'Rate limit exceeded. Maximum 5 messages per campaign per day.',
-          requestId,
-        },
-      };
-      return NextResponse.json(body, { status: 429 });
-    }
+  const parsed = await parseBody(request, messageSchema, requestId);
+  if ('error' in parsed) return parsed.error;
 
-    // Look up user profile for name/location
-    const [userProfile] = await db
-      .select({ name: users.name, location: users.location })
-      .from(users)
-      .where(eq(users.id, session.user.id))
-      .limit(1);
+  const [campaign] = await db
+    .select({ id: campaigns.id, status: campaigns.status })
+    .from(campaigns)
+    .where(eq(campaigns.slug, slug))
+    .limit(1);
 
-    const donorName = parsed.data.isAnonymous
-      ? 'Anonymous'
-      : (userProfile?.name ?? 'Donor');
-    const donorLocation = parsed.data.isAnonymous
-      ? null
-      : (userProfile?.location ?? null);
-
-    const [message] = await db
-      .insert(campaignMessages)
-      .values({
-        campaignId: campaign.id,
-        userId: session.user.id,
-        donorName,
-        donorLocation,
-        message: parsed.data.message,
-        isAnonymous: parsed.data.isAnonymous,
-      })
-      .returning({ id: campaignMessages.id, createdAt: campaignMessages.createdAt });
-
-    const body: ApiResponse<{ id: string; createdAt: Date }> = {
-      ok: true,
-      data: { id: message.id, createdAt: message.createdAt },
-    };
-    return NextResponse.json(body, { status: 201 });
-  } catch {
-    const body: ApiError = {
-      ok: false,
-      error: { code: 'INTERNAL_ERROR', message: 'Internal server error', requestId },
-    };
-    return NextResponse.json(body, { status: 500 });
+  if (!campaign || !['active', 'last_donor_zone', 'completed'].includes(campaign.status)) {
+    return apiError('NOT_FOUND', 'Campaign not found.', requestId);
   }
-}
+
+  // Rate limiting: 5 messages per user per campaign per day
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const [recentCount] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(campaignMessages)
+    .where(
+      and(
+        eq(campaignMessages.campaignId, campaign.id),
+        eq(campaignMessages.userId, auth.session.user.id),
+        gte(campaignMessages.createdAt, oneDayAgo),
+      ),
+    );
+
+  if (recentCount.count >= RATE_LIMIT_PER_DAY) {
+    return apiError('RATE_LIMITED', 'Rate limit exceeded. Maximum 5 messages per campaign per day.', requestId);
+  }
+
+  const [userProfile] = await db
+    .select({ name: users.name, location: users.location })
+    .from(users)
+    .where(eq(users.id, auth.session.user.id))
+    .limit(1);
+
+  const donorName = parsed.data.isAnonymous
+    ? 'Anonymous'
+    : (userProfile?.name ?? 'Donor');
+  const donorLocation = parsed.data.isAnonymous
+    ? null
+    : (userProfile?.location ?? null);
+
+  // Idempotency: reject duplicate messages within 30 seconds
+  const dedupWindow = new Date(Date.now() - DEDUP_WINDOW_MS);
+  const [existingMsg] = await db
+    .select({ id: campaignMessages.id, createdAt: campaignMessages.createdAt })
+    .from(campaignMessages)
+    .where(
+      and(
+        eq(campaignMessages.campaignId, campaign.id),
+        eq(campaignMessages.userId, auth.session.user.id),
+        eq(campaignMessages.message, parsed.data.message),
+        gte(campaignMessages.createdAt, dedupWindow),
+      ),
+    )
+    .limit(1);
+
+  if (existingMsg) {
+    return NextResponse.json({
+      ok: true,
+      data: { id: existingMsg.id, createdAt: existingMsg.createdAt },
+    }, { status: 200 });
+  }
+
+  const [message] = await db
+    .insert(campaignMessages)
+    .values({
+      campaignId: campaign.id,
+      userId: auth.session.user.id,
+      donorName,
+      donorLocation,
+      message: parsed.data.message,
+      isAnonymous: parsed.data.isAnonymous,
+    })
+    .returning({ id: campaignMessages.id, createdAt: campaignMessages.createdAt });
+
+  return NextResponse.json({
+    ok: true,
+    data: { id: message.id, createdAt: message.createdAt },
+  }, { status: 201 });
+});

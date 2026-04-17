@@ -92,6 +92,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         id: campaigns.id,
         creatorId: campaigns.creatorId,
         verificationStatus: campaigns.verificationStatus,
+        raisedAmount: campaigns.raisedAmount,
         title: campaigns.title,
         slug: campaigns.slug,
       })
@@ -152,15 +153,22 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     }
 
     // Update campaign
+    const updateFields: Record<string, unknown> = {
+      verificationStatus: newStatus as typeof campaigns.$inferInsert.verificationStatus,
+      verificationReviewerId: session.user.id!,
+      verificationReviewedAt: now,
+      verificationNotes: notes || null,
+      updatedAt: now,
+    };
+
+    // Lump-sum release: on full verification, release the entire raised amount
+    if (action === 'approve_t2') {
+      updateFields.totalReleasedAmount = campaign.raisedAmount;
+    }
+
     await db
       .update(campaigns)
-      .set({
-        verificationStatus: newStatus as typeof campaigns.$inferInsert.verificationStatus,
-        verificationReviewerId: session.user.id!,
-        verificationReviewedAt: now,
-        verificationNotes: notes || null,
-        updatedAt: now,
-      })
+      .set(updateFields as typeof campaigns.$inferInsert)
       .where(eq(campaigns.id, campaignId));
 
     // If requesting info, create an info request record
@@ -204,7 +212,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       severity: action === 'reject' ? 'warning' : 'info',
     });
 
-    // Notify creator — fire-and-forget; failure must not block the admin response
+    // Notify creator - fire-and-forget; failure must not block the admin response
     if (campaign.creatorId) {
       db.select({ email: users.email, name: users.name })
         .from(users)

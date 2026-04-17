@@ -35,7 +35,7 @@ async function fillStripeCard(
   await numberInput.waitFor({ timeout: 15_000 });
   await numberInput.fill(cardNumber);
 
-  // Fill expiry (MM / YY format — Stripe auto-inserts the " / ")
+  // Fill expiry (MM / YY format - Stripe auto-inserts the " / ")
   const expiryInput = stripeFrame.locator('#payment-expiryInput');
   await expiryInput.fill(expiry);
 
@@ -62,7 +62,7 @@ test.describe('Stripe Donation E2E', () => {
     await page.getByLabel('Location').fill('San Francisco, CA');
     await page.getByLabel('Message').fill('E2E test donation');
 
-    // Step 4: Click "Donate" — creates real PaymentIntent
+    // Step 4: Click "Donate" - creates real PaymentIntent
     await page.getByRole('button', { name: /Donate/i }).click();
 
     // Step 5: Wait for payment step

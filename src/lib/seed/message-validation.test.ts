@@ -150,10 +150,10 @@ describe('validateMessages', () => {
       'God bless from Texas',
     ];
     const newMessages = [
-      'Sending love from Missouri',       // valid — different
-      'Praying for the Johnson family!',   // rejected — too similar
-      'Gave $25 for the kids',             // rejected — dollar amount
-      'A'.repeat(300),                     // rejected — too long
+      'Sending love from Missouri',       // valid - different
+      'Praying for the Johnson family!',   // rejected - too similar
+      'Gave $25 for the kids',             // rejected - dollar amount
+      'A'.repeat(300),                     // rejected - too long
       'Y\'all are in our hearts',          // valid
       'From one Joplin family to another', // valid
     ];

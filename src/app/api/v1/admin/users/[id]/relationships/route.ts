@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth';
 import { db } from '@/db';
 import { donorRelationships, users, auditLogs } from '@/db/schema';
-import { eq, desc, or } from 'drizzle-orm';
+import { eq, desc, or, inArray } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { createRelationshipSchema } from '@/lib/validators/donor';
 import type { ApiError } from '@/types/api';
 import type { UserRole } from '@/types';
+import { logError } from '@/lib/errors';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     );
   }
 
+  try {
   // Fetch relationships where this donor is either side
   const relationships = await db
     .select({
@@ -62,13 +64,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   const relatedUsers: Record<string, { name: string | null; email: string }> = {};
   if (relatedIds.size > 0) {
-    for (const relId of relatedIds) {
-      const [u] = await db
-        .select({ name: users.name, email: users.email })
-        .from(users)
-        .where(eq(users.id, relId))
-        .limit(1);
-      if (u) relatedUsers[relId] = u;
+    const rows = await db
+      .select({ id: users.id, name: users.name, email: users.email })
+      .from(users)
+      .where(inArray(users.id, [...relatedIds]));
+    for (const u of rows) {
+      relatedUsers[u.id] = { name: u.name, email: u.email };
     }
   }
 
@@ -79,6 +80,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }));
 
   return NextResponse.json({ ok: true, data: enriched });
+  } catch (err) {
+    logError(err, 'admin-relationships-get', { requestId, userId: id });
+    return NextResponse.json(
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to load relationships', requestId } } satisfies ApiError,
+      { status: 500 },
+    );
+  }
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -129,6 +137,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     );
   }
 
+  try {
   // Verify donor exists
   const [donor] = await db.select({ id: users.id }).from(users).where(eq(users.id, donorId)).limit(1);
   if (!donor) {
@@ -171,6 +180,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
   });
 
   return NextResponse.json({ ok: true, data: created }, { status: 201 });
+  } catch (err) {
+    logError(err, 'admin-relationships-create', { requestId, donorId });
+    return NextResponse.json(
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to create relationship', requestId } } satisfies ApiError,
+      { status: 500 },
+    );
+  }
 }
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
@@ -195,6 +211,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     );
   }
 
+  try {
   const [existing] = await db
     .select({ id: donorRelationships.id, donorId: donorRelationships.donorId })
     .from(donorRelationships)
@@ -221,4 +238,11 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   });
 
   return NextResponse.json({ ok: true, data: { deleted: relationshipId } });
+  } catch (err) {
+    logError(err, 'admin-relationships-delete', { requestId, donorId, relationshipId });
+    return NextResponse.json(
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to delete relationship', requestId } } satisfies ApiError,
+      { status: 500 },
+    );
+  }
 }

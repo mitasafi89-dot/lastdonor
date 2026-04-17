@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { findStalePosts, queueRefreshTopics } from '@/lib/blog/content-refresh';
 import { db } from '@/db';
 import { auditLogs } from '@/db/schema';
+import { verifyCronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -11,9 +12,8 @@ export const maxDuration = 300;
  * Schedule: Sundays at 10:00 AM UTC
  */
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  if (!verifyCronAuth(request.headers.get('authorization'))) {
+    return NextResponse.json({ ok: false, error: { code: 'UNAUTHORIZED', message: 'Invalid or missing authorization' } }, { status: 401 });
   }
 
   try {

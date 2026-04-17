@@ -1,4 +1,4 @@
-# LastDonor.org — API Specification
+# LastDonor.org - API Specification
 
 **Document ID**: LD-API-001
 **Version**: 0.1
@@ -12,13 +12,13 @@
 
 ## 1. API Design Principles
 
-1. **RESTful** — Resources identified by nouns, actions by HTTP methods.
-2. **JSON only** — All request and response bodies are `application/json`.
-3. **Consistent error format** — Every error follows the same schema.
-4. **Versioned** — `/api/v1/` prefix for all endpoints. Future breaking changes increment version.
-5. **Pagination** — All list endpoints support cursor-based pagination.
-6. **Rate limited** — All public endpoints enforce rate limits. Limits returned in response headers.
-7. **Idempotent** — POST endpoints accept idempotency keys where applicable.
+1. **RESTful** - Resources identified by nouns, actions by HTTP methods.
+2. **JSON only** - All request and response bodies are `application/json`.
+3. **Consistent error format** - Every error follows the same schema.
+4. **Versioned** - `/api/v1/` prefix for all endpoints. Future breaking changes increment version.
+5. **Pagination** - All list endpoints support cursor-based pagination.
+6. **Rate limited** - All public endpoints enforce rate limits. Limits returned in response headers.
+7. **Idempotent** - POST endpoints accept idempotency keys where applicable.
 
 ---
 
@@ -110,10 +110,10 @@ List active campaigns. Public.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|:---:|---------|-------------|
 | `status` | string | No | `active` | Filter by status: `active`, `last_donor_zone`, `completed`, `all` |
-| `category` | string | No | — | Filter by category: `medical`, `disaster`, `military`, `veterans`, `memorial`, `first-responders`, `community`, `essential-needs` |
+| `category` | string | No | - | Filter by category: `medical`, `disaster`, `military`, `veterans`, `memorial`, `first-responders`, `community`, `essential-needs` |
 | `sort` | string | No | `newest` | Sort order: `newest`, `oldest`, `most_funded`, `least_funded`, `closing_soon` |
 | `limit` | integer | No | 10 | Results per page (max 50) |
-| `cursor` | string | No | — | Pagination cursor from previous response |
+| `cursor` | string | No | - | Pagination cursor from previous response |
 
 **Response: `200 OK`**
 ```json
@@ -215,7 +215,7 @@ Get single campaign with full detail. Public.
 
 ---
 
-#### `POST /api/v1/campaigns` — **Editor/Admin only**
+#### `POST /api/v1/campaigns` - **Editor/Admin only**
 
 Create a new campaign.
 
@@ -241,7 +241,7 @@ Create a new campaign.
 
 ---
 
-#### `PUT /api/v1/campaigns/:id` — **Editor/Admin only**
+#### `PUT /api/v1/campaigns/:id` - **Editor/Admin only**
 
 Update a campaign. Partial updates supported (send only changed fields).
 
@@ -249,7 +249,7 @@ Update a campaign. Partial updates supported (send only changed fields).
 
 ---
 
-#### `DELETE /api/v1/campaigns/:id` — **Admin only**
+#### `DELETE /api/v1/campaigns/:id` - **Admin only**
 
 Soft-delete a campaign (sets status to `archived`). Only draft or completed campaigns can be deleted. Active campaigns must be archived first.
 
@@ -331,7 +331,7 @@ List recent donors for a campaign. Public.
 | Parameter | Type | Required | Default |
 |-----------|------|:---:|---------|
 | `limit` | integer | No | 20 (max 50) |
-| `cursor` | string | No | — |
+| `cursor` | string | No | - |
 
 **Response: `200 OK`**
 ```json
@@ -410,9 +410,9 @@ List published blog posts. Public.
 
 | Parameter | Type | Required | Default |
 |-----------|------|:---:|---------|
-| `category` | string | No | — (`campaign_story`, `impact_report`, `news`) |
+| `category` | string | No | - (`campaign_story`, `impact_report`, `news`) |
 | `limit` | integer | No | 10 (max 50) |
-| `cursor` | string | No | — |
+| `cursor` | string | No | - |
 
 **Response: `200 OK`**
 ```json
@@ -523,7 +523,7 @@ Aggregated RSS feed items from military news sources. Editor/Admin only.
 
 | Parameter | Type | Required | Default |
 |-----------|------|:---:|---------|
-| `source` | string | No | — (filter by: `dvids`, `stripes`, `military_times`, `defense_gov`) |
+| `source` | string | No | - (filter by: `dvids`, `stripes`, `military_times`, `defense_gov`) |
 | `limit` | integer | No | 20 |
 | `since` | ISO 8601 | No | 24 hours ago |
 
@@ -548,7 +548,7 @@ Aggregated RSS feed items from military news sources. Editor/Admin only.
 
 ---
 
-#### `GET /api/v1/admin/audit-log` — **Admin only**
+#### `GET /api/v1/admin/audit-log` - **Admin only**
 
 Query audit trail. Admin only (editors cannot access).
 
@@ -556,12 +556,12 @@ Query audit trail. Admin only (editors cannot access).
 
 | Parameter | Type | Required | Default |
 |-----------|------|:---:|---------|
-| `eventType` | string | No | — |
-| `actorId` | UUID | No | — |
+| `eventType` | string | No | - |
+| `actorId` | UUID | No | - |
 | `since` | ISO 8601 | No | 7 days ago |
 | `until` | ISO 8601 | No | now |
 | `limit` | integer | No | 50 |
-| `cursor` | string | No | — |
+| `cursor` | string | No | - |
 
 ---
 

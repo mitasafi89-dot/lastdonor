@@ -63,7 +63,7 @@ test.describe('Donate Button E2E', () => {
     await page.getByRole('radio', { name: '$100.00' }).click();
     await expect(page.getByRole('button', { name: /\$100\.00/ })).toBeVisible();
 
-    // Now type a custom amount — should deselect preset
+    // Now type a custom amount - should deselect preset
     const customInput = page.getByLabel(/custom amount/i);
     await customInput.fill('75');
 
@@ -98,7 +98,7 @@ test.describe('Donate Button E2E', () => {
     await customInput.fill('3');
     await expect(page.getByRole('button', { name: /^Donate$/ })).toBeDisabled();
 
-    // Enter $5 — should enable
+    // Enter $5 - should enable
     await customInput.fill('5');
     await expect(page.getByRole('button', { name: /\$5\.00/ })).toBeEnabled();
   });
@@ -116,7 +116,7 @@ test.describe('Donate Button E2E', () => {
     await page.getByLabel(/location/i).fill('Austin, TX');
     await page.getByLabel(/message/i).fill('Wishing you the best!');
 
-    // 3. Submit — should transition to payment step
+    // 3. Submit - should transition to payment step
     await page.getByRole('button', { name: /Donate/i }).click();
 
     // 4. Payment step should appear (even with mocked API, Stripe Elements will try to load)
@@ -201,7 +201,7 @@ test.describe('Campaign Donate Button', () => {
 
     // Skip if no campaigns are in the database
     const cardVisible = await campaignCard.isVisible({ timeout: 5000 }).catch(() => false);
-    test.skip(!cardVisible, 'No campaigns in database — skipping campaign-specific test');
+    test.skip(!cardVisible, 'No campaigns in database - skipping campaign-specific test');
 
     await campaignCard.click();
     await expect(page).toHaveURL(/\/campaigns\/.+/, { timeout: 10000 });

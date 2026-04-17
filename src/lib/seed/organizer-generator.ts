@@ -64,7 +64,7 @@ The name should:
 - Be a common American name appropriate for the relation type
 - NOT be the same as ${campaign.subjectName}${excludeClause}
 - Sound natural, not fictional
-- Vary ethnicity and gender — do not default to common Anglo names
+- Vary ethnicity and gender - do not default to common Anglo names
 
 Return: {"name": "...", "city": "..."}`;
 
@@ -82,7 +82,7 @@ Return: {"name": "...", "city": "..."}`;
       city: result.city || hometown,
     };
   } catch {
-    // Deterministic fallback — never fail campaign creation over organizer
+    // Deterministic fallback - never fail campaign creation over organizer
     return {
       name: 'A close friend',
       relation,
@@ -176,7 +176,7 @@ export async function isOrganizerUpdateDue(campaignId: string): Promise<boolean>
     .orderBy(desc(schema.campaignUpdates.createdAt))
     .limit(1);
 
-  if (!lastUpdate) return true; // No updates yet — overdue
+  if (!lastUpdate) return true; // No updates yet - overdue
 
   const daysSinceLastUpdate =
     (Date.now() - new Date(lastUpdate.createdAt).getTime()) / (1000 * 60 * 60 * 24);
@@ -245,8 +245,8 @@ export async function generateOrganizerUpdate(campaign: Campaign): Promise<void>
 
   // Voice selection: organizer (first-person) or editorial team (third-person)
   const systemPrompt = useEditorial
-    ? `You write campaign update posts for a nonprofit fundraising platform called LastDonor. Write in THIRD PERSON as an editorial team member providing a thoughtful, journalistic update. Be warm, empathetic, and informative — like a community reporter covering a local story. Return ONLY plain text, no HTML, no markdown formatting.`
-    : `You write campaign updates as a specific person — the campaign organizer — on a nonprofit fundraising platform. Write in FIRST PERSON as if you are ${organizer.name}, the ${organizer.relation} of the campaign subject. Be warm, personal, genuine, and specific. Never sound like AI or a corporation. Return ONLY plain text, no HTML, no markdown formatting.`;
+    ? `You write campaign update posts for a nonprofit fundraising platform called LastDonor. Write in THIRD PERSON as an editorial team member providing a thoughtful, journalistic update. Be warm, empathetic, and informative - like a community reporter covering a local story. Return ONLY plain text, no HTML, no markdown formatting.`
+    : `You write campaign updates as a specific person - the campaign organizer - on a nonprofit fundraising platform. Write in FIRST PERSON as if you are ${organizer.name}, the ${organizer.relation} of the campaign subject. Be warm, personal, genuine, and specific. Never sound like AI or a corporation. Return ONLY plain text, no HTML, no markdown formatting.`;
 
   const userPrompt = buildOrganizerUpdateUserPrompt({
     updateType,
@@ -344,9 +344,9 @@ WRITING RULES:
 - Match the emotional tone to the campaign's progress (${input.percentage}%)
 - Do NOT repeat themes or phrases from previous updates
 - Do NOT mention specific donation amounts or name individual donors
-- ${input.useEditorial ? 'Write like a community journalist — warm but factual' : 'Sound like a real person posting on social media, not a professional writer'}
+- ${input.useEditorial ? 'Write like a community journalist - warm but factual' : 'Sound like a real person posting on social media, not a professional writer'}
 - Use natural paragraph breaks (2-3 short paragraphs)
-- Vary sentence length — mix short punchy lines with longer ones`;
+- Vary sentence length - mix short punchy lines with longer ones`;
 }
 
 function formatUpdateType(type: CampaignUpdateType): string {
@@ -380,7 +380,7 @@ function getUpdateTypeInstructions(
       return `INSTRUCTIONS FOR THIS UPDATE:
 - Share a new development or anecdote about ${input.subjectName}'s situation
 - This could be: a medical update, recovery progress, a new challenge, a small victory, an appointment result
-- Continue the story — the campaign narrative should advance from the original story
+- Continue the story - the campaign narrative should advance from the original story
 - Examples of developments: "out of surgery," "test results came back," "found temporary housing," "started physical therapy"
 - Make it feel like you're sharing real news with people who care
 - Balance honesty about challenges with hope
@@ -400,7 +400,7 @@ function getUpdateTypeInstructions(
 - Share what this milestone means personally to you and ${input.subjectName}
 - Look back at where things started vs. where they are now
 - Express what the community support has taught you
-- Be emotional but genuine — not over-the-top`;
+- Be emotional but genuine - not over-the-top`;
 
     case 'community_response':
       return `INSTRUCTIONS FOR THIS UPDATE:
@@ -408,7 +408,7 @@ function getUpdateTypeInstructions(
 - Mention the collective effort of ${input.donorCount} donors coming together
 - Share an observation about how the support has affected ${input.subjectName} or the family
 - Reference the broader community: neighbors, local businesses, church groups, school communities
-- Frame this as a community story — people helping people
+- Frame this as a community story - people helping people
 - Be specific about the emotional impact rather than financial details`;
 
     default:
@@ -417,35 +417,35 @@ function getUpdateTypeInstructions(
 }
 
 /**
- * Title templates per update type — multiple options to avoid P5 repetition.
+ * Title templates per update type - multiple options to avoid P5 repetition.
  * `{firstName}` = organizer first name, `{subjectFirst}` = subject first name.
  */
 const ORGANIZER_TITLE_TEMPLATES: Record<string, string[]> = {
   thank_you: [
     'A message from {firstName}: Thank you all',
     '{firstName} says: We\'re overwhelmed by your support',
-    'From {firstName}\'s heart to yours — thank you',
-    'Grateful beyond words — a note from {firstName}',
-    'To everyone who gave — thank you, from {firstName}',
+    'From {firstName}\'s heart to yours - thank you',
+    'Grateful beyond words - a note from {firstName}',
+    'To everyone who gave - thank you, from {firstName}',
   ],
   story_development: [
     'Update on {subjectFirst} from {firstName}',
-    'News about {subjectFirst} — an update from the family',
+    'News about {subjectFirst} - an update from the family',
     '{firstName} shares the latest on {subjectFirst}',
     'A new chapter: {subjectFirst}\'s journey continues',
-    'What\'s happening with {subjectFirst} — {firstName} reports',
+    'What\'s happening with {subjectFirst} - {firstName} reports',
   ],
   disbursement_plan: [
-    'How we\'re using your donations — from {firstName}',
+    'How we\'re using your donations - from {firstName}',
     '{firstName} shares the plan for the funds',
-    'Where your generosity is going — an update from {firstName}',
-    'Putting your donations to work — {firstName}',
+    'Where your generosity is going - an update from {firstName}',
+    'Putting your donations to work - {firstName}',
   ],
   milestone_reflection: [
-    'Reflecting on this journey — {firstName}',
+    'Reflecting on this journey - {firstName}',
     '{firstName} looks back at how far we\'ve come',
-    'A moment to pause and reflect — from {firstName}',
-    'What this milestone means to us — {firstName}',
+    'A moment to pause and reflect - from {firstName}',
+    'What this milestone means to us - {firstName}',
   ],
   community_response: [
     'The community rallies around {subjectFirst}',
@@ -462,7 +462,7 @@ const EDITORIAL_TITLE_TEMPLATES: Record<string, string[]> = {
     'Campaign spotlight: The community behind {subjectFirst}',
     'How donors are coming together for {subjectFirst}',
     'A community effort: {subjectFirst}\'s campaign update',
-    '{subjectFirst}\'s story resonates — a LastDonor editorial',
+    '{subjectFirst}\'s story resonates - a LastDonor editorial',
   ],
   milestone_reflection: [
     'Campaign milestone: {subjectFirst}\'s progress so far',

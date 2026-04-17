@@ -1,153 +1,109 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
-import { centsToDollars } from '@/lib/utils/currency';
-import { ShieldCheckIcon, CurrencyDollarIcon, HeartIcon } from '@heroicons/react/24/outline';
+import { motion } from 'motion/react';
+import { CheckBadgeIcon } from '@heroicons/react/24/solid';
+import { fadeInUp, staggerContainer } from '@/lib/animations';
 
-interface FeaturedCampaign {
-  slug: string;
-  title: string;
-  heroImageUrl: string;
-  subjectName: string;
-  campaignOrganizer?: string;
-  category?: string;
-  raisedAmount: number;
-  goalAmount: number;
-}
-
-interface HeroSectionProps {
-  featuredCampaign: FeaturedCampaign | null;
-}
-
-export function HeroSection({ featuredCampaign }: HeroSectionProps) {
-  const percent = featuredCampaign && featuredCampaign.goalAmount > 0
-    ? Math.min(Math.round((featuredCampaign.raisedAmount / featuredCampaign.goalAmount) * 100), 100)
-    : 0;
-
+export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-background">
-      {/* Subtle mesh gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
-      <div className="absolute -top-40 right-0 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl" />
-      <div className="absolute -bottom-20 -left-20 h-[400px] w-[400px] rounded-full bg-accent/5 blur-3xl" />
+    <section className="relative overflow-hidden bg-muted" aria-label="Welcome">
+      {/* Desktop hero image - right portion, fades into background */}
+      <div
+        className="absolute inset-y-0 right-0 hidden w-[55%] lg:block"
+        aria-hidden="true"
+      >
+        <Image
+          src="/images/hero-bg.webp"
+          alt=""
+          fill
+          priority
+          sizes="55vw"
+          className="object-cover object-center"
+        />
+        {/* Gradient fade - blends image seamlessly into background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-muted via-muted/50 to-transparent" />
+      </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          {/* Left column: Copy + CTAs + Trust metrics */}
-          <div>
-            <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              Every Dollar Tracked. Every Campaign Verified.
-            </h1>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
-              Give to real people and see exactly where your money goes. No
-              hidden tips, no surprise fees, no platform charges. 100% of your
-              donation reaches the person who needs it.
-            </p>
+      {/* Mobile hero image - stacked above text */}
+      <div
+        className="relative aspect-[16/9] sm:aspect-[2/1] lg:hidden"
+        aria-hidden="true"
+      >
+        <Image
+          src="/images/hero-bg.webp"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-muted via-muted/40 to-transparent" />
+      </div>
 
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link
-                href="/campaigns"
-                className="rounded-full bg-accent px-8 py-3.5 text-sm font-semibold text-accent-foreground shadow-md transition-all hover:bg-accent/90 hover:shadow-lg"
-              >
-                Donate Now
-              </Link>
-              <Link
-                href="/share-your-story"
-                className="rounded-full border border-primary/30 bg-primary/5 px-8 py-3.5 text-sm font-semibold text-primary transition-all hover:bg-primary/10"
-              >
-                Start a Campaign
-              </Link>
-            </div>
+      {/* Text content - left column on desktop, full-width on mobile */}
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
+          className="py-12 sm:py-16 lg:w-1/2 lg:py-28 xl:py-32"
+        >
+          <motion.h1
+            variants={fadeInUp}
+            className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-[3.5rem] lg:leading-[1.1]"
+          >
+            Give to Real People.
+            <br />
+            See Exactly{' '}
+            <span className="text-primary">
+              Where
+              <br />
+              It Goes.
+            </span>
+          </motion.h1>
 
-            {/* Trust metrics */}
-            <div className="mt-10 flex flex-wrap gap-6 border-t border-border pt-8">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-                  <CurrencyDollarIcon className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">0% Fees</p>
-                  <p className="text-xs text-muted-foreground">No platform charges</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-                  <ShieldCheckIcon className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">Verified</p>
-                  <p className="text-xs text-muted-foreground">Every campaign audited</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-                  <HeartIcon className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">Transparent</p>
-                  <p className="text-xs text-muted-foreground">Full fund tracking</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <motion.p
+            variants={fadeInUp}
+            className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground"
+          >
+            Every dollar reaches a verified person in need - tracked from your card
+            to their bank account. No fees. No middlemen.
+          </motion.p>
 
-          {/* Right column: Featured campaign card */}
-          <div className="relative">
-            {featuredCampaign ? (
-              <Link
-                href={`/campaigns/${featuredCampaign.slug}`}
-                className="group block overflow-hidden rounded-2xl border border-border bg-card shadow-lg transition-all hover:shadow-xl"
-              >
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <Image
-                    src={featuredCampaign.heroImageUrl}
-                    alt={`Campaign for ${featuredCampaign.subjectName}`}
-                    fill
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-6 pt-16">
-                    <span className="inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                      Featured Campaign
-                    </span>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h2 className="font-display text-xl font-bold text-card-foreground">
-                    {featuredCampaign.title}
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Help {featuredCampaign.subjectName}
-                  </p>
-                  {/* Progress bar */}
-                  <div className="mt-4">
-                    <div className="flex items-baseline justify-between">
-                      <span className="font-mono text-lg font-bold text-primary">
-                        {centsToDollars(featuredCampaign.raisedAmount)}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        of {centsToDollars(featuredCampaign.goalAmount)}
-                      </span>
-                    </div>
-                    <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-primary transition-all duration-700"
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-                    <p className="mt-1.5 text-xs text-muted-foreground">
-                      {percent}% funded
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            ) : (
-              <div className="flex aspect-[4/3] items-center justify-center rounded-2xl border border-dashed border-border bg-muted/50">
-                <p className="text-muted-foreground">No featured campaign yet</p>
-              </div>
-            )}
-          </div>
-        </div>
+          {/* CTAs - primary (amber) + secondary (teal outlined) */}
+          <motion.div
+            variants={fadeInUp}
+            className="mt-10 flex flex-wrap items-center gap-4"
+          >
+            <Link
+              href="/campaigns"
+              className="btn-press inline-flex items-center justify-center rounded-full bg-brand-amber px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all duration-200 hover:shadow-[--shadow-amber] hover:-translate-y-0.5"
+            >
+              Find a Campaign
+            </Link>
+            <Link
+              href="/share-your-story"
+              className="btn-press inline-flex items-center justify-center rounded-full border-2 border-primary px-8 py-3.5 text-sm font-semibold text-primary transition-all duration-200 hover:bg-primary/5 hover:-translate-y-0.5"
+            >
+              Start a Campaign
+            </Link>
+          </motion.div>
+
+          {/* Zero-Knowledge Proof strip: pre-empts top FUDs at point of CTA click */}
+          <motion.p
+            variants={fadeInUp}
+            className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground"
+          >
+            <CheckBadgeIcon className="h-4 w-4 text-brand-teal" aria-hidden="true" />
+            <span>No signup to donate.</span>
+            <span aria-hidden="true" className="text-border">·</span>
+            <span>Every campaign human-verified.</span>
+            <span aria-hidden="true" className="text-border">·</span>
+            <span>100% of your donation delivered.</span>
+          </motion.p>
+        </motion.div>
       </div>
     </section>
   );

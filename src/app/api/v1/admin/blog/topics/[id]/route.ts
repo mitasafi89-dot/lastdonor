@@ -5,13 +5,14 @@ import { eq } from 'drizzle-orm';
 import { requireRole, UnauthorizedError, ForbiddenError, auth } from '@/lib/auth';
 import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
+import { patchBlogTopicSchema } from '@/lib/validators/admin';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
 /**
- * PATCH /api/v1/admin/blog/topics/[id] — update topic (action: generate, reject, boost)
+ * PATCH /api/v1/admin/blog/topics/[id] - update topic (action: generate, reject, boost)
  */
 export async function PATCH(request: Request, { params }: RouteParams) {
   const { id } = await params;
@@ -22,7 +23,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const session = await auth();
 
     const body = await request.json();
-    const { action, ...updates } = body;
+    const parsed = patchBlogTopicSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { ok: false, error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0]?.message ?? 'Invalid input', requestId } } satisfies ApiError,
+        { status: 400 },
+      );
+    }
+    const { action, ...updates } = parsed.data;
 
     // Verify topic exists
     const [topic] = await db
@@ -107,7 +115,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 }
 
 /**
- * DELETE /api/v1/admin/blog/topics/[id] — delete a topic
+ * DELETE /api/v1/admin/blog/topics/[id] - delete a topic
  */
 export async function DELETE(_request: Request, { params }: RouteParams) {
   const { id } = await params;

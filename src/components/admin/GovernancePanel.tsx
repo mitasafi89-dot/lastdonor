@@ -206,7 +206,7 @@ export function GovernancePanel({ campaigns: initial }: GovernancePanelProps) {
         ),
       );
 
-      toast.success(`Campaign "${target.title}" — ${action} completed`);
+      toast.success(`Campaign "${target.title}" - ${action} completed`);
       closeDialog();
     } catch {
       setError('Network error');
@@ -326,7 +326,7 @@ export function GovernancePanel({ campaigns: initial }: GovernancePanelProps) {
                 </td>
                 <td className="hidden px-4 py-3 text-right text-muted-foreground sm:table-cell">{c.donorCount}</td>
                 <td className="hidden max-w-[140px] truncate px-4 py-3 text-muted-foreground lg:table-cell">
-                  {c.creatorName ?? c.creatorEmail ?? '—'}
+                  {c.creatorName ?? c.creatorEmail ?? '-'}
                 </td>
                 <td className="px-2 py-3 text-right">
                   {hasActions(c.status) ? (

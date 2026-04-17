@@ -9,6 +9,8 @@ import { eq, isNull, desc, sql } from 'drizzle-orm';
 import { buildGenerateNewsletterPrompt } from '@/lib/ai/prompts/generate-newsletter';
 import { callAI } from '@/lib/ai/call-ai';
 import { resend } from '@/lib/resend';
+import { logError } from '@/lib/errors';
+import { verifyCronAuth } from '@/lib/cron-auth';
 import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
@@ -23,9 +25,8 @@ type NewsletterContent = {
 };
 
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  if (!verifyCronAuth(request.headers.get('authorization'))) {
+    return NextResponse.json({ ok: false, error: { code: 'UNAUTHORIZED', message: 'Invalid cron authorization.' } }, { status: 401 });
   }
 
   try {
@@ -140,21 +141,27 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ ok: true, data: { sent, totalSubscribers: subscriberCount } });
   } catch (error) {
+    const requestId = crypto.randomUUID();
+    logError(error, { requestId, route: '/api/v1/cron/send-newsletter', method: 'GET' });
+
     await db.insert(auditLogs).values({
       eventType: 'cron.send_newsletter',
       severity: 'error',
-      details: { error: error instanceof Error ? error.message : String(error) },
-    });
+      details: { error: 'Newsletter processing failed', requestId },
+    }).catch(() => {});
 
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : 'Unknown error' },
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Newsletter processing failed.', requestId } },
       { status: 500 },
     );
   }
 }
 
 function createUnsubscribeToken(subscriberId: string): string {
-  const secret = process.env.NEWSLETTER_UNSUBSCRIBE_SECRET ?? process.env.NEXTAUTH_SECRET ?? '';
+  const secret = process.env.NEWSLETTER_UNSUBSCRIBE_SECRET;
+  if (!secret) {
+    throw new Error('NEWSLETTER_UNSUBSCRIBE_SECRET is not set - cannot generate unsubscribe tokens. Do not reuse NEXTAUTH_SECRET for this purpose.');
+  }
   const hmac = crypto.createHmac('sha256', secret);
   hmac.update(subscriberId);
   const signature = hmac.digest('hex');
@@ -203,7 +210,7 @@ function buildNewsletterHtml(content: NewsletterContent, unsubUrl: string): stri
     </div>
     <hr class="divider"/>
     <div class="footer">
-      <p>LastDonor.org — Every campaign has a last donor. Will it be you?</p>
+      <p>LastDonor.org - Every campaign has a last donor. Will it be you?</p>
       <p>1234 Main St, Suite 100, Washington, DC 20001</p>
       <p><a href="${unsubUrl}">Unsubscribe</a></p>
     </div>

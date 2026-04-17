@@ -1,5 +1,5 @@
 /**
- * Content Refresh — identifies stale blog posts that need updating
+ * Content Refresh - identifies stale blog posts that need updating
  * and orchestrates their refresh through the AI pipeline.
  */
 

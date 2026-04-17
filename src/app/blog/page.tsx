@@ -4,10 +4,13 @@ import { blogPosts } from '@/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { BlogCard } from '@/components/blog/BlogCard';
 
+export const revalidate = 300; // ISR: refresh every 5 minutes
+
 export const metadata: Metadata = {
   title: 'Stories & Impact',
   description:
     'Real stories from real campaigns. See who got helped, how the money was used, and what happened next. No fluff, no filler.',
+  alternates: { canonical: '/blog' },
   openGraph: {
     title: 'Stories & Impact | LastDonor.org',
     description:

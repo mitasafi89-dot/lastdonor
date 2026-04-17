@@ -2,12 +2,14 @@ import { db } from '@/db';
 import { users, donations } from '@/db/schema';
 import { eq, count, and, gte } from 'drizzle-orm';
 import { computeDonorScore } from '@/lib/donor-scoring';
+import { logError } from '@/lib/errors';
 
 /**
  * Compute and persist the score for a single donor.
  * Returns the new score.
  */
 export async function refreshDonorScore(userId: string): Promise<number> {
+  try {
   const [user] = await db
     .select({
       totalDonated: users.totalDonated,
@@ -60,4 +62,8 @@ export async function refreshDonorScore(userId: string): Promise<number> {
     .where(eq(users.id, userId));
 
   return score;
+  } catch (err) {
+    logError(err, 'donor-scoring', { userId });
+    return 0;
+  }
 }

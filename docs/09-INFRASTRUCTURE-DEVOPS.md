@@ -1,10 +1,10 @@
-# LastDonor.org — Infrastructure & DevOps Runbook
+﻿# LastDonor.org â€” Infrastructure & DevOps Runbook
 
 **Document ID**: LD-INFRA-001
 **Version**: 0.1
 **Date**: March 19, 2026
 **Status**: Draft
-**Classification**: Internal — Operations
+**Classification**: Internal â€” Operations
 **Owner**: Engineering Lead
 **On-Call Rotation**: TBD
 
@@ -46,51 +46,51 @@ Differences:
 ### 2.1 Architecture Diagram
 
 ```
-                         ┌──────────────┐
-                         │   DNS        │
-                         │  Cloudflare  │
-                         │              │
-                         │  A → Vercel  │
-                         │  CNAME → ... │
-                         └──────┬───────┘
-                                │
-                    ┌───────────▼──────────┐
-                    │     Cloudflare       │
-                    │  ┌────────────────┐  │
-                    │  │ DDoS Protection│  │
-                    │  │ WAF Rules      │  │
-                    │  │ SSL Termination│  │
-                    │  │ Edge Cache     │  │
-                    │  └────────────────┘  │
-                    └───────────┬──────────┘
-                                │
-                    ┌───────────▼──────────┐
-                    │       Vercel         │
-                    │                      │
-                    │  ┌────────────────┐  │      ┌──────────────┐
-                    │  │ Edge Network   │  │      │   Supabase   │
-                    │  │ (Global CDN)   │  │      │              │
-                    │  └───────┬────────┘  │      │ ┌──────────┐ │
-                    │          │           │      │ │PostgreSQL│ │
-                    │  ┌───────▼────────┐  │◄────►│ │(Pooler)  │ │
-                    │  │ Serverless     │  │      │ └──────────┘ │
-                    │  │ Functions      │  │      │ ┌──────────┐ │
-                    │  │ (API Routes)   │  │      │ │ Auth     │ │
-                    │  └───────┬────────┘  │      │ └──────────┘ │
-                    │          │           │      │ ┌──────────┐ │
-                    │  ┌───────▼────────┐  │      │ │ Storage  │ │
-                    │  │ SSR/SSG/ISR    │  │      │ └──────────┘ │
-                    │  │ (Next.js)      │  │      │ ┌──────────┐ │
-                    │  └────────────────┘  │      │ │ Realtime │ │
-                    │                      │      │ └──────────┘ │
-                    └──────────────────────┘      └──────────────┘
-                                │
-               ┌────────────────┼─────────────────┐
-               │                │                  │
-       ┌───────▼──────┐ ┌──────▼───────┐ ┌───────▼───────┐
-       │    Stripe    │ │    Resend    │ │   Sentry      │
-       │  (Payments)  │ │   (Email)   │ │  (Monitoring) │
-       └──────────────┘ └──────────────┘ └───────────────┘
+                         â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                         â”‚   DNS        â”‚
+                         â”‚  Cloudflare  â”‚
+                         â”‚              â”‚
+                         â”‚  A â†’ Vercel  â”‚
+                         â”‚  CNAME â†’ ... â”‚
+                         â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜
+                                â”‚
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚     Cloudflare       â”‚
+                    â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+                    â”‚  â”‚ DDoS Protectionâ”‚  â”‚
+                    â”‚  â”‚ WAF Rules      â”‚  â”‚
+                    â”‚  â”‚ SSL Terminationâ”‚  â”‚
+                    â”‚  â”‚ Edge Cache     â”‚  â”‚
+                    â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                                â”‚
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚       Vercel         â”‚
+                    â”‚                      â”‚
+                    â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚  â”‚ Edge Network   â”‚  â”‚      â”‚   Supabase   â”‚
+                    â”‚  â”‚ (Global CDN)   â”‚  â”‚      â”‚              â”‚
+                    â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚      â”‚ â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+                    â”‚          â”‚           â”‚      â”‚ â”‚PostgreSQLâ”‚ â”‚
+                    â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚â-„â”€â”€â”€â”€â–ºâ”‚ â”‚(Pooler)  â”‚ â”‚
+                    â”‚  â”‚ Serverless     â”‚  â”‚      â”‚ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
+                    â”‚  â”‚ Functions      â”‚  â”‚      â”‚ â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+                    â”‚  â”‚ (API Routes)   â”‚  â”‚      â”‚ â”‚ Auth     â”‚ â”‚
+                    â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚      â”‚ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
+                    â”‚          â”‚           â”‚      â”‚ â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+                    â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚      â”‚ â”‚ Storage  â”‚ â”‚
+                    â”‚  â”‚ SSR/SSG/ISR    â”‚  â”‚      â”‚ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
+                    â”‚  â”‚ (Next.js)      â”‚  â”‚      â”‚ â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+                    â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚      â”‚ â”‚ Realtime â”‚ â”‚
+                    â”‚                      â”‚      â”‚ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
+                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                                â”‚
+               â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+               â”‚                â”‚                  â”‚
+       â”Œâ”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â” â”Œâ”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â” â”Œâ”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”
+       â”‚    Stripe    â”‚ â”‚    Resend    â”‚ â”‚   Sentry      â”‚
+       â”‚  (Payments)  â”‚ â”‚   (Email)   â”‚ â”‚  (Monitoring) â”‚
+       â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### 2.2 Service-Level Dependencies
@@ -202,30 +202,30 @@ jobs:
 
 ```
 PR Merged to main
-        │
-        ▼
+        â”‚
+        â–¼
 GitHub Actions CI (full pipeline)
-        │ All stages pass
-        ▼
+        â”‚ All stages pass
+        â–¼
 Vercel auto-deploys from main
-        │
-        ▼
+        â”‚
+        â–¼
 Vercel runs build (next build)
-        │
-        ▼
+        â”‚
+        â–¼
 Vercel deploys to production edge network
-        │
-        ▼
+        â”‚
+        â–¼
 Sentry release created (source maps uploaded)
-        │
-        ▼
+        â”‚
+        â–¼
 Post-deploy health check (automated)
-  ├── Homepage returns 200
-  ├── /api/v1/campaigns returns 200
-  ├── /api/v1/stats returns 200
-  └── Stripe webhook endpoint responds
-        │
-        ▼
+  â”œâ”€â”€ Homepage returns 200
+  â”œâ”€â”€ /api/v1/campaigns returns 200
+  â”œâ”€â”€ /api/v1/stats returns 200
+  â””â”€â”€ Stripe webhook endpoint responds
+        â”‚
+        â–¼
 Deploy complete. Monitor Sentry for error spike.
 ```
 
@@ -356,22 +356,22 @@ Response 503 (any check fails):
 
 ```
 1. CHECK: Is it a Vercel platform issue?
-   → status.vercel.com — if yes, wait. If no, continue.
+   â†’ status.vercel.com â€” if yes, wait. If no, continue.
 
 2. CHECK: Recent deployment?
-   → If yes: rollback immediately via Vercel dashboard.
-   → vercel rollback --yes
+   â†’ If yes: rollback immediately via Vercel dashboard.
+   â†’ vercel rollback --yes
 
 3. CHECK: Supabase connection issue?
-   → Supabase dashboard → is the project paused or over limits?
-   → If paused: resume. If limits: upgrade plan.
+   â†’ Supabase dashboard â†’ is the project paused or over limits?
+   â†’ If paused: resume. If limits: upgrade plan.
 
 4. CHECK: Sentry for exception spike
-   → Identify the error. If it's a code bug, rollback.
+   â†’ Identify the error. If it's a code bug, rollback.
 
 5. CHECK: Cloudflare blocking legitimate traffic?
-   → Cloudflare dashboard → Firewall Events → check for false positives.
-   → If yes: adjust WAF rules.
+   â†’ Cloudflare dashboard â†’ Firewall Events â†’ check for false positives.
+   â†’ If yes: adjust WAF rules.
 
 6. ESCALATE: If none of the above, contact Vercel support.
 ```
@@ -379,56 +379,56 @@ Response 503 (any check fails):
 ### 6.2 Runbook: Donations Not Processing
 
 ```
-1. CHECK: Stripe status → status.stripe.com
-   → If Stripe is down, enable maintenance banner on donate forms. Wait.
+1. CHECK: Stripe status â†’ status.stripe.com
+   â†’ If Stripe is down, enable maintenance banner on donate forms. Wait.
 
-2. CHECK: Stripe Dashboard → Payments → recent failures
-   → Are payments failing at Stripe level? Check decline codes.
+2. CHECK: Stripe Dashboard â†’ Payments â†’ recent failures
+   â†’ Are payments failing at Stripe level? Check decline codes.
 
-3. CHECK: Webhook delivery → Stripe Dashboard → Webhooks → recent events
-   → Are webhooks being delivered? Check for failures.
-   → If webhooks failing: check /api/v1/donations/webhook endpoint health.
+3. CHECK: Webhook delivery â†’ Stripe Dashboard â†’ Webhooks â†’ recent events
+   â†’ Are webhooks being delivered? Check for failures.
+   â†’ If webhooks failing: check /api/v1/donations/webhook endpoint health.
 
 4. CHECK: Sentry for errors in webhook handler
 
-5. CHECK: Database → is the donations table writable?
-   → Supabase dashboard → SQL Editor → INSERT test
+5. CHECK: Database â†’ is the donations table writable?
+   â†’ Supabase dashboard â†’ SQL Editor â†’ INSERT test
 
 6. FIX: If webhook secret rotated/mismatched:
-   → Update STRIPE_WEBHOOK_SECRET in Vercel env vars
-   → Redeploy
+   â†’ Update STRIPE_WEBHOOK_SECRET in Vercel env vars
+   â†’ Redeploy
 
 7. RECOVERY: After fix, replay failed Stripe events via Dashboard
-   → Stripe Dashboard → Webhooks → select failed events → Retry
+   â†’ Stripe Dashboard â†’ Webhooks â†’ select failed events â†’ Retry
 ```
 
 ### 6.3 Runbook: Suspected Data Breach
 
 ```
 1. CONTAIN IMMEDIATELY:
-   → Revoke all API keys and secrets (Supabase, Stripe, Resend, NextAuth)
-   → Rotate all environment variables in Vercel
-   → Redeploy with new secrets
+   â†’ Revoke all API keys and secrets (Supabase, Stripe, Resend, NextAuth)
+   â†’ Rotate all environment variables in Vercel
+   â†’ Redeploy with new secrets
 
 2. ASSESS:
-   → What data was exposed? Check audit logs.
-   → How was access gained? Check Sentry, Vercel logs, Supabase logs.
-   → What is the blast radius? (donor PII, payment data, admin credentials)
+   â†’ What data was exposed? Check audit logs.
+   â†’ How was access gained? Check Sentry, Vercel logs, Supabase logs.
+   â†’ What is the blast radius? (donor PII, payment data, admin credentials)
 
 3. IF PAYMENT DATA INVOLVED:
-   → Contact Stripe immediately (Stripe handles card data, but notify them)
-   → Stripe will advise on PCI breach procedures
+   â†’ Contact Stripe immediately (Stripe handles card data, but notify them)
+   â†’ Stripe will advise on PCI breach procedures
 
 4. NOTIFY:
-   → Board of Directors (within 1 hour)
-   → Legal counsel (within 4 hours)
-   → Affected users (within 30 days — see Security doc for per-state requirements)
-   → If 501(c)(3): IRS may need to be notified depending on severity
+   â†’ Board of Directors (within 1 hour)
+   â†’ Legal counsel (within 4 hours)
+   â†’ Affected users (within 30 days â€” see Security doc for per-state requirements)
+   â†’ If 501(c)(3): IRS may need to be notified depending on severity
 
 5. POST-INCIDENT:
-   → Full post-mortem document
-   → Identify root cause and implement fixes
-   → External security audit if breach was significant
+   â†’ Full post-mortem document
+   â†’ Identify root cause and implement fixes
+   â†’ External security audit if breach was significant
 ```
 
 ### 6.4 Runbook: Database Migration Failure in Production
@@ -437,27 +437,27 @@ Response 503 (any check fails):
 1. DO NOT PANIC. DO NOT run another migration to "fix" it.
 
 2. CHECK: Did the migration partially apply?
-   → Connect to Supabase SQL editor
-   → Check drizzle migration table for applied status
-   → Check table state manually
+   â†’ Connect to Supabase SQL editor
+   â†’ Check drizzle migration table for applied status
+   â†’ Check table state manually
 
 3. IF MIGRATION NOT STARTED:
-   → Fix the migration file
-   → Re-run
+   â†’ Fix the migration file
+   â†’ Re-run
 
 4. IF MIGRATION PARTIALLY APPLIED:
-   → Restore from pre-migration backup (taken before every prod migration)
-   → Fix the migration
-   → Re-run against restored database
+   â†’ Restore from pre-migration backup (taken before every prod migration)
+   â†’ Fix the migration
+   â†’ Re-run against restored database
 
 5. IF DATA LOSS OCCURRED:
-   → Restore from point-in-time recovery (Supabase Pro: any point in last 7 days)
-   → Identify exact timestamp before the migration
-   → Restore to that point
+   â†’ Restore from point-in-time recovery (Supabase Pro: any point in last 7 days)
+   â†’ Identify exact timestamp before the migration
+   â†’ Restore to that point
 
 6. COMMUNICATE:
-   → If site was affected, post status update
-   → If donations were affected, audit every transaction during the window
+   â†’ If site was affected, post status update
+   â†’ If donations were affected, audit every transaction during the window
 ```
 
 ---
@@ -480,7 +480,7 @@ Response 503 (any check fails):
 | Setting | Value | Why |
 |---------|-------|-----|
 | SSL/TLS | Full (Strict) | End-to-end encryption |
-| Always Use HTTPS | On | Redirect HTTP → HTTPS |
+| Always Use HTTPS | On | Redirect HTTP â†’ HTTPS |
 | HSTS | On, max-age 1 year, includeSubDomains | Prevent downgrade attacks |
 | Minimum TLS | 1.2 | Block obsolete protocols |
 | Auto Minify | JS, CSS, HTML | Performance |
@@ -496,12 +496,12 @@ Response 503 (any check fails):
 
 | Job | Schedule | Environment | Implementation |
 |-----|----------|-------------|---------------|
-| **RSS feed aggregation** | Every 6 hours | Production | Vercel Cron → `/api/v1/cron/fetch-news` |
-| **Campaign phase checker** | Every 5 minutes | Production | Vercel Cron → `/api/v1/cron/update-phases` |
-| **Donation reconciliation** | Daily 04:00 UTC | Production | Vercel Cron → `/api/v1/cron/reconcile` |
+| **RSS feed aggregation** | Every 6 hours | Production | Vercel Cron â†’ `/api/v1/cron/fetch-news` |
+| **Campaign phase checker** | Every 5 minutes | Production | Vercel Cron â†’ `/api/v1/cron/update-phases` |
+| **Donation reconciliation** | Daily 04:00 UTC | Production | Vercel Cron â†’ `/api/v1/cron/reconcile` |
 | **Expired session cleanup** | Daily 05:00 UTC | Production | Supabase scheduled function or Vercel Cron |
-| **Sitemap regeneration** | Daily 06:00 UTC | Production | Vercel Cron → triggers ISR revalidation |
-| **Backup verification** | Weekly Sunday 07:00 UTC | Production | GitHub Action → verify backup exists and is restorable |
+| **Sitemap regeneration** | Daily 06:00 UTC | Production | Vercel Cron â†’ triggers ISR revalidation |
+| **Backup verification** | Weekly Sunday 07:00 UTC | Production | GitHub Action â†’ verify backup exists and is restorable |
 
 ### Cron Security
 - All cron endpoints require `Authorization: Bearer <CRON_SECRET>` header
@@ -520,7 +520,7 @@ Response 503 (any check fails):
 | Vercel | Pro | $20 | 100GB bandwidth, 1M serverless invocations |
 | Supabase | Pro | $25 | 8GB DB, 250GB bandwidth, 100k auth users |
 | Cloudflare | Free | $0 | Unlimited requests |
-| Resend | Free → Starter | $0-20 | 3k emails/mo (free), 50k (starter) |
+| Resend | Free â†’ Starter | $0-20 | 3k emails/mo (free), 50k (starter) |
 | Plausible | Growth | $9 | 10k monthly pageviews |
 | UptimeRobot | Free | $0 | 50 monitors |
 | Sentry | Developer | $0 | 5k errors/month |

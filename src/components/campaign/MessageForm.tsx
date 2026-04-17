@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import type { MessageItem } from '@/components/campaign/MessageWall';
+import { useAddOptimisticMessage } from '@/components/campaign/MessageWallContext';
 
 interface MessageFormProps {
   campaignSlug: string;
@@ -22,6 +23,7 @@ export function MessageForm({ campaignSlug, className }: MessageFormProps) {
   const [message, setMessage] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const addOptimisticMessage = useAddOptimisticMessage();
 
   const charCount = message.length;
   const isOverLimit = charCount > MAX_CHARS;
@@ -56,7 +58,7 @@ export function MessageForm({ campaignSlug, className }: MessageFormProps) {
           return;
         }
 
-        // Optimistic update
+        // Optimistic update via context
         const optimistic: MessageItem = {
           id: json.data.id,
           donorName: isAnonymous ? 'Anonymous' : (session?.user?.name ?? 'Donor'),
@@ -65,7 +67,7 @@ export function MessageForm({ campaignSlug, className }: MessageFormProps) {
           isAnonymous,
           createdAt: json.data.createdAt,
         };
-        (window as Window & { __addOptimisticMessage?: (msg: MessageItem) => void }).__addOptimisticMessage?.(optimistic);
+        addOptimisticMessage?.(optimistic);
 
         setMessage('');
         setIsAnonymous(false);
@@ -76,7 +78,7 @@ export function MessageForm({ campaignSlug, className }: MessageFormProps) {
         setSubmitting(false);
       }
     },
-    [canSubmit, campaignSlug, message, isAnonymous, session],
+    [canSubmit, campaignSlug, message, isAnonymous, session, addOptimisticMessage],
   );
 
   // Auth gate

@@ -1,5 +1,5 @@
 /**
- * M11 — 7.1 API Response Audit Test
+ * M11 - 7.1 API Response Audit Test
  *
  * Scans all public API route handler source files for patterns that could
  * leak simulation-related data to the client. This is a static-analysis
@@ -22,7 +22,7 @@ import { globSync } from 'glob';
 const ROOT = resolve(__dirname, '../..');
 
 /**
- * Public API route files — every route.ts under api/v1/ that is NOT
+ * Public API route files - every route.ts under api/v1/ that is NOT
  * behind /admin/ or /cron/ gates.
  */
 function getPublicRouteFiles(): string[] {
@@ -58,7 +58,7 @@ const FORBIDDEN_RESPONSE_VALUES = [
   'simulated',
 ];
 
-describe('API Response Audit — Public Routes', () => {
+describe('API Response Audit - Public Routes', () => {
   const publicFiles = getPublicRouteFiles();
 
   it('discovers at least 5 public route files', () => {
@@ -169,7 +169,7 @@ describe('API Response Audit — Public Routes', () => {
   }
 });
 
-describe('API Response Audit — Stats endpoint', () => {
+describe('API Response Audit - Stats endpoint', () => {
   const statsPath = join(ROOT, 'src/app/api/v1/stats/route.ts');
 
   it('stats route exists', () => {

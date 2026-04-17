@@ -15,10 +15,11 @@ export async function GET() {
     await db.execute(sql`SELECT 1`);
     checks.database = { status: 'ok', latencyMs: Date.now() - dbStart };
   } catch (err) {
+    console.error('[health] Database check failed:', err instanceof Error ? err.message : err);
     checks.database = {
       status: 'error',
       latencyMs: Date.now() - dbStart,
-      error: err instanceof Error ? err.message : 'Unknown error',
+      error: 'Database connection failed',
     };
   }
 
@@ -28,10 +29,11 @@ export async function GET() {
     await stripe.balance.retrieve();
     checks.stripe = { status: 'ok', latencyMs: Date.now() - stripeStart };
   } catch (err) {
+    console.error('[health] Stripe check failed:', err instanceof Error ? err.message : err);
     checks.stripe = {
       status: 'error',
       latencyMs: Date.now() - stripeStart,
-      error: err instanceof Error ? err.message : 'Unknown error',
+      error: 'Payment service check failed',
     };
   }
 

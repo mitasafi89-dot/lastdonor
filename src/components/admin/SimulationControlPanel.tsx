@@ -100,7 +100,7 @@ export function SimulationControlPanel({ initialSettings, campaigns: initialCamp
           body: JSON.stringify(patch),
         });
         const body = await res.json();
-        if (!res.ok) throw new Error(body.error?.message ?? 'Failed to save');
+        if (!res.ok) throw new Error(body.error?.code === 'VALIDATION_ERROR' ? (body.error?.message ?? 'Failed to save') : 'Failed to save');
         setSettings((prev) => ({ ...prev, ...patch, ...(body.data ?? {}) }));
         toast.success('Settings saved');
         router.refresh();
@@ -120,7 +120,7 @@ export function SimulationControlPanel({ initialSettings, campaigns: initialCamp
       try {
         const res = await fetch(`/api/v1/admin/simulation/campaigns/${id}/${action}`, { method: 'POST' });
         const body = await res.json();
-        if (!res.ok) throw new Error(body.error?.message ?? `Failed to ${action}`);
+        if (!res.ok) throw new Error(body.error?.code === 'VALIDATION_ERROR' ? (body.error?.message ?? `Failed to ${action}`) : `Failed to ${action}`);
         setCampaigns((prev) => prev.map((c) => (c.id === id ? { ...c, paused: action === 'pause' } : c)));
         toast.success(`Campaign ${action === 'pause' ? 'paused' : 'resumed'}`);
       } catch (err) {
@@ -146,7 +146,7 @@ export function SimulationControlPanel({ initialSettings, campaigns: initialCamp
         body: JSON.stringify({ beneficiaryInfo: beneficiaryInfo.trim() }),
       });
       const body = await res.json();
-      if (!res.ok) throw new Error(body.error?.message ?? 'Failed to convert');
+      if (!res.ok) throw new Error(body.error?.code === 'VALIDATION_ERROR' ? (body.error?.message ?? 'Failed to convert') : 'Failed to convert');
       setCampaigns((prev) => prev.filter((c) => c.id !== convertTarget.id));
       setConvertTarget(null);
       setBeneficiaryInfo('');

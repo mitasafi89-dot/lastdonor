@@ -1,10 +1,10 @@
-# LastDonor.org — Security & Compliance Design Document
+# LastDonor.org - Security & Compliance Design Document
 
 **Document ID**: LD-SEC-001
 **Version**: 0.1
 **Date**: March 19, 2026
 **Status**: Draft
-**Classification**: Internal — Confidential
+**Classification**: Internal - Confidential
 **Owner**: Engineering Lead
 **Reviewers**: CTO, Legal Counsel, Board of Directors
 
@@ -18,12 +18,12 @@ This document defines the security architecture, threat model, data classificati
 
 ## 2. Security Principles
 
-1. **Defense in depth** — No single layer of security is sufficient. Multiple overlapping controls at every tier.
-2. **Least privilege** — Every user, service, and process operates with the minimum permissions required.
-3. **Zero trust** — No implicit trust based on network location. Verify every request.
-4. **Secure by default** — All new features ship with security controls enabled. Developers must explicitly opt out (with review).
-5. **Fail closed** — On error, deny access. Never fail open.
-6. **Audit everything** — Every state-changing operation is logged with actor, action, target, and timestamp.
+1. **Defense in depth** - No single layer of security is sufficient. Multiple overlapping controls at every tier.
+2. **Least privilege** - Every user, service, and process operates with the minimum permissions required.
+3. **Zero trust** - No implicit trust based on network location. Verify every request.
+4. **Secure by default** - All new features ship with security controls enabled. Developers must explicitly opt out (with review).
+5. **Fail closed** - On error, deny access. Never fail open.
+6. **Audit everything** - Every state-changing operation is logged with actor, action, target, and timestamp.
 
 ---
 
@@ -33,7 +33,7 @@ This document defines the security architecture, threat model, data classificati
 
 | Tier | Label | Description | Examples |
 |------|-------|-------------|----------|
-| **T1** | **Restricted** | Data that, if exposed, causes legal liability, financial loss, or severe reputational damage | Payment credentials (handled exclusively by Stripe — never stored), donor SSNs (never collected), admin credentials |
+| **T1** | **Restricted** | Data that, if exposed, causes legal liability, financial loss, or severe reputational damage | Payment credentials (handled exclusively by Stripe - never stored), donor SSNs (never collected), admin credentials |
 | **T2** | **Confidential** | Data limited to authorized personnel | Donor email addresses, donation amounts tied to identifiers, campaign subject family contact info, internal editorial notes |
 | **T3** | **Internal** | Operational data not meant for public consumption | Draft campaigns, admin dashboard metrics, RSS feed aggregation data, internal communications |
 | **T4** | **Public** | Data intended for public access | Published campaigns, blog posts, aggregate impact statistics, transparency reports |
@@ -56,7 +56,7 @@ This document defines the security architecture, threat model, data classificati
 - Social Security Numbers
 - Government-issued ID numbers
 - Biometric data
-- Health records (even for injury-related campaigns — we reference public reports only)
+- Health records (even for injury-related campaigns - we reference public reports only)
 - Precise geolocation of donors (city-level only, from self-reported data)
 
 ---
@@ -84,11 +84,11 @@ This document defines the security architecture, threat model, data classificati
 EXTERNAL ATTACK SURFACE
 │
 ├── Public Web (lastdonor.org)
-│   ├── Campaign pages (SSG/ISR — static, low risk)
-│   ├── Donation form (Stripe Elements — card data never touches our server)
-│   ├── Newsletter signup (email input — validate, rate limit)
-│   ├── Blog (static content — low risk)
-│   └── Contact form (if implemented — validate, rate limit, CAPTCHA)
+│   ├── Campaign pages (SSG/ISR - static, low risk)
+│   ├── Donation form (Stripe Elements - card data never touches our server)
+│   ├── Newsletter signup (email input - validate, rate limit)
+│   ├── Blog (static content - low risk)
+│   └── Contact form (if implemented - validate, rate limit, CAPTCHA)
 │
 ├── API Routes (/api/*)
 │   ├── /api/donations/create-intent (creates Stripe PaymentIntent)
@@ -208,7 +208,7 @@ LastDonor achieves PCI compliance through **SAQ A** (Self-Assessment Questionnai
 | Card data never enters our servers | Stripe Elements (client-side JS) collects card data directly to Stripe |
 | No card data in logs | No card fields in any form that posts to our API |
 | No card data in database | Only Stripe PaymentIntent IDs and charge IDs stored |
-| Stripe.js loaded from Stripe CDN | `js.stripe.com` — never self-hosted |
+| Stripe.js loaded from Stripe CDN | `js.stripe.com` - never self-hosted |
 | HTTPS everywhere | Vercel enforces HTTPS; HSTS header enabled |
 
 ### 6.2 Donation Integrity
@@ -227,7 +227,7 @@ LastDonor achieves PCI compliance through **SAQ A** (Self-Assessment Questionnai
 1. Webhook endpoint: /api/donations/webhook
 2. Verify signature using stripe.webhooks.constructEvent() with STRIPE_WEBHOOK_SECRET
 3. Reject any request with invalid or missing signature (HTTP 400)
-4. Process event idempotently — check if event.id already processed
+4. Process event idempotently - check if event.id already processed
 5. Return HTTP 200 immediately, process asynchronously if needed
 6. Log all received webhook events (event type, ID, timestamp)
 7. Alert if webhook delivery failures exceed threshold (Stripe dashboard monitoring)
@@ -297,7 +297,7 @@ Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(self)
 
 - All dynamic content rendered through React (auto-escaped by default)
 - Campaign story HTML rendered via sanitized `dangerouslySetInnerHTML` with DOMPurify on server
-- API JSON responses use `Content-Type: application/json` — no HTML interpretation
+- API JSON responses use `Content-Type: application/json` - no HTML interpretation
 - RSS feed content from external sources sanitized before storage
 
 ---
@@ -400,8 +400,8 @@ POST-MORTEM
 
 | Jurisdiction | Requirement | Timeline |
 |-------------|------------|----------|
-| US Federal | No single federal law — state laws govern | Varies |
-| California (CCPA) | Notify affected California residents | "Expedient" — typically 45 days |
+| US Federal | No single federal law - state laws govern | Varies |
+| California (CCPA) | Notify affected California residents | "Expedient" - typically 45 days |
 | New York (SHIELD Act) | Notify affected NY residents | "Most expeditious time possible" |
 | Other states | 50 states have individual breach notification laws | Varies: 30-90 days |
 | GDPR (if EU donors) | Notify supervisory authority | 72 hours |
@@ -420,8 +420,8 @@ POST-MORTEM
 | **ADA / Section 508** | Website accessibility | WCAG 2.1 AA target (see Accessibility doc) | Engineering + Design |
 | **IRS 501(c)(3)** | Tax-exempt status | Pending application | Legal |
 | **State charity solicitation** | Fundraising in each state | Registered in home state; phased rollout | Legal |
-| **COPPA** | Children under 13 | Not applicable — minimum donor age 18 (enforced in terms of service) | Legal |
-| **GDPR** | EU donors (if any) | Phase 2 — implement consent management if EU traffic detected | Legal + Engineering |
+| **COPPA** | Children under 13 | Not applicable - minimum donor age 18 (enforced in terms of service) | Legal |
+| **GDPR** | EU donors (if any) | Phase 2 - implement consent management if EU traffic detected | Legal + Engineering |
 
 ---
 

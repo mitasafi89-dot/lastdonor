@@ -42,7 +42,8 @@ describe('CampaignCard', () => {
 
   it('displays raised amount as whole dollars', () => {
     render(<CampaignCard {...defaultProps} />);
-    expect(screen.getByText(/\$1,250 raised/)).toBeInTheDocument();
+    expect(screen.getByText(/\$1,250/)).toBeInTheDocument();
+    expect(screen.getByText('raised')).toBeInTheDocument();
   });
 
   it('renders location badge when location is provided', () => {
@@ -55,10 +56,10 @@ describe('CampaignCard', () => {
     expect(screen.queryByText(/United Kingdom/)).not.toBeInTheDocument();
   });
 
-  it('does not display goal amount but shows percentage', () => {
+  it('displays goal amount and shows funded percentage', () => {
     render(<CampaignCard {...defaultProps} />);
-    expect(screen.queryByText(/\$5,000/)).not.toBeInTheDocument();
-    expect(screen.getByText('25%')).toBeInTheDocument();
+    expect(screen.getByText(/of \$5,000/)).toBeInTheDocument();
+    expect(screen.getByRole('progressbar', { name: /25% funded/ })).toBeInTheDocument();
   });
 
   it('does not display donor count', () => {

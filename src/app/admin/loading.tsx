@@ -20,7 +20,7 @@ export default function AdminLoading() {
         ))}
       </div>
 
-      {/* CDS data table skeleton — Active campaigns */}
+      {/* CDS data table skeleton - Active campaigns */}
       <section>
         <Skeleton className="h-4 w-32" />
         <div className="mt-4 overflow-hidden rounded-lg border border-border">
@@ -36,7 +36,7 @@ export default function AdminLoading() {
         </div>
       </section>
 
-      {/* CDS data table skeleton — Recent donations */}
+      {/* CDS data table skeleton - Recent donations */}
       <section>
         <Skeleton className="h-4 w-32" />
         <div className="mt-4 overflow-hidden rounded-lg border border-border">

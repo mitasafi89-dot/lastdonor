@@ -27,7 +27,7 @@ export function playNotificationSound(): void {
   try {
     const ctx = new AudioContext();
 
-    // First tone — 880 Hz (A5) for 80ms
+    // First tone - 880 Hz (A5) for 80ms
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     osc1.type = 'sine';
@@ -38,7 +38,7 @@ export function playNotificationSound(): void {
     osc1.start(ctx.currentTime);
     osc1.stop(ctx.currentTime + 0.08);
 
-    // Second tone — 1320 Hz (E6) for 120ms, slight delay
+    // Second tone - 1320 Hz (E6) for 120ms, slight delay
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
     osc2.type = 'sine';
@@ -52,6 +52,6 @@ export function playNotificationSound(): void {
     // Clean up after sound finishes
     setTimeout(() => ctx.close().catch(() => {}), 300);
   } catch {
-    // Web Audio not available — fail silently
+    // Web Audio not available - fail silently
   }
 }

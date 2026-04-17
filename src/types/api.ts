@@ -17,7 +17,8 @@ export interface ApiError {
       | 'NOT_FOUND'
       | 'CONFLICT'
       | 'RATE_LIMITED'
-      | 'INTERNAL_ERROR';
+      | 'INTERNAL_ERROR'
+      | 'CONNECT_NOT_ENABLED';
     message: string;
     field?: string;
     requestId: string;

@@ -15,8 +15,8 @@ export type StoryIssue = {
   detail: string;
 };
 
-const MIN_ABSOLUTE_WORDS = 50;
-const MAX_ABSOLUTE_WORDS = 400;
+const MIN_ABSOLUTE_WORDS = 150;
+const MAX_ABSOLUTE_WORDS = 1200;
 
 /** Patterns that indicate markdown leaked into the output */
 const MARKDOWN_PATTERNS = [

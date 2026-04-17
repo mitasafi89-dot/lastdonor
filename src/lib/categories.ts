@@ -9,7 +9,7 @@ import type { CampaignCategory } from '@/types';
  * To add/remove/reorder categories:
  * 1. Update the DB enum via a migration (campaignCategoryEnum in schema.ts)
  * 2. Update the CampaignCategory type in src/types/index.ts
- * 3. Update this array — everything else derives from it automatically.
+ * 3. Update this array - everything else derives from it automatically.
  */
 export const CAMPAIGN_CATEGORIES = [
   {

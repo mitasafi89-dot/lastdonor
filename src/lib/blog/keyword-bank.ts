@@ -1,5 +1,5 @@
 /**
- * Keyword Bank — curated keyword data for blog topic generation.
+ * Keyword Bank - curated keyword data for blog topic generation.
  * Organized by cause category with primary/secondary keywords, search volume estimates,
  * keyword difficulty (KD), and search intent classification.
  */

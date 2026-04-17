@@ -7,7 +7,7 @@ import { BlogEditor } from '@/components/admin/BlogEditor';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Edit Blog Post — Admin — LastDonor.org',
+  title: 'Edit Blog Post - Admin - LastDonor.org',
   robots: { index: false },
 };
 

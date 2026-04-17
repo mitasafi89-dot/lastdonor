@@ -452,7 +452,7 @@ export function UserDetail({ user, donations, auditEntries, currentUserId }: Use
           <div className="mt-4 flex flex-wrap gap-2">
             {badges.map((b, i) => (
               <Badge key={i} variant="secondary">
-                {b.type} — {b.campaignSlug}
+                {b.type} - {b.campaignSlug}
               </Badge>
             ))}
           </div>

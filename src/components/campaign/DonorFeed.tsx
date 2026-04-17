@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useCallback } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { centsToDollars } from '@/lib/utils/currency';
 import { formatRelativeTime } from '@/lib/utils/dates';
 import { cn } from '@/lib/utils';
+import { usePollingList } from '@/hooks/usePollingList';
 
 export interface DonorFeedItem {
   id: string;
@@ -22,52 +23,29 @@ interface DonorFeedProps {
   className?: string;
 }
 
-const POLL_INTERVAL_MS = 15_000; // 15 seconds
+const POLL_INTERVAL_MS = 15_000;
+const getDonorId = (d: DonorFeedItem) => d.id;
 
 export function DonorFeed({
   campaignSlug,
   initialDonors,
   className,
 }: DonorFeedProps) {
-  const [donors, setDonors] = useState<DonorFeedItem[]>(initialDonors);
-  const latestIdRef = useRef<string | null>(initialDonors[0]?.id ?? null);
+  const buildUrl = useCallback(
+    ({ cursor }: { cursor?: number; after?: string }) => {
+      const params = new URLSearchParams({ limit: '10' });
+      if (cursor != null) params.set('cursor', String(cursor));
+      return `/api/v1/campaigns/${encodeURIComponent(campaignSlug)}/donors?${params}`;
+    },
+    [campaignSlug],
+  );
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function poll() {
-      try {
-        const params = new URLSearchParams({ limit: '10' });
-        if (latestIdRef.current) {
-          params.set('after', latestIdRef.current);
-        }
-        const res = await fetch(
-          `/api/v1/campaigns/${campaignSlug}/donors?${params}`,
-          { signal: controller.signal },
-        );
-        if (!res.ok) return;
-        const json = await res.json();
-        if (json.ok && json.data.length > 0) {
-          const newDonors = json.data as DonorFeedItem[];
-          latestIdRef.current = newDonors[0].id;
-          setDonors((prev) => {
-            // Deduplicate by id
-            const existingIds = new Set(prev.map((d) => d.id));
-            const unique = newDonors.filter((d) => !existingIds.has(d.id));
-            return [...unique, ...prev].slice(0, 50);
-          });
-        }
-      } catch {
-        // Silently ignore abort & network errors
-      }
-    }
-
-    const interval = setInterval(poll, POLL_INTERVAL_MS);
-    return () => {
-      controller.abort();
-      clearInterval(interval);
-    };
-  }, [campaignSlug]);
+  const { items: donors } = usePollingList(initialDonors, {
+    buildUrl,
+    pollIntervalMs: POLL_INTERVAL_MS,
+    getId: getDonorId,
+    maxItems: 50,
+  });
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -81,47 +59,49 @@ export function DonorFeed({
         className="space-y-3"
       >
         <AnimatePresence initial={false}>
-          {donors.map((donor) => (
-            <motion.div
-              key={donor.id}
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="flex items-start gap-3 rounded-lg border border-border bg-card p-3"
-            >
-              {/* Avatar placeholder */}
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                {donor.isAnonymous
-                  ? '?'
-                  : donor.donorName.charAt(0).toUpperCase()}
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-sm font-medium text-card-foreground">
-                    {donor.isAnonymous ? 'Anonymous' : donor.donorName}
-                  </span>
-                  <span className="shrink-0 font-mono text-sm font-semibold text-primary">
-                    {centsToDollars(donor.amount)}
-                  </span>
+          {donors.map((donor) => {
+            const displayName = donor.isAnonymous ? 'Anonymous' : donor.donorName;
+            return (
+              <motion.div
+                key={donor.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-start gap-3 rounded-lg border border-border bg-card p-3"
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+                  {donor.isAnonymous
+                    ? '?'
+                    : donor.donorName.charAt(0).toUpperCase()}
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  {!donor.isAnonymous && donor.donorLocation && (
-                    <span>{donor.donorLocation}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-sm font-medium text-card-foreground">
+                      {displayName}
+                    </span>
+                    <span className="shrink-0 font-mono text-sm font-semibold text-foreground">
+                      {centsToDollars(donor.amount)}
+                    </span>
+                  </div>
+
+                  <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                    {!donor.isAnonymous && donor.donorLocation && (
+                      <span>{donor.donorLocation}</span>
+                    )}
+                    <span>{formatRelativeTime(donor.createdAt)}</span>
+                  </div>
+
+                  {donor.message && (
+                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground italic">
+                      &ldquo;{donor.message}&rdquo;
+                    </p>
                   )}
-                  <span>{formatRelativeTime(donor.createdAt)}</span>
                 </div>
-
-                {donor.message && (
-                  <p className="mt-1 text-sm text-muted-foreground italic">
-                    &ldquo;{donor.message}&rdquo;
-                  </p>
-                )}
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
 
         {donors.length === 0 && (

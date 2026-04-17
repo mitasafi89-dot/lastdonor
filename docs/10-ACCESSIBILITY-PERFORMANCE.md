@@ -1,10 +1,10 @@
-# LastDonor.org — Accessibility & Performance Budget
+﻿# LastDonor.org â€” Accessibility & Performance Budget
 
 **Document ID**: LD-A11Y-PERF-001
 **Version**: 0.1
 **Date**: March 19, 2026
 **Status**: Draft
-**Classification**: Internal — Engineering
+**Classification**: Internal â€” Engineering
 **Owner**: Engineering Lead
 **Compliance Target**: WCAG 2.1 Level AA
 
@@ -14,7 +14,7 @@
 
 ### 1.1 Compliance Target
 
-**WCAG 2.1 Level AA** — mandatory for all pages before launch.
+**WCAG 2.1 Level AA** â€” mandatory for all pages before launch.
 
 Rationale: A nonprofit fundraising platform must be usable by everyone, including donors with visual, motor, or cognitive disabilities. Beyond ethics, ADA lawsuits against websites are increasing. AA compliance blocks this risk entirely.
 
@@ -22,41 +22,41 @@ Rationale: A nonprofit fundraising platform must be usable by everyone, includin
 
 | Principle | Guideline | Implementation |
 |-----------|-----------|---------------|
-| **Perceivable** | 1.1 — Text alternatives | All images have descriptive `alt` text. Decorative images use `alt=""`. Campaign hero images describe the person/scene. |
-| | 1.2 — Time-based media | Any future video/audio content must have captions and transcripts. |
-| | 1.3 — Adaptable | Semantic HTML throughout (`<main>`, `<nav>`, `<article>`, `<section>`, `<aside>`). Headings in proper hierarchy (`h1` > `h2` > `h3`). Form inputs have `<label>` elements. |
-| | 1.4 — Distinguishable | Color contrast ratios meet minimums. Text is resizable to 200%. No information conveyed by color alone. |
-| **Operable** | 2.1 — Keyboard accessible | All interactive elements reachable via Tab. Custom components have proper keyboard handlers. No keyboard traps. Skip-to-content link on every page. |
-| | 2.2 — Enough time | No auto-advancing content. Session timeouts show warning with option to extend. |
-| | 2.3 — Seizures | No flashing content. No auto-playing animations. |
-| | 2.4 — Navigable | Clear page titles. Focus order matches visual order. Link purpose clear from text (no "click here"). Breadcrumbs on campaign pages. |
-| | 2.5 — Input modalities | Touch targets minimum 44×44px. |
-| **Understandable** | 3.1 — Readable | `lang="en"` on `<html>`. Reading level: aim for 8th grade on campaign pages. |
-| | 3.2 — Predictable | Navigation consistent across pages. No unexpected context changes. Form submission requires explicit action (button click). |
-| | 3.3 — Input assistance | Form errors identified clearly. Required fields marked. Error messages suggest corrections. |
-| **Robust** | 4.1 — Compatible | Valid HTML. ARIA attributes used correctly. Works with screen readers (NVDA, JAWS, VoiceOver). |
+| **Perceivable** | 1.1 â€” Text alternatives | All images have descriptive `alt` text. Decorative images use `alt=""`. Campaign hero images describe the person/scene. |
+| | 1.2 â€” Time-based media | Any future video/audio content must have captions and transcripts. |
+| | 1.3 â€” Adaptable | Semantic HTML throughout (`<main>`, `<nav>`, `<article>`, `<section>`, `<aside>`). Headings in proper hierarchy (`h1` > `h2` > `h3`). Form inputs have `<label>` elements. |
+| | 1.4 â€” Distinguishable | Color contrast ratios meet minimums. Text is resizable to 200%. No information conveyed by color alone. |
+| **Operable** | 2.1 â€” Keyboard accessible | All interactive elements reachable via Tab. Custom components have proper keyboard handlers. No keyboard traps. Skip-to-content link on every page. |
+| | 2.2 â€” Enough time | No auto-advancing content. Session timeouts show warning with option to extend. |
+| | 2.3 â€” Seizures | No flashing content. No auto-playing animations. |
+| | 2.4 â€” Navigable | Clear page titles. Focus order matches visual order. Link purpose clear from text (no "click here"). Breadcrumbs on campaign pages. |
+| | 2.5 â€” Input modalities | Touch targets minimum 44Ã-44px. |
+| **Understandable** | 3.1 â€” Readable | `lang="en"` on `<html>`. Reading level: aim for 8th grade on campaign pages. |
+| | 3.2 â€” Predictable | Navigation consistent across pages. No unexpected context changes. Form submission requires explicit action (button click). |
+| | 3.3 â€” Input assistance | Form errors identified clearly. Required fields marked. Error messages suggest corrections. |
+| **Robust** | 4.1 â€” Compatible | Valid HTML. ARIA attributes used correctly. Works with screen readers (NVDA, JAWS, VoiceOver). |
 
 ### 1.3 Color Contrast Requirements
 
 | Element | Foreground | Background | Ratio | Minimum Required |
 |---------|-----------|------------|:-----:|:-----:|
-| Body text (light mode) | `#1A1A1A` (Near Black) | `#F8F6F2` (Warm White) | 15.4:1 | 4.5:1 ✓ |
-| Body text (dark mode) | `#F1F5F9` | `#0F1A19` | 14.8:1 | 4.5:1 ✓ |
-| Amber CTA button text | `#FFFFFF` | `#D97706` (Amber) | 3.1:1 | 3:1 (large text) ✓ |
-| Amber CTA — adjusted for small text | `#0F1A19` (Dark text) | `#D97706` (Amber) | 4.7:1 | 4.5:1 ✓ |
-| Red urgency badge | `#FFFFFF` | `#8B2332` (Red) | 7.1:1 | 4.5:1 ✓ |
-| Green success badge | `#FFFFFF` | `#2D6A4F` (Green) | 5.8:1 | 4.5:1 ✓ |
-| Teal on white | `#0F766E` (Deep Teal) | `#F8F6F2` (Warm White) | 5.2:1 | 4.5:1 ✓ |
-| White on teal | `#FFFFFF` | `#0F766E` (Deep Teal) | 4.6:1 | 4.5:1 ✓ |
-| Muted text | `#6B7280` | `#F8F6F2` | 4.6:1 | 4.5:1 ✓ |
-| Muted text (dark mode) | `#94A3B8` | `#0F1A19` | 7.2:1 | 4.5:1 ✓ |
+| Body text (light mode) | `#1A1A1A` (Near Black) | `#F8F6F2` (Warm White) | 15.4:1 | 4.5:1 âœ“ |
+| Body text (dark mode) | `#F1F5F9` | `#0F1A19` | 14.8:1 | 4.5:1 âœ“ |
+| Amber CTA button text | `#FFFFFF` | `#D97706` (Amber) | 3.1:1 | 3:1 (large text) âœ“ |
+| Amber CTA â€” adjusted for small text | `#0F1A19` (Dark text) | `#D97706` (Amber) | 4.7:1 | 4.5:1 âœ“ |
+| Red urgency badge | `#FFFFFF` | `#8B2332` (Red) | 7.1:1 | 4.5:1 âœ“ |
+| Green success badge | `#FFFFFF` | `#2D6A4F` (Green) | 5.8:1 | 4.5:1 âœ“ |
+| Teal on white | `#0F766E` (Deep Teal) | `#F8F6F2` (Warm White) | 5.2:1 | 4.5:1 âœ“ |
+| White on teal | `#FFFFFF` | `#0F766E` (Deep Teal) | 4.6:1 | 4.5:1 âœ“ |
+| Muted text | `#6B7280` | `#F8F6F2` | 4.6:1 | 4.5:1 âœ“ |
+| Muted text (dark mode) | `#94A3B8` | `#0F1A19` | 7.2:1 | 4.5:1 âœ“ |
 
 **Rule**: If any brand color combination fails 4.5:1, use dark text on that background instead of white. Verified above: amber buttons must use dark text at body-text sizes.
 
 ### 1.4 Focus Indicators
 
 ```css
-/* Global focus style — visible, high-contrast, not reliant on color alone */
+/* Global focus style â€” visible, high-contrast, not reliant on color alone */
 :focus-visible {
   outline: 3px solid #D97706;
   outline-offset: 2px;
@@ -77,10 +77,10 @@ Rationale: A nonprofit fundraising platform must be usable by everyone, includin
 
 | Page | Expected Tab Order |
 |------|-------------------|
-| **Homepage** | Skip-to-content → Logo (home link) → Nav items → Hero CTA → Featured campaign cards → Campaign CTAs → Blog preview cards → Footer links |
-| **Campaign Page** | Skip-to-content → Nav → Campaign title → Progress bar (ARIA live region) → Donate button → Story content → Recent donors (ARIA live region) → Updates → Footer |
-| **Donate Flow** | Amount presets (radio group) → Custom amount input → Payment form (Stripe Elements handles internal keyboard) → Submit button |
-| **Blog Post** | Skip-to-content → Nav → Article title → Article body → Related posts → Footer |
+| **Homepage** | Skip-to-content â†’ Logo (home link) â†’ Nav items â†’ Hero CTA â†’ Featured campaign cards â†’ Campaign CTAs â†’ Blog preview cards â†’ Footer links |
+| **Campaign Page** | Skip-to-content â†’ Nav â†’ Campaign title â†’ Progress bar (ARIA live region) â†’ Donate button â†’ Story content â†’ Recent donors (ARIA live region) â†’ Updates â†’ Footer |
+| **Donate Flow** | Amount presets (radio group) â†’ Custom amount input â†’ Payment form (Stripe Elements handles internal keyboard) â†’ Submit button |
+| **Blog Post** | Skip-to-content â†’ Nav â†’ Article title â†’ Article body â†’ Related posts â†’ Footer |
 
 ### 1.6 ARIA Requirements
 
@@ -119,8 +119,8 @@ Rationale: A nonprofit fundraising platform must be usable by everyone, includin
 ### 1.9 CI Gate
 
 ```
-Accessibility score < 95 on any page → build fails.
-Any axe-core critical/serious violation → build fails.
+Accessibility score < 95 on any page â†’ build fails.
+Any axe-core critical/serious violation â†’ build fails.
 ```
 
 ---
@@ -168,11 +168,11 @@ Any axe-core critical/serious violation → build fails.
 
 | Context | Format | Max Dimensions | Max File Size | Loading |
 |---------|--------|:---:|:---:|---------|
-| Campaign hero | WebP (AVIF where supported) | 1200×675 | 80 KB | `priority` (LCP element) |
-| Campaign card thumbnail | WebP | 600×338 | 30 KB | `lazy` |
-| Blog post header | WebP | 1200×675 | 80 KB | `priority` on first post, `lazy` on listings |
-| Blog inline images | WebP | 800×600 | 50 KB | `lazy` |
-| Profile avatars | WebP | 96×96 | 10 KB | `lazy` |
+| Campaign hero | WebP (AVIF where supported) | 1200Ã-675 | 80 KB | `priority` (LCP element) |
+| Campaign card thumbnail | WebP | 600Ã-338 | 30 KB | `lazy` |
+| Blog post header | WebP | 1200Ã-675 | 80 KB | `priority` on first post, `lazy` on listings |
+| Blog inline images | WebP | 800Ã-600 | 50 KB | `lazy` |
+| Profile avatars | WebP | 96Ã-96 | 10 KB | `lazy` |
 | Logo | SVG | N/A | < 5 KB | Inline |
 
 **Implementation**:
@@ -203,7 +203,7 @@ Any axe-core critical/serious violation → build fails.
 
 **Loading Strategy**:
 ```css
-/* Font display swap — show fallback immediately, swap when loaded */
+/* Font display swap â€” show fallback immediately, swap when loaded */
 @font-face {
   font-family: 'DM Serif Display';
   font-display: swap;
@@ -211,7 +211,7 @@ Any axe-core critical/serious violation → build fails.
 }
 ```
 
-- Self-host all fonts (no Google Fonts CDN — privacy + performance)
+- Self-host all fonts (no Google Fonts CDN â€” privacy + performance)
 - Subset to Latin characters only (saves ~40% file size)
 - Preload critical font (DM Sans 400) in `<head>`
 - `font-display: swap` on all fonts to prevent invisible text
@@ -243,7 +243,7 @@ Any axe-core critical/serious violation → build fails.
 **Rules**:
 - No third-party script loaded synchronously in `<head>` (except font preload)
 - Stripe.js loaded only when donate form is in viewport or user scrolls near it
-- Plausible is tiny and deferred — acceptable on all pages
+- Plausible is tiny and deferred â€” acceptable on all pages
 - Sentry loaded after `onLoad` event via dynamic import
 - No Google Analytics, no Facebook Pixel, no tracking scripts (brand promise: privacy-first)
 
@@ -284,9 +284,9 @@ Any axe-core critical/serious violation → build fails.
 
 | Name | Width | Target |
 |------|:---:|--------|
-| **Mobile** | 0–639px | Phones (portrait) |
-| **Tablet** | 640–1023px | Tablets, phones (landscape) |
-| **Desktop** | 1024–1279px | Laptops, small desktops |
+| **Mobile** | 0â€“639px | Phones (portrait) |
+| **Tablet** | 640â€“1023px | Tablets, phones (landscape) |
+| **Desktop** | 1024â€“1279px | Laptops, small desktops |
 | **Wide** | 1280px+ | Large monitors |
 
 (Uses Tailwind's default breakpoints: `sm:640`, `md:768`, `lg:1024`, `xl:1280`, `2xl:1536`)
@@ -294,7 +294,7 @@ Any axe-core critical/serious violation → build fails.
 ### 4.2 Mobile-First Design Rules
 
 - All CSS written mobile-first (base styles = mobile, `sm:` and up for larger)
-- Touch targets: minimum 44×44px
+- Touch targets: minimum 44Ã-44px
 - No horizontal scrolling on any screen width
 - Donate buttons always visible without scrolling on campaign pages
 - Campaign progress bar readable at 320px width
@@ -305,13 +305,13 @@ Any axe-core critical/serious violation → build fails.
 
 | Device | Screen Size | Priority |
 |--------|:---:|:---:|
-| iPhone 14 / 15 | 390×844 | P0 — must work perfectly |
-| iPhone SE (3rd gen) | 375×667 | P0 — smallest common phone |
-| Samsung Galaxy S23 | 360×780 | P0 — top Android device |
-| iPad (10th gen) | 820×1180 | P1 |
-| MacBook Air 13" | 1440×900 | P0 |
-| Generic 1920×1080 | 1920×1080 | P0 — most common desktop |
-| 4K display | 3840×2160 | P2 — should be tested quarterly |
+| iPhone 14 / 15 | 390Ã-844 | P0 â€” must work perfectly |
+| iPhone SE (3rd gen) | 375Ã-667 | P0 â€” smallest common phone |
+| Samsung Galaxy S23 | 360Ã-780 | P0 â€” top Android device |
+| iPad (10th gen) | 820Ã-1180 | P1 |
+| MacBook Air 13" | 1440Ã-900 | P0 |
+| Generic 1920Ã-1080 | 1920Ã-1080 | P0 â€” most common desktop |
+| 4K display | 3840Ã-2160 | P2 â€” should be tested quarterly |
 
 ---
 
@@ -321,7 +321,7 @@ Any axe-core critical/serious violation → build fails.
 
 | Requirement | Implementation |
 |-------------|---------------|
-| Server-rendered HTML | Next.js SSR/SSG — all content in initial HTML response |
+| Server-rendered HTML | Next.js SSR/SSG â€” all content in initial HTML response |
 | Semantic heading hierarchy | One `<h1>` per page, proper nesting |
 | Meta tags | `<title>`, `<meta name="description">` on every page, unique per page |
 | Open Graph + Twitter Card | `og:title`, `og:description`, `og:image`, `twitter:card` on every page |
@@ -331,7 +331,7 @@ Any axe-core critical/serious violation → build fails.
 | Structured data (JSON-LD) | `Nonprofit Organization` schema on homepage, `Article` on blog posts, `DonateAction` on campaign pages |
 | 301 redirects | Configured in `next.config.ts` redirects for any URL changes |
 | 404 page | Custom, helpful, includes search and popular campaign links |
-| Page speed | LCP < 2.5s — a ranking factor |
+| Page speed | LCP < 2.5s â€” a ranking factor |
 | Mobile-friendly | Passes Google Mobile-Friendly Test |
 | HTTPS | Enforced everywhere |
 
@@ -389,19 +389,19 @@ This allows future i18n adoption without a rewrite.
 - [ ] Lighthouse Accessibility score = 100 on homepage, campaign page, donate flow, blog
 - [ ] axe-core: zero critical/serious violations
 - [ ] Full keyboard navigation test (all pages, no traps)
-- [ ] Screen reader test with NVDA (Windows) — full donate flow
-- [ ] Screen reader test with VoiceOver (macOS + iOS) — full donate flow
+- [ ] Screen reader test with NVDA (Windows) â€” full donate flow
+- [ ] Screen reader test with VoiceOver (macOS + iOS) â€” full donate flow
 - [ ] Color contrast verified for all text/background combinations (both themes)
 - [ ] All images have appropriate alt text
 - [ ] All form fields have labels
 - [ ] Skip-to-content link works on every page
 - [ ] Focus indicators visible on every interactive element
 - [ ] No ARIA misuse (validated with axe)
-- [ ] Touch targets ≥ 44×44px on mobile
+- [ ] Touch targets â‰¥ 44Ã-44px on mobile
 
 ### Performance
 
-- [ ] Lighthouse Performance score ≥ 90 on mobile (throttled 4G)
+- [ ] Lighthouse Performance score â‰¥ 90 on mobile (throttled 4G)
 - [ ] LCP < 2.5s on campaign page (mobile, 4G)
 - [ ] CLS < 0.1 on all pages
 - [ ] INP < 200ms on campaign page

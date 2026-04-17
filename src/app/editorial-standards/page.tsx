@@ -60,27 +60,27 @@ export default function EditorialStandardsPage() {
           </h2>
           <ol className="mt-3 list-decimal space-y-2 pl-6 text-muted-foreground">
             <li>
-              <strong>We find the story</strong> — Through news feeds,
+              <strong>We find the story</strong> - Through news feeds,
               official reports, and community submissions. We go looking for
               people who actually need help.
             </li>
             <li>
-              <strong>We check the sources</strong> — At least one primary
+              <strong>We check the sources</strong> - At least one primary
               source has to be independently verifiable. We cross-reference
               with multiple sources whenever we can.
             </li>
             <li>
-              <strong>We confirm the need</strong> — We verify that the
+              <strong>We confirm the need</strong> - We verify that the
               person or family has a real financial need, and that a specific
               dollar amount is justified and not inflated.
             </li>
             <li>
-              <strong>A real person reviews it</strong> — A member of our
+              <strong>A real person reviews it</strong> - A member of our
               editorial team reads the campaign for accuracy, tone, and
               completeness. Not an algorithm. A person.
             </li>
             <li>
-              <strong>It goes live with citations</strong> — Every published
+              <strong>It goes live with citations</strong> - Every published
               campaign includes source citations so you can verify the story
               yourself if you want to.
             </li>

@@ -1,68 +1,112 @@
+'use client';
+
 import Link from 'next/link';
 import {
   ShieldCheckIcon,
   EyeIcon,
   CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
+import { motion } from 'motion/react';
+import { staggerContainer, fadeInUp } from '@/lib/animations';
 
-const trustPoints = [
+/**
+ * TrustBanner: Final-CTA section combining proof + action.
+ *
+ * Psychology: By this point in the page scroll, the user has seen
+ * campaigns, impact numbers, and testimonials. This section resolves
+ * any remaining hesitation with structural proof (HOW trust works)
+ * and a clear, dominant call-to-action.
+ *
+ * Each card answers a specific objection:
+ * 1. "How do I know campaigns are real?" -> Verified by a human
+ * 2. "What happens to my money?" -> Impact-verified updates
+ * 3. "Will they add fees?" -> 0% platform fees, proven
+ */
+const trustProofs = [
   {
     icon: ShieldCheckIcon,
     title: 'Verified by a real person',
-    description:
-      'Every campaign is document-verified by a real reviewer before a single dollar is raised.',
+    proof: 'Every campaign is document-verified and reviewed by our team before a single dollar can be raised. Not a bot. Not an algorithm.',
   },
   {
     icon: EyeIcon,
-    title: 'Full fund tracking',
-    description:
-      'See exactly where every donation goes with milestone-based releases.',
+    title: 'Impact-verified fund usage',
+    proof: 'Campaigners submit an impact update with photos and receipts showing how funds were used. Full transparency, no guesswork.',
   },
   {
     icon: CurrencyDollarIcon,
-    title: '0% platform fees',
-    description:
-      'No hidden tips, no surprise charges at checkout. More of your donation reaches the person who needs it.',
+    title: '0% platform fees. Period.',
+    proof: 'No hidden tips at checkout. No "optional" surcharges. The only cost is payment processing (Stripe). We publish the breakdown.',
   },
 ];
 
 export function TrustBanner() {
   return (
-    <section className="bg-primary py-20 sm:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
-          Built on Trust. Backed by Proof.
-        </h2>
-        <div className="mt-12 grid gap-8 sm:grid-cols-3">
-          {trustPoints.map((point) => (
-            <div key={point.title}>
-              <point.icon className="h-8 w-8 text-white/80" />
-              <h3 className="mt-4 font-display text-lg font-bold text-white">
-                {point.title}
+    <section className="relative overflow-hidden bg-primary py-20 sm:py-24">
+      {/* Subtle texture -- grid lines for structured/fintech feel */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            'linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)',
+          backgroundSize: '48px 48px',
+        }}
+        aria-hidden="true"
+      />
+
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: '-60px' }}
+        variants={staggerContainer}
+        className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
+      >
+        <motion.div variants={fadeInUp} className="max-w-2xl">
+          <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            Built on Proof, Not Promises
+          </h2>
+          <p className="mt-3 text-base text-white/80">
+            We designed every part of this platform to answer one question:
+            &ldquo;Can I trust this with my money?&rdquo;
+          </p>
+        </motion.div>
+
+        <div className="mt-12 grid gap-6 sm:grid-cols-3">
+          {trustProofs.map((proof) => (
+            <motion.div
+              key={proof.title}
+              variants={fadeInUp}
+              className="group rounded-2xl bg-white/[0.06] p-6 backdrop-blur-sm transition-colors duration-200 hover:bg-white/[0.10]"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
+                <proof.icon className="h-5 w-5 text-white" />
+              </div>
+              <h3 className="mt-4 text-base font-bold text-white">
+                {proof.title}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-white/70">
-                {point.description}
+              <p className="mt-2 text-sm leading-relaxed text-white/80">
+                {proof.proof}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
-        <div className="mt-12">
+
+        {/* Dominant CTA */}
+        <motion.div variants={fadeInUp} className="mt-12 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
           <Link
             href="/campaigns"
-            className="inline-flex rounded-full bg-brand-amber px-8 py-3.5 text-sm font-bold text-white shadow-lg transition-all hover:bg-brand-amber/90 hover:shadow-xl"
+            className="btn-press inline-flex rounded-full bg-brand-amber px-8 py-3.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[--shadow-amber]"
           >
-            Start giving today
+            Give with Confidence
           </Link>
-          <p className="mt-4 text-sm text-white/60">
-            <Link
-              href="/how-it-works"
-              className="font-medium text-white/80 underline underline-offset-4 hover:text-white"
-            >
-              Read the LastDonor Giving Guarantee
-            </Link>
-          </p>
-        </div>
-      </div>
+          <Link
+            href="/how-it-works"
+            className="text-sm font-medium text-white/70 underline underline-offset-4 transition-colors hover:text-white"
+          >
+            Read the Giving Guarantee
+          </Link>
+        </motion.div>
+      </motion.div>
     </section>
   );
 }

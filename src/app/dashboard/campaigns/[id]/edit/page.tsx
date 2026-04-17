@@ -7,7 +7,7 @@ import { CampaignEditClient } from '@/components/dashboard/CampaignEditClient';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Edit Campaign — Dashboard — LastDonor.org',
+  title: 'Edit Campaign - Dashboard - LastDonor.org',
   robots: { index: false },
 };
 

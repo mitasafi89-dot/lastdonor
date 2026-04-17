@@ -5,6 +5,7 @@ import { users } from '@/db/schema';
 import { eq, ilike, or, desc, sql, and } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
+import { logError } from '@/lib/errors';
 
 export async function GET(request: NextRequest) {
   const requestId = randomUUID();
@@ -19,6 +20,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(error, { status: 403 });
   }
 
+  try {
   const { searchParams } = request.nextUrl;
   const search = searchParams.get('search')?.trim() ?? '';
   const roleFilter = searchParams.get('role');
@@ -96,4 +98,12 @@ export async function GET(request: NextRequest) {
       roleCounts: Object.fromEntries(roleCounts.map((r) => [r.role, r.count])),
     },
   });
+  } catch (err) {
+    logError(err, 'admin-users-list', { requestId });
+    const error: ApiError = {
+      ok: false,
+      error: { code: 'INTERNAL_ERROR', message: 'Failed to load users', requestId },
+    };
+    return NextResponse.json(error, { status: 500 });
+  }
 }

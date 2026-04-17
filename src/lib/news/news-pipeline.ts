@@ -109,7 +109,7 @@ export async function runNewsPipeline(
           nws: nwsAlerts.status === 'rejected' ? String(nwsAlerts.reason) : null,
         },
       });
-      result.errors.push('All news sources failed — admin alerted');
+      result.errors.push('All news sources failed - admin alerted');
       return result;
     }
 
@@ -279,7 +279,7 @@ export async function runNewsPipeline(
   const { calculateAutoVolume } = await import('@/lib/seed/phase-out');
   const autoVolume = await calculateAutoVolume();
   if (autoVolume === 0) {
-    result.errors.push('Phase-out threshold reached — no new simulated campaigns');
+    result.errors.push('Phase-out threshold reached - no new simulated campaigns');
     return result;
   }
 
@@ -336,7 +336,7 @@ export async function runNewsPipeline(
       entity.category = entity.category || (classification.category as CampaignCategory);
       entity.confidence = entity.confidence ?? 50;
 
-      // Step 5b: Validate entity name — reject garbage before creating campaigns
+      // Step 5b: Validate entity name - reject garbage before creating campaigns
       if (!isValidEntityName(entity.name, article.title)) {
         result.errors.push(`Skipped "${article.title}": invalid entity name "${entity.name}"`);
         continue;
@@ -617,7 +617,7 @@ export async function runNewsPipeline(
 
 /**
  * Deduplicate articles against existing news_items using an indexed IN query.
- * Only fetches URLs that match the incoming batch — not the entire table.
+ * Only fetches URLs that match the incoming batch - not the entire table.
  */
 async function deduplicateArticles(
   articles: NormalizedNewsItem[],
@@ -626,7 +626,7 @@ async function deduplicateArticles(
 
   const urls = articles.map((a) => a.url);
 
-  // Query only the URLs from this batch — hits the unique index on url
+  // Query only the URLs from this batch - hits the unique index on url
   const existing = await db
     .select({ url: schema.newsItems.url })
     .from(schema.newsItems)
@@ -716,7 +716,7 @@ async function generateStoryWithRetry(
     if (result.valid) return cleaned;
   }
 
-  // Second attempt also had issues — accept the cleaned output anyway
+  // Second attempt also had issues - accept the cleaned output anyway
   // (soft issues like word count are acceptable on retry)
   const fallbackRaw = await callAI<string>({
     systemPrompt: prompt.systemPrompt,
@@ -757,6 +757,6 @@ export async function generateHeadlineWithRetry(
     if (!result.rejected) return result.title;
   }
 
-  // Both attempts failed — use deterministic fallback
+  // Both attempts failed - use deterministic fallback
   return buildFallbackTitle(input.subjectName, input.hometown, input.category);
 }

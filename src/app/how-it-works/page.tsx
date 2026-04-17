@@ -5,12 +5,13 @@ import {
   MagnifyingGlassIcon,
   CurrencyDollarIcon,
   EyeIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/24/solid';
 
 export const metadata: Metadata = {
   title: 'How It Works',
   description:
     'No hidden tips, no surprise fees. We find real people in crisis, verify their stories, and run campaigns until every dollar is raised. Here is exactly how it works.',
+  alternates: { canonical: '/how-it-works' },
   openGraph: {
     title: 'How LastDonor.org Works',
     description:

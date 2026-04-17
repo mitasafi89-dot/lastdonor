@@ -18,7 +18,7 @@ export function DonorScoreBadge({ score, size = 'md' }: DonorScoreBadgeProps) {
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full font-medium ${meta.color} ${meta.darkColor} ${sizeClasses}`}
-      title={`Donor Score: ${score}/100 — ${meta.label}`}
+      title={`Donor Score: ${score}/100 - ${meta.label}`}
     >
       <span className="font-mono font-bold">{score}</span>
       <span>{meta.label}</span>

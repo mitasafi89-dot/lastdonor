@@ -1,4 +1,4 @@
-# LastDonor.org — Content Strategy
+# LastDonor.org - Content Strategy
 
 **Version**: 0.1 (Pre-Development)
 **Date**: March 19, 2026
@@ -36,7 +36,7 @@ Every campaign follows this structure. No exceptions.
 - Example: "Ben Pennington was 26, from Glendale, Kentucky. He married his high school sweetheart the summer after enlisting."
 
 ### Section 3: The Situation (paragraph 2-3)
-- What happened to them — injury, deployment, loss, disaster
+- What happened to them - injury, deployment, loss, disaster
 - Written in plain English, no jargon
 - Sourced: link to the news report, DoD announcement, or official source
 - Example: "On March 9, the Department of War confirmed Ben was killed supporting Operation Epic Fury."
@@ -60,7 +60,7 @@ Every campaign follows this structure. No exceptions.
 1. Every claim must have a source (DoD announcement, news article, family confirmation)
 2. All names used with explicit permission from family or from public DoD announcements
 3. Representative/composite stories are clearly labeled as such
-4. No exploitation — strength and dignity, not helplessness
+4. No exploitation - strength and dignity, not helplessness
 5. Every story reviewed by at least one editor before publishing
 
 ---
@@ -81,7 +81,7 @@ Every campaign follows this structure. No exceptions.
 | Source | What to Look For | Method | Frequency |
 |--------|-----------------|--------|-----------|
 | ODMP (odmp.org) | Law enforcement line-of-duty deaths (LODD), officer names, agencies, families | RSS + scrape | Daily |
-| USFA Firefighter Fatalities (apps.usfa.fema.gov) | Firefighter fatalities — name, department, city, date, cause | RSS feed + CSV API | Daily |
+| USFA Firefighter Fatalities (apps.usfa.fema.gov) | Firefighter fatalities - name, department, city, date, cause | RSS feed + CSV API | Daily |
 | Firehouse.com (LODDs section) | Firefighter line-of-duty deaths, injuries, department news | RSS | Daily |
 | FireRescue1.com | Fire/EMS line-of-duty deaths, first responder injuries | RSS | Daily |
 | PoliceOne / Police1.com | Law enforcement injuries, LODDs, officer-involved incidents | RSS | Daily |
@@ -90,8 +90,8 @@ Every campaign follows this structure. No exceptions.
 #### Disaster Relief
 | Source | What to Look For | Method | Frequency |
 |--------|-----------------|--------|-----------|
-| FEMA Disaster Declarations (fema.gov/disaster/declarations) | Federally declared disasters — type, location, date, affected counties | JSON API | Daily |
-| National Weather Service (weather.gov/alerts) | Severe weather alerts — tornadoes, hurricanes, floods, wildfires | RSS / API | Every 30 min |
+| FEMA Disaster Declarations (fema.gov/disaster/declarations) | Federally declared disasters - type, location, date, affected counties | JSON API | Daily |
+| National Weather Service (weather.gov/alerts) | Severe weather alerts - tornadoes, hurricanes, floods, wildfires | RSS / API | Every 30 min |
 | ReliefWeb (reliefweb.int) | Humanitarian disaster reports, US-specific | RSS | Daily |
 | NIFC (nifc.gov) | Active wildfire incidents, locations, acreage | RSS + GeoJSON | Daily |
 | GNews API | "house fire", "apartment fire", "tornado damage", "flood victims", "wildfire evacuation" | REST API | Every 30 min |
@@ -101,14 +101,14 @@ Every campaign follows this structure. No exceptions.
 |--------|-----------------|--------|-----------|
 | GNews API | "can't afford surgery", "medical bills", "cancer diagnosis fundraiser", "uninsured accident", "hospital bills" | REST API | Every 30 min |
 | Local TV station RSS feeds | Human-interest medical stories, community rallies around sick individuals | RSS (50+ stations) | Daily |
-| CaringBridge (caringbridge.org) | Public health journey updates (for story leads only — verify independently) | Manual | Weekly |
+| CaringBridge (caringbridge.org) | Public health journey updates (for story leads only - verify independently) | Manual | Weekly |
 
 #### Memorial / Funeral
 | Source | What to Look For | Method | Frequency |
 |--------|-----------------|--------|-----------|
 | GNews API | "can't afford funeral", "funeral fundraiser", "GoFundMe funeral", "burial costs" | REST API | Every 30 min |
 | Local news RSS | Unexpected deaths, families struggling with funeral costs, young parent deaths | RSS | Daily |
-| ODMP + USFA feeds | First responder LODDs (cross-category — these also generate memorial campaigns) | RSS | Daily |
+| ODMP + USFA feeds | First responder LODDs (cross-category - these also generate memorial campaigns) | RSS | Daily |
 
 #### Community & Crisis (DV, Crime Victims, Accidents, Housing)
 | Source | What to Look For | Method | Frequency |
@@ -126,7 +126,7 @@ Every campaign follows this structure. No exceptions.
 | Local news RSS | Job loss stories, plant closures, families in crisis | RSS | Daily |
 
 ### Tier 2: Community Submissions
-- "Share Your Story" page on the site — open to all categories
+- "Share Your Story" page on the site - open to all categories
 - Military family organizations and veteran groups
 - First responder unions, FOP lodges, IAFF locals
 - Hospital social workers and patient advocates
@@ -173,24 +173,24 @@ Every campaign follows this structure. No exceptions.
 ### Month 1: Launch
 | Week | Post | Pillar | Purpose |
 |------|------|--------|---------|
-| 1 | "Why We Built LastDonor" — origin story | Context | Establish mission and credibility |
-| 1 | "Where Your Money Goes" — transparency breakdown | Impact | Build trust before first donation |
+| 1 | "Why We Built LastDonor" - origin story | Context | Establish mission and credibility |
+| 1 | "Where Your Money Goes" - transparency breakdown | Impact | Build trust before first donation |
 | 2 | Campaign Story #1 (launch campaign) | Campaign | First campaign, first donations |
 | 3 | Campaign Story #2 | Campaign | Second active campaign |
-| 4 | "How We Verify Every Story" — editorial standards | Impact | Trust building |
+| 4 | "How We Verify Every Story" - editorial standards | Impact | Trust building |
 
 ### Month 2: Build
 | Week | Post | Pillar | Purpose |
 |------|------|--------|---------|
 | 1 | Campaign Story #3 | Campaign | Expand active campaigns |
-| 2 | First Impact Report — "Your Donations in Action" | Impact | Close the loop for early donors |
+| 2 | First Impact Report - "Your Donations in Action" | Impact | Close the loop for early donors |
 | 3 | Context piece about current deployment/operation | Context | SEO + education |
 | 4 | Campaign Story #4 | Campaign | Pipeline |
 
 ### Month 3: Grow
 | Week | Post | Pillar | Purpose |
 |------|------|--------|---------|
-| 1 | "Meet Our First Last Donor" — profile the person who closed Campaign #1 | Impact | Celebrate the mechanic, social proof |
+| 1 | "Meet Our First Last Donor" - profile the person who closed Campaign #1 | Impact | Celebrate the mechanic, social proof |
 | 2 | Campaign Story #5 | Campaign | Pipeline |
 | 3 | Context piece about military families / first responders / disaster preparedness | Context | SEO + emotional resonance |
 | 4 | Monthly Impact Report #2 | Impact | Ongoing trust |
@@ -200,7 +200,7 @@ Every campaign follows this structure. No exceptions.
 ## 5. Newsletter Strategy
 
 ### Format
-- **Frequency**: Weekly (Thursdays — highest open rates for nonprofit)
+- **Frequency**: Weekly (Thursdays - highest open rates for nonprofit)
 - **Subject line formula**: First name of campaign subject + what happened
   - Example: "Ashley needs help. Ben isn't coming home."
   - Never: "LastDonor Weekly Newsletter #4"
@@ -242,11 +242,11 @@ Every campaign follows this structure. No exceptions.
 ## 6. Social Media Strategy
 
 ### Platforms (Priority Order)
-1. **Facebook** — Largest US demographic for charitable giving (35-65 age group). Share campaigns, stories, impact reports.
-2. **Instagram** — Visual storytelling. Campaign photos, infographics, progress milestones.
-3. **X (Twitter)** — News engagement, rapid response to military/disaster/medical news, connect with veteran/military/first responder community.
-4. **TikTok** — Phase 2. Short-form video storytelling for younger donors (18-35).
-5. **YouTube** — Phase 2. Long-form: Town Halls, impact documentaries, veteran interviews.
+1. **Facebook** - Largest US demographic for charitable giving (35-65 age group). Share campaigns, stories, impact reports.
+2. **Instagram** - Visual storytelling. Campaign photos, infographics, progress milestones.
+3. **X (Twitter)** - News engagement, rapid response to military/disaster/medical news, connect with veteran/military/first responder community.
+4. **TikTok** - Phase 2. Short-form video storytelling for younger donors (18-35).
+5. **YouTube** - Phase 2. Long-form: Town Halls, impact documentaries, veteran interviews.
 
 ### Content Per Platform
 
@@ -268,7 +268,7 @@ Every campaign follows this structure. No exceptions.
 
 **Milestone Hit:**
 > [Progress bar image]
-> 🔥 72% funded — only $8,400 to go.
+> 🔥 72% funded - only $8,400 to go.
 > Who's going to be the Last Donor?
 > → lastdonor.org/ben
 
@@ -305,7 +305,7 @@ Every campaign follows this structure. No exceptions.
 - Structured data: Organization, DonateAction, Article schemas
 - Sitemap auto-generated
 - Canonical URLs on all pages
-- Fast load times (< 2s) — Google ranking factor
+- Fast load times (< 2s) - Google ranking factor
 
 ### Content SEO
 - Blog posts targeting long-tail keywords around military support, medical emergencies, disaster relief, first responders, funeral costs, donation transparency, and specific operations
@@ -314,7 +314,7 @@ Every campaign follows this structure. No exceptions.
 
 ---
 
-## 8. Content Production — Who Does What
+## 8. Content Production - Who Does What
 
 ### MVP Team (Minimum Viable)
 | Role | Responsibility | Person |
@@ -349,7 +349,7 @@ Campaign completes → publish impact report
 ```
 
 ### AI-Assisted Content (Where Appropriate)
-- AI can draft initial campaign stories from news sources — **always human-reviewed and edited**
-- AI can suggest headlines, social captions — **always human-approved**
+- AI can draft initial campaign stories from news sources - **always human-reviewed and edited**
+- AI can suggest headlines, social captions - **always human-approved**
 - AI never publishes autonomously
 - AI-generated content is never labeled as "written by" a human author

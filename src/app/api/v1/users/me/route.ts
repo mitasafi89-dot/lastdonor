@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/db';
-import { users, donations, auditLogs } from '@/db/schema';
+import { users, donations, campaigns, campaignMessages, donorCampaignSubscriptions, supportConversations, auditLogs } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { updateProfileSchema } from '@/lib/validators/user';
 import { resend } from '@/lib/resend';
@@ -123,28 +123,63 @@ export async function DELETE(request: NextRequest) {
   const userId = session.user.id;
   const userEmail = session.user.email;
 
-  // Anonymize donations
-  await db
-    .update(donations)
-    .set({
-      donorName: 'Deleted User',
-      donorEmail: 'deleted@lastdonor.org',
-      message: null,
-    })
-    .where(eq(donations.userId, userId));
+  try {
+    await db.transaction(async (tx) => {
+      // Anonymize donations (null FK + scrub PII)
+      await tx
+        .update(donations)
+        .set({
+          donorName: 'Deleted User',
+          donorEmail: 'deleted@lastdonor.org',
+          message: null,
+          userId: null,
+        })
+        .where(eq(donations.userId, userId));
 
-  // Delete user
-  await db.delete(users).where(eq(users.id, userId));
+      // Null out campaign messages FK
+      await tx
+        .update(campaignMessages)
+        .set({ userId: null, donorName: 'Deleted User' })
+        .where(eq(campaignMessages.userId, userId));
 
-  // Audit log
-  await db.insert(auditLogs).values({
-    eventType: 'user.deleted',
-    actorId: userId,
-    targetType: 'user',
-    targetId: userId,
-    severity: 'warning',
-    details: { email: userEmail },
-  });
+      // Null out donor subscriptions FK
+      await tx
+        .update(donorCampaignSubscriptions)
+        .set({ userId: null })
+        .where(eq(donorCampaignSubscriptions.userId, userId));
+
+      // Null out support conversations FK
+      await tx
+        .update(supportConversations)
+        .set({ userId: null })
+        .where(eq(supportConversations.userId, userId));
+
+      // Null out campaigns creator FK (campaigns persist for donors)
+      await tx
+        .update(campaigns)
+        .set({ creatorId: null })
+        .where(eq(campaigns.creatorId, userId));
+
+      // Delete user
+      await tx.delete(users).where(eq(users.id, userId));
+
+      // Audit log
+      await tx.insert(auditLogs).values({
+        eventType: 'user.deleted',
+        actorId: userId,
+        targetType: 'user',
+        targetId: userId,
+        severity: 'warning',
+        details: { email: userEmail },
+      });
+    });
+  } catch (error) {
+    console.error('[DELETE /api/v1/users/me]', error);
+    return NextResponse.json(
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to delete account. Please try again or contact support.', requestId } } satisfies ApiError,
+      { status: 500 },
+    );
+  }
 
   // Send confirmation email
   if (userEmail) {

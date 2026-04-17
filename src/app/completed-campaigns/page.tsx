@@ -3,9 +3,11 @@ import Link from 'next/link';
 import { db } from '@/db';
 import { campaigns } from '@/db/schema';
 import { eq, and, desc, asc, ilike, or } from 'drizzle-orm';
-import { CompletedCampaignGrid } from './grid';
+import { CampaignGrid } from '@/components/campaign/CampaignGrid';
 import { CompletedCampaignFilters } from './filters';
 import type { CampaignCategory } from '@/types';
+
+export const revalidate = 300; // ISR: refresh every 5 minutes
 
 export const metadata: Metadata = {
   title: 'Completed Campaigns | LastDonor.org',
@@ -155,7 +157,7 @@ export default async function CompletedCampaignsPage({ searchParams }: PageProps
         />
       </div>
 
-      <CompletedCampaignGrid
+      <CampaignGrid
         key={`${categoryFilter ?? ''}-${sort}-${searchQuery}-${locationFilter}`}
         initialCampaigns={displayedCampaigns}
         initialCursor={nextCursor}
@@ -164,6 +166,18 @@ export default async function CompletedCampaignsPage({ searchParams }: PageProps
         sort={sort}
         searchQuery={searchQuery}
         locationFilter={locationFilter}
+        extraParams={{ status: 'completed' }}
+        emptyMessage={categoryFilter
+          ? 'No completed campaigns in this category yet.'
+          : 'No completed campaigns yet. Check back soon.'}
+        emptyAction={
+          <Link
+            href="/campaigns"
+            className="mt-4 inline-block text-sm font-medium text-primary hover:text-primary/80"
+          >
+            Browse active campaigns
+          </Link>
+        }
       />
     </div>
   );

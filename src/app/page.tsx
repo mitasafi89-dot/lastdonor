@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { unstable_cache } from 'next/cache';
 import { db } from '@/db';
 import { campaigns, donations, blogPosts } from '@/db/schema';
 import { eq, or, desc, sql } from 'drizzle-orm';
@@ -15,12 +16,14 @@ import { Testimonials } from '@/components/homepage/Testimonials';
 import { Newsletter } from '@/components/homepage/Newsletter';
 import { CampaignCard } from '@/components/campaign/CampaignCard';
 
+import { AnimateOnScroll } from '@/components/AnimateOnScroll';
+
 export const metadata: Metadata = {
-  title: 'LastDonor.org — Donate to Real People in Need | 0% Platform Fees',
+  title: 'LastDonor.org - Donate to Real People in Need | 0% Platform Fees',
   description:
     'Crowdfunding that actually works for you. No hidden tips, no surprise fees, no AI chatbots. Every campaign is verified. Every dollar is tracked. See exactly where your money goes.',
   openGraph: {
-    title: 'LastDonor.org — Donate to Real People in Need',
+    title: 'LastDonor.org - Donate to Real People in Need',
     description:
       'No hidden tips. No surprise fees. Every campaign is verified, every dollar is tracked. Crowdfunding built on trust.',
     url: 'https://lastdonor.org',
@@ -29,7 +32,7 @@ export const metadata: Metadata = {
         url: '/api/v1/og/page?title=Donate+to+Real+People+in+Need&subtitle=0%25+fees.+Every+campaign+verified.+Every+dollar+tracked.',
         width: 1200,
         height: 630,
-        alt: 'LastDonor.org — Donate to Real People in Need',
+        alt: 'LastDonor.org - Donate to Real People in Need',
       },
     ],
   },
@@ -38,7 +41,7 @@ export const metadata: Metadata = {
 export const revalidate = 300; // ISR: revalidate every 5 minutes
 
 async function getHomepageData() {
-  const [featuredCampaigns, activeCampaigns, stats, latestPosts] =
+  const [featuredCampaigns, activeCampaigns, stats, latestPosts, completedCount, supportedCount] =
     await Promise.all([
       // Featured campaign: most recently published active
       db
@@ -76,6 +79,7 @@ async function getHomepageData() {
           raisedAmount: campaigns.raisedAmount,
           goalAmount: campaigns.goalAmount,
           donorCount: campaigns.donorCount,
+          verificationStatus: campaigns.verificationStatus,
         })
         .from(campaigns)
         .where(
@@ -110,24 +114,26 @@ async function getHomepageData() {
         .where(eq(blogPosts.published, true))
         .orderBy(desc(blogPosts.publishedAt))
         .limit(3),
+
+      // Completed campaign count
+      db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(campaigns)
+        .where(
+          or(
+            eq(campaigns.status, 'completed'),
+            eq(campaigns.status, 'archived'),
+          ),
+        ),
+
+      // Unique people supported
+      db
+        .select({
+          count: sql<number>`COUNT(DISTINCT ${campaigns.subjectName})`,
+        })
+        .from(campaigns)
+        .where(eq(campaigns.status, 'completed')),
     ]);
-
-  const completedCount = await db
-    .select({ count: sql<number>`COUNT(*)` })
-    .from(campaigns)
-    .where(
-      or(
-        eq(campaigns.status, 'completed'),
-        eq(campaigns.status, 'archived'),
-      ),
-    );
-
-  const supportedCount = await db
-    .select({
-      count: sql<number>`COUNT(DISTINCT ${campaigns.subjectName})`,
-    })
-    .from(campaigns)
-    .where(eq(campaigns.status, 'completed'));
 
   return {
     featuredCampaign: featuredCampaigns[0] ?? null,
@@ -140,20 +146,25 @@ async function getHomepageData() {
   };
 }
 
+const getCachedHomepageData = unstable_cache(
+  getHomepageData,
+  ['homepage-data'],
+  { revalidate: 300 },
+);
+
 export default async function Home() {
-  const data = await getHomepageData();
+  const data = await getCachedHomepageData();
 
   return (
     <>
-      <HeroSection featuredCampaign={data.featuredCampaign} />
-      <TrustBar totalDonors={data.totalDonors} />
-      <HowItWorks />
+      <HeroSection />
+      <TrustBar />
 
       {/* Active Campaigns */}
       {data.activeCampaigns.length > 0 && (
-        <section className="py-20">
+        <section className="bg-surface-teal py-20 sm:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div>
+            <AnimateOnScroll>
               <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                 Verified Campaigns Raising Money Right Now
               </h2>
@@ -161,7 +172,7 @@ export default async function Home() {
                 Every campaign below has been reviewed by a real person.
                 Give with confidence knowing your donation is tracked from start to finish.
               </p>
-            </div>
+            </AnimateOnScroll>
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {data.activeCampaigns.map((c) => (
                 <CampaignCard
@@ -171,25 +182,26 @@ export default async function Home() {
                   heroImageUrl={c.heroImageUrl}
                   subjectName={c.subjectName}
                   category={c.category}
-                  location={c.location || c.subjectHometown}
+                  location={c.location || c.subjectHometown || undefined}
                   raisedAmount={c.raisedAmount}
                   goalAmount={c.goalAmount}
                   donorCount={c.donorCount}
                 />
               ))}
             </div>
-            <div className="mt-8">
+            <AnimateOnScroll className="mt-8">
               <Link
                 href="/campaigns"
-                className="inline-flex rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                className="btn-press inline-flex rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
               >
                 See all fundraisers
               </Link>
-            </div>
+            </AnimateOnScroll>
           </div>
         </section>
       )}
 
+      <HowItWorks />
       <ImpactCounter
         totalRaised={data.totalRaised}
         totalDonors={data.totalDonors}
@@ -197,38 +209,38 @@ export default async function Home() {
         peopleSupported={data.peopleSupported}
       />
       <WhereYourMoneyGoes />
-      <CategoryShowcase />
       <Testimonials />
+      <CategoryShowcase />
       <TrustBanner />
 
       {/* Blog Preview */}
       {data.latestPosts.length > 0 && (
-        <section className="py-20">
+        <section className="bg-surface-sage py-20 sm:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div>
+            <AnimateOnScroll>
               <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                 Impact Stories from Real Campaigns
               </h2>
               <p className="mt-3 max-w-xl text-base text-muted-foreground">
                 Updates, results, and the real stories behind the people you help.
               </p>
-            </div>
+            </AnimateOnScroll>
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {data.latestPosts.map((post) => (
                 <Link
                   key={post.slug}
                   href={`/blog/${post.slug}`}
-                  className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+                  className="group overflow-hidden rounded-2xl border border-border bg-card card-hover-lift"
                 >
                   {post.coverImageUrl && (
-                    <div className="relative aspect-video overflow-hidden">
+                    <div className="relative aspect-[16/10] overflow-hidden">
                       <Image
                         src={post.coverImageUrl}
-                        alt=""
+                        alt={post.title}
                         fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                         sizes="(max-width: 768px) 100vw, 33vw"
-                        unoptimized
+                        loading="lazy"
                       />
                     </div>
                   )}
@@ -253,14 +265,14 @@ export default async function Home() {
                 </Link>
               ))}
             </div>
-            <div className="mt-8 text-center">
+            <AnimateOnScroll className="mt-8 text-center">
               <Link
                 href="/blog"
-                className="inline-flex rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                className="btn-press inline-flex rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors duration-200 hover:bg-muted"
               >
                 Read more stories
               </Link>
-            </div>
+            </AnimateOnScroll>
           </div>
         </section>
       )}

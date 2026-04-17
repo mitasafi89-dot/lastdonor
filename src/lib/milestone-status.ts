@@ -6,7 +6,7 @@
  * calculations across the system.
  *
  * Sequential enforcement model (non-negotiable):
- *   M1 release → requires identity verification only (Veriff)
+ *   M1 release -> requires identity verification only (Stripe Identity)
  *   M2 release → requires M1 released + M1 evidence approved
  *   M3 release → requires M2 released + M2 evidence approved
  *   Post-M3   → optional, not gating
@@ -72,7 +72,7 @@ export function computeMilestoneDisplayStatus(
   fundRelease: FundReleaseData | null,
   prevMilestone: MilestoneData | null,
 ): MilestoneDisplayStatus {
-  // Fund release exists — check its state first
+  // Fund release exists - check its state first
   if (fundRelease) {
     if (fundRelease.flaggedForAudit) return 'flagged';
     if (fundRelease.status === 'paused') return 'on_hold';

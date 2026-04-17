@@ -56,7 +56,7 @@ async function requireOwner(id: string, _requestId: string) {
 }
 
 /**
- * GET /api/v1/user-campaigns/[id] — Get a single user campaign (with updates)
+ * GET /api/v1/user-campaigns/[id] - Get a single user campaign (with updates)
  */
 export async function GET(_request: NextRequest, { params }: Params) {
   const requestId = randomUUID();
@@ -111,7 +111,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
 }
 
 /**
- * PUT /api/v1/user-campaigns/[id] — Update campaign (owner-only fields)
+ * PUT /api/v1/user-campaigns/[id] - Update campaign (owner-only fields)
  */
 export async function PUT(request: NextRequest, { params }: Params) {
   const requestId = randomUUID();
@@ -152,6 +152,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
     if (data.title !== undefined) updateValues.title = data.title;
     if (data.category !== undefined) updateValues.category = data.category;
     if (data.heroImageUrl !== undefined) updateValues.heroImageUrl = data.heroImageUrl;
+    if (data.galleryImages !== undefined) updateValues.galleryImages = data.galleryImages ?? [];
     if (data.subjectHometown !== undefined) updateValues.subjectHometown = data.subjectHometown;
     if (data.story !== undefined) {
       updateValues.storyHtml = sanitizeHtml(
@@ -195,7 +196,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 }
 
 /**
- * DELETE /api/v1/user-campaigns/[id] — Close/archive a campaign (owner-only)
+ * DELETE /api/v1/user-campaigns/[id] - Close/archive a campaign (owner-only)
  */
 export async function DELETE(_request: NextRequest, { params }: Params) {
   const requestId = randomUUID();

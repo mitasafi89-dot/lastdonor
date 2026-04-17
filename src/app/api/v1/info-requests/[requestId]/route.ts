@@ -14,7 +14,7 @@ type RouteParams = { params: Promise<{ requestId: string }> };
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * GET /api/v1/info-requests/[requestId] — Get info request details
+ * GET /api/v1/info-requests/[requestId] - Get info request details
  * Accessible by the targeted campaigner or admin.
  */
 export async function GET(_request: NextRequest, { params }: RouteParams) {
@@ -88,7 +88,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 }
 
 /**
- * PATCH /api/v1/info-requests/[requestId] — Respond to an info request
+ * PATCH /api/v1/info-requests/[requestId] - Respond to an info request
  * Only the targeted campaigner can respond.
  * Accepts multipart/form-data with responseText + optional file attachments.
  */
@@ -253,7 +253,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       if (uploadError) {
         console.error('Info request file upload failed:', uploadError.message, 'path:', storagePath, 'type:', file.type, 'size:', file.size);
         return NextResponse.json(
-          { ok: false, error: { code: 'INTERNAL_ERROR', message: `Failed to upload file: ${file.name}. ${uploadError.message}`, requestId: rid } } satisfies ApiError,
+          { ok: false, error: { code: 'INTERNAL_ERROR', message: `Failed to upload file: ${file.name}. Please try again.`, requestId: rid } } satisfies ApiError,
           { status: 500 },
         );
       }

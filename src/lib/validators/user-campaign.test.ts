@@ -2,12 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { createUserCampaignSchema, updateUserCampaignSchema, CATEGORIES, BENEFICIARY_RELATIONS } from './user-campaign';
 
 describe('createUserCampaignSchema', () => {
-  const validMilestones = [
-    { title: 'Initial medical expenses', description: 'Cover the first round of hospital bills and medication', fundPercentage: 30 },
-    { title: 'Ongoing treatment costs', description: 'Physical therapy and follow-up appointments over the next months', fundPercentage: 40 },
-    { title: 'Recovery and rehabilitation', description: 'Final recovery costs including home care and medical equipment', fundPercentage: 30 },
-  ];
-
   const valid = {
     subjectName: 'John Doe',
     subjectHometown: 'Austin, TX',
@@ -18,7 +12,6 @@ describe('createUserCampaignSchema', () => {
     story: 'A'.repeat(500),
     goalAmount: 50_000,
     fundUsagePlan: 'B'.repeat(100),
-    milestones: validMilestones,
     heroImageUrl: 'https://example.com/photo.jpg',
     agreedToTerms: true as const,
     confirmedTruthful: true as const,
@@ -87,7 +80,9 @@ describe('createUserCampaignSchema', () => {
     }
   });
 
-  // ── beneficiaryConsent (conditional refine) ────────────────────────────
+  // ── beneficiaryConsent ──────────────────────────────────────────────────
+  // Consent is now implicit (always sent as true from the frontend).
+  // The schema accepts boolean -- no refine blocks non-self + false.
 
   it('allows beneficiaryConsent=false when relation is self', () => {
     const result = createUserCampaignSchema.safeParse({
@@ -98,29 +93,13 @@ describe('createUserCampaignSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('rejects beneficiaryConsent=false when relation is not self', () => {
+  it('accepts beneficiaryConsent=true for non-self relations', () => {
     const result = createUserCampaignSchema.safeParse({
       ...valid,
       beneficiaryRelation: 'friend',
-      beneficiaryConsent: false,
+      beneficiaryConsent: true,
     });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      const paths = result.error.issues.map((i) => i.path.join('.'));
-      expect(paths).toContain('beneficiaryConsent');
-    }
-  });
-
-  it('requires beneficiaryConsent=true for all non-self relations', () => {
-    const nonSelf = BENEFICIARY_RELATIONS.filter((r) => r !== 'self');
-    for (const rel of nonSelf) {
-      const result = createUserCampaignSchema.safeParse({
-        ...valid,
-        beneficiaryRelation: rel,
-        beneficiaryConsent: false,
-      });
-      expect(result.success, `relation "${rel}" without consent should fail`).toBe(false);
-    }
+    expect(result.success).toBe(true);
   });
 
   // ── title ──────────────────────────────────────────────────────────────
@@ -159,18 +138,18 @@ describe('createUserCampaignSchema', () => {
 
   // ── goalAmount ─────────────────────────────────────────────────────────
 
-  it('rejects goalAmount below $50 (5000 cents)', () => {
-    const result = createUserCampaignSchema.safeParse({ ...valid, goalAmount: 4999 });
+  it('rejects goalAmount below $1 (100 cents)', () => {
+    const result = createUserCampaignSchema.safeParse({ ...valid, goalAmount: 99 });
     expect(result.success).toBe(false);
   });
 
-  it('rejects goalAmount above $50,000 (5,000,000 cents)', () => {
-    const result = createUserCampaignSchema.safeParse({ ...valid, goalAmount: 5_000_001 });
+  it('rejects goalAmount above $1,000,000,000 (100_000_000_000 cents)', () => {
+    const result = createUserCampaignSchema.safeParse({ ...valid, goalAmount: 100_000_000_001 });
     expect(result.success).toBe(false);
   });
 
-  it('accepts goalAmount at exactly $50 (5000 cents)', () => {
-    const result = createUserCampaignSchema.safeParse({ ...valid, goalAmount: 5000 });
+  it('accepts goalAmount at exactly $1 (100 cents)', () => {
+    const result = createUserCampaignSchema.safeParse({ ...valid, goalAmount: 100 });
     expect(result.success).toBe(true);
   });
 
@@ -245,125 +224,6 @@ describe('createUserCampaignSchema', () => {
     }
   });
 
-  // ── milestones ─────────────────────────────────────────────────────────
-
-  it('rejects missing milestones', () => {
-    const { milestones: _milestones, ...rest } = valid;
-    const result = createUserCampaignSchema.safeParse(rest);
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects fewer than 3 milestones', () => {
-    const result = createUserCampaignSchema.safeParse({
-      ...valid,
-      milestones: validMilestones.slice(0, 2),
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects more than 3 milestones', () => {
-    const result = createUserCampaignSchema.safeParse({
-      ...valid,
-      milestones: [...validMilestones, { title: 'Extra', description: 'Extra phase desc', fundPercentage: 10 }],
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects milestones with percentages not summing to 100', () => {
-    const result = createUserCampaignSchema.safeParse({
-      ...valid,
-      milestones: [
-        { title: 'Phase one title', description: 'Phase one description text', fundPercentage: 30 },
-        { title: 'Phase two title', description: 'Phase two description text', fundPercentage: 30 },
-        { title: 'Phase three title', description: 'Phase three description text', fundPercentage: 30 },
-      ],
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects milestone with fundPercentage below 10', () => {
-    const result = createUserCampaignSchema.safeParse({
-      ...valid,
-      milestones: [
-        { title: 'Phase one title', description: 'Phase one description text', fundPercentage: 5 },
-        { title: 'Phase two title', description: 'Phase two description text', fundPercentage: 55 },
-        { title: 'Phase three title', description: 'Phase three description text', fundPercentage: 40 },
-      ],
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects Phase 1 fundPercentage above 40', () => {
-    const result = createUserCampaignSchema.safeParse({
-      ...valid,
-      milestones: [
-        { title: 'Phase one title', description: 'Phase one description text', fundPercentage: 45 },
-        { title: 'Phase two title', description: 'Phase two description text', fundPercentage: 30 },
-        { title: 'Phase three title', description: 'Phase three description text', fundPercentage: 25 },
-      ],
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('accepts Phase 1 at exactly 40', () => {
-    const result = createUserCampaignSchema.safeParse({
-      ...valid,
-      milestones: [
-        { title: 'Phase one title', description: 'Phase one description text', fundPercentage: 40 },
-        { title: 'Phase two title', description: 'Phase two description text', fundPercentage: 30 },
-        { title: 'Phase three title', description: 'Phase three description text', fundPercentage: 30 },
-      ],
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it('rejects milestone with fundPercentage above 60', () => {
-    const result = createUserCampaignSchema.safeParse({
-      ...valid,
-      milestones: [
-        { title: 'Phase one title', description: 'Phase one description text', fundPercentage: 70 },
-        { title: 'Phase two title', description: 'Phase two description text', fundPercentage: 15 },
-        { title: 'Phase three title', description: 'Phase three description text', fundPercentage: 15 },
-      ],
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects milestone with title shorter than 3 chars', () => {
-    const result = createUserCampaignSchema.safeParse({
-      ...valid,
-      milestones: [
-        { title: 'Hi', description: 'Phase one description text', fundPercentage: 30 },
-        { title: 'Phase two title', description: 'Phase two description text', fundPercentage: 40 },
-        { title: 'Phase three title', description: 'Phase three description text', fundPercentage: 30 },
-      ],
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects milestone with description shorter than 10 chars', () => {
-    const result = createUserCampaignSchema.safeParse({
-      ...valid,
-      milestones: [
-        { title: 'Phase one title', description: 'Short', fundPercentage: 30 },
-        { title: 'Phase two title', description: 'Phase two description text', fundPercentage: 40 },
-        { title: 'Phase three title', description: 'Phase three description text', fundPercentage: 30 },
-      ],
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('accepts milestones with 10/60/30 split', () => {
-    const result = createUserCampaignSchema.safeParse({
-      ...valid,
-      milestones: [
-        { title: 'Phase one title', description: 'Phase one description text', fundPercentage: 10 },
-        { title: 'Phase two title', description: 'Phase two description text', fundPercentage: 60 },
-        { title: 'Phase three title', description: 'Phase three description text', fundPercentage: 30 },
-      ],
-    });
-    expect(result.success).toBe(true);
-  });
 });
 
 describe('updateUserCampaignSchema', () => {

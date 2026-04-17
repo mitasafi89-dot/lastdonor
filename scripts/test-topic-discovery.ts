@@ -30,7 +30,7 @@ async function main() {
       console.log(`  ${isFromNews ? '📰' : '📖'} "${topic.title}"`);
       console.log(`    Keyword: ${topic.primaryKeyword}`);
       console.log(`    Category: ${topic.causeCategory}`);
-      console.log(`    From news: ${isFromNews ? `YES — "${topic.newsHook}"` : 'No (keyword bank)'}`);
+      console.log(`    From news: ${isFromNews ? `YES - "${topic.newsHook}"` : 'No (keyword bank)'}`);
       console.log(`    Status: ${topic.status} | Priority: ${topic.priorityScore}`);
       console.log('');
     }

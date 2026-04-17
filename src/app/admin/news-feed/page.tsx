@@ -5,14 +5,14 @@ import { NewsFeedMonitor } from '@/components/admin/NewsFeedMonitor';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'News Feed — Admin — LastDonor.org',
+  title: 'News Feed - Admin - LastDonor.org',
   robots: { index: false },
 };
 
 export const revalidate = 60;
 
 export default async function NewsFeedPage() {
-  /* Select only the columns the UI needs — excludes heavy articleBody */
+  /* Select only the columns the UI needs - excludes heavy articleBody */
   const items = await db
     .select({
       id: newsItems.id,

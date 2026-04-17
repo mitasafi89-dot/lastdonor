@@ -134,7 +134,7 @@ const SURGE_LATE_BASE: Omit<TrajectoryProfile, 'amountTier' | 'surges' | 'target
   baseDonateChance: 0.25,
   phaseMultipliers: {
     first_believers: 0.90,
-    the_push: 0.50,       // deliberate lull — the "stall"
+    the_push: 0.50,       // deliberate lull - the "stall"
     closing_in: 1.60,     // post-surge acceleration
     last_donor_zone: 1.40,
   },
@@ -146,7 +146,7 @@ const SURGE_LATE_BASE: Omit<TrajectoryProfile, 'amountTier' | 'surges' | 'target
 
 /**
  * For each category, defines the probability of being assigned each archetype.
- * Probabilities are weights (not strict fractions) — they are normalized at selection.
+ * Probabilities are weights (not strict fractions) - they are normalized at selection.
  *
  * Reasoning:
  * - military/first-responders: unions share instantly → often viral
@@ -318,29 +318,44 @@ export function generateTrajectoryProfile(
 }
 
 /**
+ * Persisted surge state: maps surge atPercent thresholds to the cycle number
+ * when they were first triggered. Stored in simulationConfig JSONB so surge
+ * duration survives across 15-minute cron runs.
+ */
+export type SurgeState = Record<number, number>;
+
+/**
  * Check if any surge event should be active for the current campaign state.
- * Tracks which surges have been "triggered" by checking if the campaign
- * percentage has crossed the surge threshold.
+ *
+ * A surge activates when the campaign percentage first crosses its threshold
+ * and remains active for exactly `durationCycles` consecutive cycles. State
+ * is persisted via the `surgeState` object (mutated in-place) so that surge
+ * durations survive across cron runs.
  *
  * Returns the multiplier to apply (1.0 if no surge is active).
- *
- * The `triggeredSurgePercents` set tracks which surges have already been
- * counted to avoid re-triggering on every cycle. This is maintained in-memory
- * per simulation run (not persisted — surges are short-lived).
  */
 export function getActiveSurgeMultiplier(
   profile: TrajectoryProfile,
   currentPercent: number,
-  campaignAgeCycles: number,
-  triggeredSurgePercents: Set<number>,
+  currentCycle: number,
+  surgeState: SurgeState,
 ): number {
   let multiplier = 1.0;
 
   for (const surge of profile.surges) {
-    if (currentPercent >= surge.atPercent && !triggeredSurgePercents.has(surge.atPercent)) {
-      // Surge just crossed its threshold — activate it
-      triggeredSurgePercents.add(surge.atPercent);
-      multiplier = Math.max(multiplier, surge.multiplier);
+    const key = surge.atPercent;
+
+    if (currentPercent >= key && !(key in surgeState)) {
+      // Surge threshold just crossed - record the trigger cycle
+      surgeState[key] = currentCycle;
+    }
+
+    if (key in surgeState) {
+      const elapsed = currentCycle - surgeState[key];
+      if (elapsed < surge.durationCycles) {
+        // Surge is still within its duration window
+        multiplier = Math.max(multiplier, surge.multiplier);
+      }
     }
   }
 

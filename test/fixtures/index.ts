@@ -1,5 +1,5 @@
 /**
- * Shared test fixtures — static data used across test suites.
+ * Shared test fixtures - static data used across test suites.
  */
 
 export const VALID_CAMPAIGN_INPUT = {

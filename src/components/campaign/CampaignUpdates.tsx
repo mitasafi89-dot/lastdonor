@@ -43,9 +43,8 @@ export function CampaignUpdates({ updates, className }: CampaignUpdatesProps) {
 
         {visibleUpdates.map((update) => (
           <div key={update.id} className="relative">
-            {/* Timeline dot */}
             <div
-              className="absolute -left-6 top-1.5 h-[10px] w-[10px] rounded-full border-2 border-primary bg-background"
+              className="absolute -left-6 top-1.5 h-[10px] w-[10px] rounded-full border-2 border-foreground/25 bg-background"
               aria-hidden="true"
             />
 
@@ -88,7 +87,7 @@ export function CampaignUpdates({ updates, className }: CampaignUpdatesProps) {
         <button
           type="button"
           onClick={() => setShowAll(!showAll)}
-          className="flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+          className="flex items-center gap-1 text-sm font-medium text-foreground transition-colors hover:text-foreground/70"
         >
           {showAll ? (
             <>

@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { FooterDarkModeToggle } from '@/components/layout/FooterDarkModeToggle';
+import { FooterNewsletter } from '@/components/layout/FooterNewsletter';
+import { ShieldCheckIcon } from '@heroicons/react/24/solid';
 
 const LINK_GROUPS = [
   {
@@ -7,7 +9,8 @@ const LINK_GROUPS = [
     links: [
       { label: 'Campaigns', href: '/campaigns' },
       { label: 'Completed Campaigns', href: '/completed-campaigns' },
-      { label: 'How It Works', href: '/about' },
+      { label: 'How It Works', href: '/how-it-works' },
+      { label: 'Newsletter', href: '/newsletter' },
       { label: 'Share Your Story', href: '/share-your-story' },
     ],
   },
@@ -34,6 +37,17 @@ export function Footer() {
 
   return (
     <footer className="bg-[#0F1A19] text-gray-300">
+      {/* Newsletter CTA strip */}
+      <div className="border-b border-white/10">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6 lg:px-8">
+          <div>
+            <p className="font-display text-lg font-bold text-white">Stay in the loop</p>
+            <p className="mt-1 text-sm text-gray-400">Weekly impact stories and new campaigns. No spam.</p>
+          </div>
+          <FooterNewsletter />
+        </div>
+      </div>
+
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand column */}
@@ -46,13 +60,26 @@ export function Footer() {
               <span className="text-[#14B8A6]">Donor</span>
               <span className="text-[#FBBF24]">.</span>
             </Link>
-            <p className="mt-3 text-sm text-gray-400">
+            <p className="mt-3 text-sm leading-relaxed text-gray-400">
               Verified fundraising for real people in crisis. 100% transparent.
               You&apos;re the reason it&apos;s done.
             </p>
-            <p className="mt-4 rounded-md bg-[#14B8A6]/15 px-3 py-2 text-xs font-medium text-[#14B8A6]">
-              501(c)(3) Nonprofit Organization
-            </p>
+            <div className="mt-4 flex items-center gap-2 rounded-lg bg-[#14B8A6]/15 px-3 py-2">
+              <ShieldCheckIcon className="h-4 w-4 text-[#14B8A6]" />
+              <span className="text-xs font-medium text-[#14B8A6]">501(c)(3) Nonprofit Organization</span>
+            </div>
+
+            {/* Trust badges */}
+            <div className="mt-4 flex items-center gap-3 text-xs text-gray-500">
+              <span className="flex items-center gap-1">
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2}><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                Secured by Stripe
+              </span>
+              <span className="flex items-center gap-1">
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                SSL Protected
+              </span>
+            </div>
           </div>
 
           {/* Link groups */}

@@ -5,7 +5,7 @@ type RssFeedConfig = {
   source: string;
 };
 
-// All RSS feeds — organized by region and type for global coverage
+// All RSS feeds - organized by region and type for global coverage
 // The pipeline handles fetch failures gracefully, so non-functional feeds are skipped silently.
 export const RSS_FEEDS: RssFeedConfig[] = [
   // ─── Wire Services & Global ─────────────────────────────────────
@@ -314,7 +314,7 @@ export async function fetchAllRssFeeds(): Promise<NormalizedNewsItem[]> {
   const items: NormalizedNewsItem[] = [];
   for (const result of results) {
     if (result.status === 'fulfilled') {
-      // Cap per feed — keep the most recent items
+      // Cap per feed - keep the most recent items
       const feedItems = result.value
         .sort((a, b) => (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0))
         .slice(0, MAX_ITEMS_PER_FEED);

@@ -1,4 +1,4 @@
-# LastDonor.org — Brand Guidelines
+# LastDonor.org - Brand Guidelines
 
 **Version**: 0.1 (Pre-Development)
 **Date**: March 19, 2026
@@ -14,14 +14,14 @@
 **Category descriptor**: A nonprofit fundraising platform
 
 ### Brand Positioning
-LastDonor is a story-driven, editorially curated fundraising platform where every campaign has a real person, a specific goal, and a finish line. The "Last Donor" — the person whose donation closes a campaign — is celebrated as the hero.
+LastDonor is a story-driven, editorially curated fundraising platform where every campaign has a real person, a specific goal, and a finish line. The "Last Donor" - the person whose donation closes a campaign - is celebrated as the hero.
 
 ### Brand Personality
-- **Bold** — we don't sugarcoat. We show real stories, real needs, real impact.
-- **Trustworthy** — every dollar is tracked. Every story is verified. Every report is published.
-- **Urgent** — people need help now. We don't waste time or words.
-- **Warm** — behind the boldness is real human compassion. We care about people, not metrics.
-- **American** — rooted in American communities, serving American causes first, without being partisan.
+- **Bold** - we don't sugarcoat. We show real stories, real needs, real impact.
+- **Trustworthy** - every dollar is tracked. Every story is verified. Every report is published.
+- **Urgent** - people need help now. We don't waste time or words.
+- **Warm** - behind the boldness is real human compassion. We care about people, not metrics.
+- **American** - rooted in American communities, serving American causes first, without being partisan.
 
 ### What We Are NOT
 - Not political. No party affiliation. No endorsements.
@@ -37,16 +37,16 @@ LastDonor is a story-driven, editorially curated fundraising platform where ever
 
 | Color | Hex | Usage |
 |-------|-----|-------|
-| **Deep Teal** | #0F766E | Primary brand color — headers, nav, brand anchoring, trust signals |
+| **Deep Teal** | #0F766E | Primary brand color - headers, nav, brand anchoring, trust signals |
 | **Warm White** | #F8F6F2 | Page backgrounds, card backgrounds, breathing space |
-| **Warm Amber** | #D97706 | Accent — CTAs, progress bars, highlights, the "." in logo, achievements, donate buttons |
+| **Warm Amber** | #D97706 | Accent - CTAs, progress bars, highlights, the "." in logo, achievements, donate buttons |
 
 ### Secondary Colors
 
 | Color | Hex | Usage |
 |-------|-----|-------|
-| **Deep Red** | #8B2332 | Urgent elements only — "Last Donor Zone" indicators, critical alerts. Used sparingly. |
-| **Forest Green** | #2D6A4F | Success states — campaign completed, goal met, confirmation messages |
+| **Deep Red** | #8B2332 | Urgent elements only - "Last Donor Zone" indicators, critical alerts. Used sparingly. |
+| **Forest Green** | #2D6A4F | Success states - campaign completed, goal met, confirmation messages |
 | **Near Black** | #1A1A1A | Body text on light backgrounds |
 | **Medium Gray** | #6B7280 | Secondary text, captions, timestamps |
 | **Light Gray** | #E5E7EB | Borders, dividers, subtle backgrounds |
@@ -83,13 +83,13 @@ LastDonor is a story-driven, editorially curated fundraising platform where ever
 | **Stats/Numbers** | DM Mono | Regular (400) | monospace |
 | **UI elements** | DM Sans | Medium (500), Semi-bold (600) | system-ui, sans-serif |
 
-All three fonts are from the same DM type family — designed with shared proportions and visual DNA. This creates natural harmony without effort.
+All three fonts are from the same DM type family - designed with shared proportions and visual DNA. This creates natural harmony without effort.
 
 ### Typography Rules
-- Headlines: DM Serif Display Regular. Sentence case. Never all-caps except in the logo. Only one weight available — let the serif itself carry the visual weight.
+- Headlines: DM Serif Display Regular. Sentence case. Never all-caps except in the logo. Only one weight available - let the serif itself carry the visual weight.
 - Body: DM Sans Regular, 16px minimum on desktop, 15px on mobile. Line height 1.6.
 - Stats and dollar amounts: DM Mono. "$42,750 raised" in mono feels more precise and trustworthy.
-- Never use more than 2 fonts on a single page (DM Mono is the exception — used only for numbers/stats, not prose).
+- Never use more than 2 fonts on a single page (DM Mono is the exception - used only for numbers/stats, not prose).
 - Links in body text: warm amber (#D97706), underlined on hover only.
 
 ---
@@ -122,16 +122,16 @@ You're the reason it's done.
 
 LastDonor uses two distinct image systems:
 
-1. **Campaign images** — Real photography tied to specific people and events, sourced from news and federal databases.
-2. **Platform images** — Fresh public domain photography for the site's own visual identity, rotated every 1-2 weeks.
+1. **Campaign images** - Real photography tied to specific people and events, sourced from news and federal databases.
+2. **Platform images** - Fresh public domain photography for the site's own visual identity, rotated every 1-2 weeks.
 
 ### Platform Photography (Homepage, Category Headers, Blog)
 
 - **Freshness rule**: All platform photography must be published within the last 14 days. Never show stale imagery.
-- **Primary source**: DVIDS (dvidshub.net) for military/first-responder/veterans imagery — hundreds of high-res photos uploaded daily, all public domain.
-- **Secondary source**: FEMA Media Library / NWS / NOAA for disaster imagery — all public domain.
+- **Primary source**: DVIDS (dvidshub.net) for military/first-responder/veterans imagery - hundreds of high-res photos uploaded daily, all public domain.
+- **Secondary source**: FEMA Media Library / NWS / NOAA for disaster imagery - all public domain.
 - **Rotation**: Weekly cron selects top-scoring recent photos per category. Old photos archived for blog/social reuse.
-- **Credit**: Always credit the photographer — "Photo: Sgt. James Carter / DVIDS, March 14, 2026". Not legally required (public domain) but builds credibility.
+- **Credit**: Always credit the photographer - "Photo: Sgt. James Carter / DVIDS, March 14, 2026". Not legally required (public domain) but builds credibility.
 
 | Platform Location | Source | Rotation |
 |------------------|--------|----------|
@@ -164,10 +164,10 @@ For illustrations, abstract backgrounds, textures, and decorative elements where
 
 - **Primary source**: DVIDS for military/first-responder campaign stories, FEMA for disaster stories
 - **Secondary**: User-submitted photos (with permission), local news (with permission)
-- **Fallback**: Solid teal/amber gradient placeholder with category SVG icon — never a fake photo
+- **Fallback**: Solid teal/amber gradient placeholder with category SVG icon - never a fake photo
 - **Treatment**: Slightly desaturated. No Instagram filters. No oversaturation. Serious, respectful.
-- **Faces visible when possible** — people donate to people, not landscapes
-- **Never exploit suffering** — show strength, resilience, and humanity. Never gore, never helplessness without dignity.
+- **Faces visible when possible** - people donate to people, not landscapes
+- **Never exploit suffering** - show strength, resilience, and humanity. Never gore, never helplessness without dignity.
 
 ### Image Rules
 - Hero images: minimum 1920x1080, optimized as WebP with JPEG fallback
@@ -184,13 +184,13 @@ For illustrations, abstract backgrounds, textures, and decorative elements where
 
 | Do | Don't |
 |----|-------|
-| Use first names — "Mike," not "SSG Torres" | Use military jargon — not "AOR," "CENTCOM," "TDY" |
-| Mention their hometown — "from Tulsa, Oklahoma" | Use vague locations — not "overseas" or "deployed" |
+| Use first names - "Mike," not "SSG Torres" | Use military jargon - not "AOR," "CENTCOM," "TDY" |
+| Mention their hometown - "from Tulsa, Oklahoma" | Use vague locations - not "overseas" or "deployed" |
 | Include one specific human detail per story | Write press releases |
-| Short paragraphs — 2-3 sentences max | Wall-of-text paragraphs |
-| Active voice — "Sarah sent a care package" | Passive voice — "A care package was sent" |
+| Short paragraphs - 2-3 sentences max | Wall-of-text paragraphs |
+| Active voice - "Sarah sent a care package" | Passive voice - "A care package was sent" |
 | End with the ask, connected to the person | End with generic "please donate" language |
-| Dignify — these are heroes, not victims | Use pity language — "poor," "suffering," "helpless" |
+| Dignify - these are heroes, not victims | Use pity language - "poor," "suffering," "helpless" |
 
 ### Headlines
 - Direct. Short. Person-focused.
@@ -204,19 +204,19 @@ For illustrations, abstract backgrounds, textures, and decorative elements where
 
 ### Error / Empty States
 - Human, not robotic.
-- Good: "No active campaigns right now. Check back soon — we're always working on the next one."
+- Good: "No active campaigns right now. Check back soon - we're always working on the next one."
 - Bad: "Error 404: Page not found."
 
 ---
 
 ## 7. Category-Contextual Design Elements
 
-LastDonor serves 8 campaign categories. Visual accents adapt to context — the platform feels cohesive, but individual campaigns carry the emotional texture of their cause.
+LastDonor serves 8 campaign categories. Visual accents adapt to context - the platform feels cohesive, but individual campaigns carry the emotional texture of their cause.
 
 ### Patriotic Accents (military, veterans, first-responders only)
 - A very faint, desaturated American flag texture may be used as a background element on military/veterans/first-responder campaign pages
-- Opacity: 3-5% maximum — barely perceptible
-- Never used behind text-heavy sections — only in hero areas or section dividers
+- Opacity: 3-5% maximum - barely perceptible
+- Never used behind text-heavy sections - only in hero areas or section dividers
 - Never cartoonish or clip-art style
 - A single, subtle star may be used as a design accent (section breaks, list bullets, badge elements)
 - Star style: simple, geometric, not illustrative
@@ -225,14 +225,14 @@ LastDonor serves 8 campaign categories. Visual accents adapt to context — the 
 ### Neutral Presentation (medical, disaster, memorial, community, essential-needs)
 - No patriotic textures on non-service campaign pages
 - Use warm, neutral photography and the standard teal/amber palette
-- Let the person's story carry the emotional weight — no visual theme beyond the brand itself
+- Let the person's story carry the emotional weight - no visual theme beyond the brand itself
 
 ### Global Rules
 - Contextual elements are **textural**, never central
 - The people in the stories are the emotion. The design just supports the mood.
 - Never use flag bunting, eagles, shields, or red/white/blue stripes as primary design elements
 - This is a charity, not a campaign rally
-- Category-specific accents only appear on individual campaign pages and category browse pages — the homepage, about page, and shared UI remain category-neutral
+- Category-specific accents only appear on individual campaign pages and category browse pages - the homepage, about page, and shared UI remain category-neutral
 
 ---
 

@@ -1,6 +1,6 @@
 /**
- * Content Brief Generator — takes a topic from the queue and generates
- * a structured content brief using AI.
+ * Content Brief Generator - takes a topic from the queue and generates
+ * a structured content brief using AI, enhanced with oblique constraints.
  */
 
 import { callAI } from '@/lib/ai/call-ai';
@@ -10,9 +10,11 @@ import {
   type ContentBrief,
 } from '@/lib/ai/prompts/generate-blog-brief';
 import { getLowCompetitionKeywords } from './keyword-bank';
+import { generateObliqueBrief, formatObliqueConstraints, type ObliqueBrief } from './oblique-engine';
+import { pipelineLog, pipelineWarn } from '@/lib/server-logger';
 
 /**
- * Generate a content brief for a blog topic.
+ * Generate a content brief for a blog topic, with oblique constraints.
  */
 export async function generateContentBrief(params: {
   primaryKeyword: string;
@@ -20,7 +22,7 @@ export async function generateContentBrief(params: {
   causeCategory: string;
   targetWordCount: number;
   newsHook?: string | null;
-}): Promise<ContentBrief> {
+}): Promise<ContentBrief & { obliqueBrief?: ObliqueBrief }> {
   // If no secondary keywords provided, pull from keyword bank
   let secondaryKeywords = params.secondaryKeywords;
   if (secondaryKeywords.length === 0) {
@@ -31,6 +33,22 @@ export async function generateContentBrief(params: {
       .map((k) => k.keyword);
   }
 
+  // Generate oblique constraints first
+  let obliqueBrief: ObliqueBrief | undefined;
+  let obliqueConstraintsText: string | undefined;
+  try {
+    obliqueBrief = await generateObliqueBrief({
+      primaryKeyword: params.primaryKeyword,
+      causeCategory: params.causeCategory,
+      newsHook: params.newsHook,
+    });
+    obliqueConstraintsText = formatObliqueConstraints(obliqueBrief);
+    pipelineLog('content-brief', `Oblique brief generated (seed: "${obliqueBrief.seedWord}", law: "${obliqueBrief.primalLaw.slice(0, 60)}...")`);
+  } catch (error) {
+    // Non-fatal: fall back to standard brief generation if oblique engine fails
+    pipelineWarn('content-brief', `Oblique engine failed, using standard brief: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
   const brief = await callAI<ContentBrief>({
     systemPrompt: buildBlogBriefSystemPrompt(),
     userPrompt: buildBlogBriefUserPrompt({
@@ -39,6 +57,7 @@ export async function generateContentBrief(params: {
       causeCategory: params.causeCategory,
       targetWordCount: params.targetWordCount,
       newsHook: params.newsHook,
+      obliqueConstraints: obliqueConstraintsText,
     }),
     parseJson: true,
     maxTokens: 8192,
@@ -50,5 +69,10 @@ export async function generateContentBrief(params: {
     throw new Error('Generated brief is missing required fields (title or outline)');
   }
 
-  return brief;
+  // Attach oblique constraints text to the brief for downstream passes
+  if (obliqueConstraintsText) {
+    brief.obliqueConstraints = obliqueConstraintsText;
+  }
+
+  return { ...brief, obliqueBrief };
 }

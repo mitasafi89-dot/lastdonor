@@ -13,7 +13,7 @@ import { eq, and, or, desc, asc, sql, ilike, gte } from 'drizzle-orm';
 import { clearDatabase, seedCampaign } from '../../../test/helpers';
 
 /* ------------------------------------------------------------------ */
-/*  Shared query builder — mirrors page.tsx & route.ts logic          */
+/*  Shared query builder - mirrors page.tsx & route.ts logic          */
 /* ------------------------------------------------------------------ */
 
 type CampaignCategory = typeof campaigns.$inferSelect['category'];
@@ -163,7 +163,7 @@ describe('Campaign Filters – DB Integration', () => {
       status: 'active',
     });
 
-    // Completed campaign — should never appear
+    // Completed campaign - should never appear
     await seedCampaign({
       title: 'Completed Campaign',
       slug: 'completed-campaign',
@@ -314,24 +314,24 @@ describe('Campaign Filters – DB Integration', () => {
   // ────────────────────────────────────────────────────────
 
   describe('Sort', () => {
-    it('sorts by newest (default) — most recent publishedAt first', async () => {
+    it('sorts by newest (default) - most recent publishedAt first', async () => {
       const results = await queryCampaigns({ sort: 'newest' });
       expect(results[0].slug).toBe('disaster-relief-california'); // Mar 2026
       expect(results[results.length - 1].slug).toBe('help-veterans-texas'); // Jan 2026
     });
 
-    it('sorts by most_funded — highest raisedAmount first', async () => {
+    it('sorts by most_funded - highest raisedAmount first', async () => {
       const results = await queryCampaigns({ sort: 'most_funded' });
       expect(results[0].slug).toBe('disaster-relief-california'); // 480k
       expect(results[1].slug).toBe('help-veterans-texas'); // 450k
     });
 
-    it('sorts by least_funded — lowest raisedAmount first', async () => {
+    it('sorts by least_funded - lowest raisedAmount first', async () => {
       const results = await queryCampaigns({ sort: 'least_funded' });
       expect(results[0].slug).toBe('medical-bills-sarah'); // 100k
     });
 
-    it('sorts by closing_soon — highest funded ratio first', async () => {
+    it('sorts by closing_soon - highest funded ratio first', async () => {
       const results = await queryCampaigns({ sort: 'closing_soon' });
       expect(results[0].slug).toBe('disaster-relief-california'); // 96%
       expect(results[1].slug).toBe('help-veterans-texas'); // 90%
@@ -355,7 +355,7 @@ describe('Campaign Filters – DB Integration', () => {
       expect(results[0].slug).toBe('disaster-relief-california');
     });
 
-    it('q + location combined — both must match', async () => {
+    it('q + location combined - both must match', async () => {
       // "sarah" matches medical-bills-sarah and "Portland" matches same
       const results = await queryCampaigns({ q: 'sarah', location: 'Portland' });
       expect(results.length).toBe(1);
@@ -375,7 +375,7 @@ describe('Campaign Filters – DB Integration', () => {
       expect(results[1].slug).toBe('disaster-relief-california');
     });
 
-    it('all filters combined — category + q + location + close_to_target', async () => {
+    it('all filters combined - category + q + location + close_to_target', async () => {
       // Veterans + "johnson" + Austin + close to target → only veterans campaign matches all
       const results = await queryCampaigns({
         category: 'veterans',
@@ -387,7 +387,7 @@ describe('Campaign Filters – DB Integration', () => {
       expect(results[0].slug).toBe('help-veterans-texas');
     });
 
-    it('all filters combined — contradicting → empty', async () => {
+    it('all filters combined - contradicting → empty', async () => {
       const results = await queryCampaigns({
         category: 'medical',
         q: 'johnson',

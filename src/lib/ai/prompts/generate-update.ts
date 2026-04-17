@@ -9,7 +9,7 @@ import type { DonationPhase, CampaignOrganizer } from '@/types';
  */
 const PHASE_TRANSITION_TITLE_TEMPLATES: Record<DonationPhase, string[]> = {
   first_believers: [
-    "The first believers have spoken — {fullName}'s campaign is underway",
+    "The first believers have spoken - {fullName}'s campaign is underway",
     "{fullName}'s community rallies with early support",
     "Early momentum builds for {name}'s campaign",
     "{name}'s campaign crosses its first milestone",
@@ -17,14 +17,14 @@ const PHASE_TRANSITION_TITLE_TEMPLATES: Record<DonationPhase, string[]> = {
   ],
   the_push: [
     "{fullName}'s campaign hits a major milestone",
-    "The push is on — {name} is past 25% funded",
+    "The push is on - {name} is past 25% funded",
     "Building momentum: supporters keep showing up for {name}",
     "{name}'s campaign enters a new chapter",
     "Halfway in sight: {fullName}'s campaign gains steam",
   ],
   closing_in: [
     "{fullName}'s campaign is closing in on the goal",
-    "Almost there — {name}'s campaign crosses 60%",
+    "Almost there - {name}'s campaign crosses 60%",
     "The finish line is in sight for {name}",
     "{name}'s community pushes closer to the goal",
     "So close: {fullName}'s campaign enters the home stretch",
@@ -32,9 +32,9 @@ const PHASE_TRANSITION_TITLE_TEMPLATES: Record<DonationPhase, string[]> = {
   last_donor_zone: [
     "{fullName}'s campaign enters the Last Donor Zone!",
     "Who will be the last donor? {name}'s campaign is over 90%",
-    "Final stretch — {name}'s campaign needs just a little more",
+    "Final stretch - {name}'s campaign needs just a little more",
     "The Last Donor Zone: {fullName}'s campaign is almost complete",
-    "One generous gift away — {name} is in the Last Donor Zone",
+    "One generous gift away - {name} is in the Last Donor Zone",
   ],
 };
 
@@ -80,7 +80,7 @@ export type GenerateUpdateInput = {
   storySummary?: string;
   /** Titles/types of previous updates for context continuity */
   previousUpdates?: string[];
-  /** Organizer identity — if present, the update is written in their voice */
+  /** Organizer identity - if present, the update is written in their voice */
   organizer?: CampaignOrganizer;
 };
 
@@ -91,7 +91,7 @@ export function buildGenerateUpdatePrompt(input: GenerateUpdateInput) {
   // Determine voice: organizer (first-person) or platform (third-person)
   const hasOrganizer = !!input.organizer;
   const voiceInstruction = hasOrganizer
-    ? `Write as ${input.organizer!.name}, the ${input.organizer!.relation} of ${input.subjectName}, from ${input.organizer!.city}. Write in FIRST PERSON — "we", "I", "our". Be warm, personal, and genuine. Reference your relationship naturally.`
+    ? `Write as ${input.organizer!.name}, the ${input.organizer!.relation} of ${input.subjectName}, from ${input.organizer!.city}. Write in FIRST PERSON - "we", "I", "our". Be warm, personal, and genuine. Reference your relationship naturally.`
     : `Write as a warm, human campaign update. Reference ${input.subjectName} by name. Be genuine, not corporate.`;
 
   const systemPrompt = `You write short campaign update posts for a nonprofit fundraising platform. ${voiceInstruction} Return ONLY plain text, no formatting, no HTML, no markdown.`;
@@ -122,7 +122,7 @@ Write a 2-3 sentence campaign update that:
 - Thanks the ${input.donorCount ?? 'many'} donors who got us here
 - Builds urgency and momentum for the next phase
 - References ${input.subjectName} by ${hasOrganizer ? 'first name' : 'name'}
-${hasOrganizer ? `- Sounds like a real person posting — ${input.organizer!.name}, not a brand` : ''}
+${hasOrganizer ? `- Sounds like a real person posting - ${input.organizer!.name}, not a brand` : ''}
 - Does NOT mention specific dollar amounts from individual donors
 - Does NOT repeat themes from previous updates`;
 

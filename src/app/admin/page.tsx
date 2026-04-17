@@ -6,7 +6,7 @@ import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Admin Dashboard — LastDonor.org',
+  title: 'Admin Dashboard - LastDonor.org',
   robots: { index: false },
 };
 

@@ -1,4 +1,4 @@
-# LastDonor.org — Product Requirements Document (PRD)
+# LastDonor.org - Product Requirements Document (PRD)
 
 **Version**: 0.1 (Pre-Development)
 **Date**: March 19, 2026
@@ -8,7 +8,7 @@
 
 ## 1. Problem Statement
 
-Millions of US service members, disaster victims, medical emergency patients, first responders, and people in crisis need financial support. Existing platforms (GoFundMe, GiveSendGo) are generic — anyone can post anything, there's no editorial curation, no institutional trust, and no follow-through on impact reporting.
+Millions of US service members, disaster victims, medical emergency patients, first responders, and people in crisis need financial support. Existing platforms (GoFundMe, GiveSendGo) are generic - anyone can post anything, there's no editorial curation, no institutional trust, and no follow-through on impact reporting.
 
 Donors don't trust random campaigns. They want:
 - Verified stories about real people
@@ -19,11 +19,11 @@ There is no platform that combines **editorially curated, story-driven fundraisi
 
 ## 2. Solution
 
-**LastDonor.org** — a nonprofit fundraising platform where every campaign is:
+**LastDonor.org** - a nonprofit fundraising platform where every campaign is:
 - Tied to a **real, verified person or cause**
 - Driven by a **relatable human story**, not jargon
 - Tracked with a **visible progress bar** toward a specific goal
-- Closed by a **"Last Donor"** — the person whose donation hits the target
+- Closed by a **"Last Donor"** - the person whose donation hits the target
 
 **Tagline**: *"You're the reason it's done."*
 
@@ -33,7 +33,7 @@ There is no platform that combines **editorially curated, story-driven fundraisi
 - **Secondary**: Military families, veteran communities, first responder families, civic-minded Americans
 - **Psychographic**: People who donate when they trust the recipient and see where their money goes. Skeptical of generic charity. Responsive to personal stories.
 
-## 4. Core Features — MVP
+## 4. Core Features - MVP
 
 ### 4.1 Campaign System
 - Each campaign has: title, hero image, story (3-5 paragraphs), funding goal, progress bar, donation tiers with impact labels
@@ -87,7 +87,7 @@ There is no platform that combines **editorially curated, story-driven fundraisi
 - Full dark mode toggle
 - Persisted in user preference / local storage
 
-## 5. Features — Post-MVP
+## 5. Features - Post-MVP
 
 - Discussion forum (Discourse integration)
 - Donor leaderboards (monthly, all-time)

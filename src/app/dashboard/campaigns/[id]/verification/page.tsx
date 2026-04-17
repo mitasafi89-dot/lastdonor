@@ -7,7 +7,7 @@ import { CampaignVerificationDashboard } from '@/components/verification/Campaig
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Campaign Verification — LastDonor.org',
+  title: 'Campaign Verification - LastDonor.org',
   robots: { index: false },
 };
 
@@ -39,8 +39,8 @@ export default async function CampaignVerificationPage({ params }: Props) {
       verificationReviewedAt: campaigns.verificationReviewedAt,
       goalAmount: campaigns.goalAmount,
       raisedAmount: campaigns.raisedAmount,
-      veriffSessionId: campaigns.veriffSessionId,
-      veriffSessionUrl: campaigns.veriffSessionUrl,
+      stripeVerificationId: campaigns.stripeVerificationId,
+      stripeVerificationUrl: campaigns.stripeVerificationUrl,
       creatorId: campaigns.creatorId,
     })
     .from(campaigns)

@@ -14,7 +14,9 @@ export function buildCampaign(overrides: Partial<Campaign> = {}): Campaign {
     slug: 'help-johnson-family-rebuild',
     status: 'active' as CampaignStatus,
     heroImageUrl: 'https://example.com/hero.webp',
+    galleryImages: [],
     photoCredit: null,
+    youtubeUrl: null,
     storyHtml: '<p>Their home was destroyed by a tornado.</p>',
     goalAmount: 5_000_00, // $5,000 in cents
     raisedAmount: 1_250_00, // $1,250 in cents
@@ -54,11 +56,13 @@ export function buildCampaign(overrides: Partial<Campaign> = {}): Campaign {
     verificationReviewerId: null,
     verificationReviewedAt: null,
     verificationNotes: null,
-    milestoneFundRelease: false,
     totalReleasedAmount: 0,
     totalWithdrawnAmount: 0,
-    veriffSessionId: null,
-    veriffSessionUrl: null,
+    stripeVerificationId: null,
+    stripeVerificationUrl: null,
+    seedDonationCount: 0,
+    messageCount: 0,
+    updateCount: 0,
     ...overrides,
   };
 }
@@ -116,6 +120,8 @@ export function buildUser(overrides: Partial<User> = {}): User {
     stripeConnectStatus: 'not_started',
     stripeConnectOnboardedAt: null,
     payoutCurrency: null,
+    failedLoginCount: 0,
+    failedLoginWindowStart: null,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     ...overrides,
   };

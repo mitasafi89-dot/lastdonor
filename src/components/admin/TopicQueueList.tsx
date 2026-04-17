@@ -461,7 +461,7 @@ export function TopicQueueList({ topics: initialTopics, counts }: TopicQueueList
                       {topic.causeCategory ? (
                         <Badge variant="outline" className="text-xs">{topic.causeCategory}</Badge>
                       ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
+                        <span className="text-xs text-muted-foreground">-</span>
                       )}
                     </td>
 

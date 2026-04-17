@@ -18,7 +18,7 @@ const ENV_KEYS = {
   RESEND_API_KEY: { label: 'Resend API Key', envVar: 'RESEND_API_KEY' },
   OPENROUTER_API_KEY: { label: 'OpenRouter API Key', envVar: 'OPENROUTER_API_KEY' },
   SENTRY_DSN: { label: 'Sentry DSN', envVar: 'SENTRY_DSN' },
-  DATABASE_URL: { label: 'Database URL', envVar: 'DATABASE_URL' },
+  // DATABASE_URL intentionally excluded: infrastructure secret, not admin-changeable
 } as const;
 
 type EnvKeyName = keyof typeof ENV_KEYS;

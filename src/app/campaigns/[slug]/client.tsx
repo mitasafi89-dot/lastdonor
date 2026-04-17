@@ -3,37 +3,35 @@
 import { useRouter } from 'next/navigation';
 import { SidebarDonationSummary } from '@/components/campaign/SidebarDonationSummary';
 import { ImpactTiers } from '@/components/campaign/ImpactTiers';
+import { StickyMobileDonateBar } from '@/components/campaign/StickyMobileDonateBar';
 import { DonorFeed, type DonorFeedItem } from '@/components/campaign/DonorFeed';
 import { MessageWall, type MessageItem } from '@/components/campaign/MessageWall';
 import { MessageForm } from '@/components/campaign/MessageForm';
-import { StickyMobileDonateBar } from '@/components/campaign/StickyMobileDonateBar';
+import { MessageWallProvider } from '@/components/campaign/MessageWallContext';
 import type { ImpactTier } from '@/types';
 
-interface CampaignDetailClientProps {
+// ─── Sidebar: conversion funnel only ────────────────────────────────────────
+
+interface CampaignSidebarClientProps {
   campaignSlug: string;
   raisedAmount: number;
   goalAmount: number;
   donorCount: number;
   impactTiers: ImpactTier[];
-  initialDonors: DonorFeedItem[];
-  initialMessages: MessageItem[];
 }
 
-export function CampaignDetailClient({
+export function CampaignSidebarClient({
   campaignSlug,
   raisedAmount,
   goalAmount,
   donorCount,
   impactTiers,
-  initialDonors,
-  initialMessages,
-}: CampaignDetailClientProps) {
+}: CampaignSidebarClientProps) {
   const router = useRouter();
   const donateHref = `/campaigns/${campaignSlug}/donate`;
 
   return (
     <>
-      {/* Sidebar summary card */}
       <SidebarDonationSummary
         raisedAmount={raisedAmount}
         goalAmount={goalAmount}
@@ -48,24 +46,42 @@ export function CampaignDetailClient({
         />
       )}
 
-      <DonorFeed
-        campaignSlug={campaignSlug}
-        initialDonors={initialDonors}
-      />
-
-      <MessageForm campaignSlug={campaignSlug} />
-
-      <MessageWall
-        campaignSlug={campaignSlug}
-        initialMessages={initialMessages}
-      />
-
-      {/* Mobile sticky donate bar */}
       <StickyMobileDonateBar
         raisedAmount={raisedAmount}
         goalAmount={goalAmount}
         donateHref={donateHref}
       />
+    </>
+  );
+}
+
+// ─── Community: social proof + engagement ────────────────────────────────────
+
+interface CampaignCommunityClientProps {
+  campaignSlug: string;
+  initialDonors: DonorFeedItem[];
+  initialMessages: MessageItem[];
+}
+
+export function CampaignCommunityClient({
+  campaignSlug,
+  initialDonors,
+  initialMessages,
+}: CampaignCommunityClientProps) {
+  return (
+    <>
+      <DonorFeed
+        campaignSlug={campaignSlug}
+        initialDonors={initialDonors}
+      />
+
+      <MessageWallProvider>
+        <MessageForm campaignSlug={campaignSlug} />
+        <MessageWall
+          campaignSlug={campaignSlug}
+          initialMessages={initialMessages}
+        />
+      </MessageWallProvider>
     </>
   );
 }

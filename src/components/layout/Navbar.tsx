@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -12,7 +12,6 @@ import {
   MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import { UserNav } from '@/components/layout/UserNav';
-import { NotificationBell } from '@/components/NotificationBell';
 import { DarkModeToggle } from '@/components/DarkModeToggle';
 import {
   DropdownMenu,
@@ -30,11 +29,16 @@ import {
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
+// Lazy-load NotificationBell (not needed for initial render, reduces main bundle)
+const NotificationBell = lazy(() =>
+  import('@/components/NotificationBell').then((m) => ({ default: m.NotificationBell }))
+);
+
 /* ------------------------------------------------------------------ */
-/*  Navigation data — all links derive from here, nothing hardcoded   */
+/*  Navigation data - all links derive from here, nothing hardcoded   */
 /* ------------------------------------------------------------------ */
 
-/** Pages surfaced in the "About" dropdown — trust & information. */
+/** Pages surfaced in the "About" dropdown - trust & information. */
 const ABOUT_ITEMS = [
   { label: 'How It Works', href: '/how-it-works' },
   { label: 'About LastDonor', href: '/about' },
@@ -86,9 +90,9 @@ export function Navbar() {
             <span className="text-accent">.</span>
           </Link>
 
-          {/* Desktop nav — visible md+ */}
+          {/* Desktop nav - visible md+ */}
           <nav className="hidden items-center gap-0.5 md:flex" aria-label="Main navigation">
-            {/* Search — navigates to campaigns page */}
+            {/* Search - navigates to campaigns page */}
             <Link
               href="/campaigns"
               className={cn(
@@ -100,7 +104,18 @@ export function Navbar() {
               Search
             </Link>
 
-            {/* Campaigns dropdown — category discovery */}
+            {/* Fundraise - supply-side action, top-level visibility */}
+            <Link
+              href="/share-your-story"
+              className={cn(
+                NAV_LINK,
+                pathname === '/share-your-story' ? NAV_LINK_ACTIVE : NAV_LINK_IDLE,
+              )}
+            >
+              Fundraise
+            </Link>
+
+            {/* Campaigns dropdown - category discovery */}
             <DropdownMenu>
               <DropdownMenuTrigger
                 className={cn(
@@ -143,61 +158,52 @@ export function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Share Story — supply-side action, top-level visibility */}
-            <Link
-              href="/share-your-story"
-              className={cn(
-                NAV_LINK,
-                pathname === '/share-your-story' ? NAV_LINK_ACTIVE : NAV_LINK_IDLE,
-              )}
-            >
-              Share Story
-            </Link>
+            {/* About dropdown - trust & informational pages */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className={cn(
+                  DROPDOWN_TRIGGER,
+                  isAboutActive ? NAV_LINK_ACTIVE : NAV_LINK_IDLE,
+                )}
+              >
+                About
+                <ChevronDownIcon className="h-3.5 w-3.5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-[420px] p-0">
+                <div className="flex items-center gap-2 border-b border-border px-5 py-3">
+                  <svg className="h-4 w-4 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+                  <span className="text-sm text-muted-foreground">How it works, trust & more</span>
+                </div>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1 px-3 py-3">
+                  {ABOUT_ITEMS.map((item) => (
+                    <DropdownMenuItem key={item.href} asChild>
+                      <Link
+                        href={item.href}
+                        className={cn(
+                          'text-sm',
+                          pathname === item.href && 'text-primary font-semibold',
+                        )}
+                      >
+                        {item.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
         </div>
 
         {/* ============ RIGHT ZONE: trust + conversion ============ */}
         <div className="hidden items-center gap-1 md:flex">
-          {/* About dropdown — trust & informational pages */}
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className={cn(
-                DROPDOWN_TRIGGER,
-                isAboutActive ? NAV_LINK_ACTIVE : NAV_LINK_IDLE,
-              )}
-            >
-              About
-              <ChevronDownIcon className="h-3.5 w-3.5" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[420px] p-0">
-              <div className="flex items-center gap-2 border-b border-border px-5 py-3">
-                <svg className="h-4 w-4 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
-                <span className="text-sm text-muted-foreground">How it works, trust & more</span>
-              </div>
-              <div className="grid grid-cols-2 gap-x-2 gap-y-1 px-3 py-3">
-                {ABOUT_ITEMS.map((item) => (
-                  <DropdownMenuItem key={item.href} asChild>
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        'text-sm',
-                        pathname === item.href && 'text-primary font-semibold',
-                      )}
-                    >
-                      {item.label}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Auth — Sign in (text link, low visual weight) */}
+          {/* Auth - Sign in (text link, low visual weight) */}
           {status === 'loading' ? (
             <div className="h-9 w-9 animate-pulse rounded-full bg-muted" />
           ) : isAuthed ? (
             <>
-              <NotificationBell />
+              <Suspense fallback={<div className="h-9 w-9" />}>
+                <NotificationBell />
+              </Suspense>
               <UserNav />
             </>
           ) : (
@@ -212,10 +218,10 @@ export function Navbar() {
             </Link>
           )}
 
-          {/* Donate CTA — isolated far-right, recency effect */}
+          {/* Donate CTA - isolated far-right, recency effect */}
           <Link
             href="/donate"
-            className="ml-1 rounded-md bg-accent px-5 py-2 text-sm font-bold text-accent-foreground shadow-sm transition-all hover:bg-accent/85 hover:shadow-md active:scale-[0.97]"
+            className="ml-1 rounded-full bg-accent px-5 py-2 text-sm font-bold text-accent-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-accent/85 hover:shadow-md hover:shadow-accent/20 active:scale-[0.97]"
           >
             Donate
           </Link>
@@ -225,7 +231,9 @@ export function Navbar() {
         <div className="flex items-center gap-2 md:hidden">
           {isAuthed && (
             <>
-              <NotificationBell />
+              <Suspense fallback={<div className="h-9 w-9" />}>
+                <NotificationBell />
+              </Suspense>
               <UserNav />
             </>
           )}
@@ -252,7 +260,7 @@ export function Navbar() {
                   </SheetHeader>
 
                   <nav className="flex flex-1 flex-col" aria-label="Mobile navigation">
-                    {/* Navigation rows — large tap targets, title + subtitle */}
+                    {/* Navigation rows - large tap targets, title + subtitle */}
                     <div className="flex flex-col">
                       {/* Campaigns → sub-view */}
                       <button
@@ -309,7 +317,7 @@ export function Navbar() {
                       </SheetClose>
                     </div>
 
-                    {/* Bottom actions — pinned to bottom */}
+                    {/* Bottom actions - pinned to bottom */}
                     <div className="mt-auto space-y-3 px-6 pb-6 pt-6">
                       <SheetClose asChild>
                         <Link

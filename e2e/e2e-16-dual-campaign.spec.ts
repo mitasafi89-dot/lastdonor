@@ -17,7 +17,7 @@ test.describe('E2E-16: Dual Campaign Indistinguishability', () => {
     // Should render at least one campaign card (seed or real)
     const cards = page.locator('article');
     const count = await cards.count();
-    test.skip(count === 0, 'No campaigns in database — skipping dual campaign tests');
+    test.skip(count === 0, 'No campaigns in database - skipping dual campaign tests');
 
     // Each card should have a link to the campaign detail
     const firstLink = cards.first().locator('a').first();

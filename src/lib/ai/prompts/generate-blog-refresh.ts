@@ -1,5 +1,5 @@
 /**
- * Blog Refresh Prompt — AI prompt for refreshing outdated blog content.
+ * Blog Refresh Prompt - AI prompt for refreshing outdated blog content.
  * Used by the weekly content refresh cron job.
  */
 

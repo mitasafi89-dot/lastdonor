@@ -1,60 +1,73 @@
+'use client';
+
+import { motion } from 'motion/react';
+import { fadeInUp } from '@/lib/animations';
 import {
   CurrencyDollarIcon,
   ShieldCheckIcon,
-  PhoneIcon,
-  HeartIcon,
-} from '@heroicons/react/24/outline';
+  EyeIcon,
+} from '@heroicons/react/24/solid';
 
-interface TrustBarProps {
-  totalDonors: number;
-}
-
-const trustItems = [
+/**
+ * Trust Bar: Three data-driven proof points beneath the hero.
+ * Psychology: Each metric pre-empts a specific donor objection:
+ * - "Will they take a cut?" -> 0% Fees
+ * - "Is this a scam?" -> Verified by humans
+ * - "Where does my money go?" -> Full tracking
+ */
+const proofPoints = [
   {
     icon: CurrencyDollarIcon,
-    title: '0% Fees',
-    description: 'Every cent goes to the cause',
+    label: '0% Platform Fees.',
+    sublabel: 'Every cent reaches the cause.',
+    tint: 'bg-brand-amber/10 text-brand-amber ring-brand-amber/20',
   },
   {
     icon: ShieldCheckIcon,
-    title: 'Verified Campaigns',
-    description: 'Human-audited before going live',
+    label: '100% Human Verified.',
+    sublabel: 'Reviewed before going live.',
+    tint: 'bg-brand-teal/10 text-brand-teal ring-brand-teal/20',
   },
   {
-    icon: PhoneIcon,
-    title: 'Real Support',
-    description: 'Talk to a person, not a bot',
+    icon: EyeIcon,
+    label: 'Verified Impact Updates.',
+    sublabel: 'Photos, receipts, transparency.',
+    tint: 'bg-brand-green/10 text-brand-green ring-brand-green/20',
   },
 ];
 
-export function TrustBar({ totalDonors }: TrustBarProps) {
+export function TrustBar() {
   return (
-    <section className="border-y border-border bg-muted/50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        <div className="grid grid-cols-2 gap-6 sm:gap-8 lg:grid-cols-4">
-          {trustItems.map((item) => (
-            <div key={item.title} className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                <item.icon className="h-5 w-5 text-primary" />
+    <section
+      className="border-t border-border bg-background"
+      aria-label="Platform trust indicators"
+    >
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-20px' }}
+          variants={fadeInUp}
+          className="flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-evenly sm:gap-0"
+        >
+          {proofPoints.map((point) => (
+            <div key={point.label} className="flex items-center gap-4">
+              <div
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ring-1 ${point.tint}`}
+              >
+                <point.icon className="h-5 w-5" aria-hidden="true" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">{item.description}</p>
+                <p className="text-sm font-bold text-foreground">
+                  {point.label}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {point.sublabel}
+                </p>
               </div>
             </div>
           ))}
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-              <HeartIcon className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                <span className="font-mono">{totalDonors.toLocaleString('en-US')}</span> Donors
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">And counting every day</p>
-            </div>
-          </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

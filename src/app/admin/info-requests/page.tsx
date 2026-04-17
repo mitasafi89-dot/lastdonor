@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { InfoRequestsDashboard } from '@/components/admin/InfoRequestsDashboard';
 
 export const metadata: Metadata = {
-  title: 'Info Requests — Admin — LastDonor.org',
+  title: 'Info Requests - Admin - LastDonor.org',
   robots: { index: false },
 };
 

@@ -108,7 +108,7 @@ export function CampaignsList({ campaigns, statusCounts }: CampaignsListProps) {
       });
       const body = await res.json();
       if (!res.ok) {
-        setActionError(body?.error?.message ?? 'Failed to change status');
+        setActionError(body?.error?.code === 'VALIDATION_ERROR' ? (body?.error?.message ?? 'Failed to change status') : 'Failed to change status');
         return;
       }
       setStatusTarget(null);
@@ -128,7 +128,7 @@ export function CampaignsList({ campaigns, statusCounts }: CampaignsListProps) {
       });
       const body = await res.json();
       if (!res.ok) {
-        setActionError(body?.error?.message ?? 'Failed to delete campaign');
+        setActionError(body?.error?.code === 'VALIDATION_ERROR' ? (body?.error?.message ?? 'Failed to delete campaign') : 'Failed to delete campaign');
         return;
       }
       setDeleteTarget(null);

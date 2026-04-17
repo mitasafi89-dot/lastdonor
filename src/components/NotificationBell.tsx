@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { BellIcon } from '@heroicons/react/24/outline';
@@ -37,27 +37,18 @@ interface Notification {
 
 // ─── Type → Icon mapping ────────────────────────────────────────────────────
 
-const TYPE_ICON: Record<string, React.ElementType> = {
-  donation_refunded:        ArrowPathIcon,
-  donation_refund_reversed: ArrowUturnLeftIcon,
-  campaign_completed:       CheckCircleIcon,
-  campaign_archived:        ArchiveBoxIcon,
-  campaign_status_changed:  ExclamationCircleIcon,
-  role_changed:             ShieldCheckIcon,
-  account_deleted:          TrashIcon,
-  campaign_submitted:       DocumentPlusIcon,
+const TYPE_CONFIG: Record<string, { icon: React.ElementType; color: string }> = {
+  donation_refunded:        { icon: ArrowPathIcon,        color: 'text-amber-500' },
+  donation_refund_reversed: { icon: ArrowUturnLeftIcon,   color: 'text-emerald-500' },
+  campaign_completed:       { icon: CheckCircleIcon,      color: 'text-emerald-500' },
+  campaign_archived:        { icon: ArchiveBoxIcon,       color: 'text-muted-foreground' },
+  campaign_status_changed:  { icon: ExclamationCircleIcon, color: 'text-amber-500' },
+  role_changed:             { icon: ShieldCheckIcon,      color: 'text-blue-500' },
+  account_deleted:          { icon: TrashIcon,            color: 'text-destructive' },
+  campaign_submitted:       { icon: DocumentPlusIcon,     color: 'text-blue-500' },
 };
 
-const TYPE_COLOR: Record<string, string> = {
-  donation_refunded:        'text-amber-500',
-  donation_refund_reversed: 'text-emerald-500',
-  campaign_completed:       'text-emerald-500',
-  campaign_archived:        'text-muted-foreground',
-  campaign_status_changed:  'text-amber-500',
-  role_changed:             'text-blue-500',
-  account_deleted:          'text-destructive',
-  campaign_submitted:       'text-blue-500',
-};
+const DEFAULT_TYPE_CONFIG = { icon: InformationCircleIcon, color: 'text-muted-foreground' };
 
 // ─── Timestamp ──────────────────────────────────────────────────────────────
 
@@ -74,88 +65,151 @@ function timeAgo(dateStr: string): string {
   return `${weeks}w ago`;
 }
 
+// ─── Module-level singleton store ───────────────────────────────────────────
+// Ensures only ONE polling loop runs even if multiple <NotificationBell />
+// instances are mounted (e.g. desktop + mobile nav).
+
+interface NotifState {
+  notifications: Notification[];
+  unreadCount: number;
+}
+
+let _state: NotifState = { notifications: [], unreadCount: 0 };
+const _listeners = new Set<() => void>();
+let _intervalId: ReturnType<typeof setInterval> | null = null;
+let _subscriberCount = 0;
+let _prevUnread = -1; // -1 sentinel: don't chime on first load
+let _lastFetchTs = 0;
+
+function _emit() {
+  _listeners.forEach((l) => l());
+}
+
+function _setState(next: NotifState) {
+  _state = next;
+  _emit();
+}
+
+async function _fetchNotifications() {
+  try {
+    const res = await fetch('/api/v1/notifications?limit=30');
+    if (!res.ok) return;
+    const json = await res.json();
+    if (json.ok) {
+      const newCount = json.data.unreadCount as number;
+      if (newCount > _prevUnread && _prevUnread !== -1) {
+        playNotificationSound();
+      }
+      _prevUnread = newCount;
+      _lastFetchTs = Date.now();
+      _setState({
+        notifications: json.data.notifications,
+        unreadCount: newCount,
+      });
+    }
+  } catch {
+    // Silently fail
+  }
+}
+
+function _startPolling() {
+  if (_intervalId) return;
+  _fetchNotifications();
+  _intervalId = setInterval(_fetchNotifications, 60_000);
+}
+
+function _stopPolling() {
+  if (_intervalId) {
+    clearInterval(_intervalId);
+    _intervalId = null;
+  }
+}
+
+function _subscribe(listener: () => void) {
+  _listeners.add(listener);
+  _subscriberCount++;
+  if (_subscriberCount === 1) _startPolling();
+  return () => {
+    _listeners.delete(listener);
+    _subscriberCount--;
+    if (_subscriberCount === 0) _stopPolling();
+  };
+}
+
+function _getSnapshot() {
+  return _state;
+}
+
+function _refreshIfStale() {
+  if (Date.now() - _lastFetchTs > 10_000) {
+    _fetchNotifications();
+  }
+}
+
+function _markAsRead(id: string) {
+  _setState({
+    ..._state,
+    notifications: _state.notifications.map((n) =>
+      n.id === id ? { ...n, read: true } : n,
+    ),
+    unreadCount: Math.max(0, _state.unreadCount - 1),
+  });
+  _prevUnread = Math.max(0, _state.unreadCount);
+  fetch('/api/v1/notifications', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids: [id] }),
+  }).catch(() => {});
+}
+
+function _markAllRead() {
+  _setState({
+    ..._state,
+    notifications: _state.notifications.map((n) => ({ ...n, read: true })),
+    unreadCount: 0,
+  });
+  _prevUnread = 0;
+  fetch('/api/v1/notifications', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ markAllRead: true }),
+  }).catch(() => {});
+}
+
+function _clearAll() {
+  _setState({ notifications: [], unreadCount: 0 });
+  _prevUnread = 0;
+  fetch('/api/v1/notifications', { method: 'DELETE' }).catch(() => {});
+}
+
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export function NotificationBell() {
   const { status } = useSession();
   const router = useRouter();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
-  const prevUnreadRef = useRef(-1); // -1 sentinel: don't chime on first load
 
-  const fetchNotifications = useCallback(async () => {
-    try {
-      const res = await fetch('/api/v1/notifications?limit=30');
-      if (!res.ok) return;
-      const json = await res.json();
-      if (json.ok) {
-        setNotifications(json.data.notifications);
-        const newCount = json.data.unreadCount as number;
+  // Subscribe to the shared notification store (singleton polling)
+  const { notifications, unreadCount } = useSyncExternalStore(
+    _subscribe,
+    _getSnapshot,
+    _getSnapshot,
+  );
 
-        // Play sound when new notifications arrive (not on first load)
-        if (newCount > prevUnreadRef.current && prevUnreadRef.current !== -1) {
-          playNotificationSound();
-        }
-        prevUnreadRef.current = newCount;
-        setUnreadCount(newCount);
-      }
-    } catch {
-      // Silently fail — non-critical UI
+  // Start/stop polling based on auth status
+  useEffect(() => {
+    if (status !== 'authenticated') {
+      _stopPolling();
     }
-  }, []);
+  }, [status]);
 
-  // Poll every 30s
+  // Refresh on popover open if stale
   useEffect(() => {
-    if (status !== 'authenticated') return;
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30_000);
-    return () => clearInterval(interval);
-  }, [status, fetchNotifications]);
-
-  // Refresh when popover opens
-  useEffect(() => {
-    if (open) fetchNotifications();
-  }, [open, fetchNotifications]);
-
-  const markAsRead = async (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    );
-    setUnreadCount((c) => {
-      const next = Math.max(0, c - 1);
-      prevUnreadRef.current = next;
-      return next;
-    });
-    await fetch('/api/v1/notifications', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids: [id] }),
-    }).catch(() => {});
-  };
-
-  const markAllRead = async () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    setUnreadCount(0);
-    prevUnreadRef.current = 0;
-    await fetch('/api/v1/notifications', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ markAllRead: true }),
-    }).catch(() => {});
-  };
-
-  const clearAll = async () => {
-    setNotifications([]);
-    setUnreadCount(0);
-    prevUnreadRef.current = 0;
-    await fetch('/api/v1/notifications', {
-      method: 'DELETE',
-    }).catch(() => {});
-  };
+    if (open) _refreshIfStale();
+  }, [open]);
 
   const handleNotificationClick = (n: Notification) => {
-    if (!n.read) markAsRead(n.id);
+    if (!n.read) _markAsRead(n.id);
     if (n.link) {
       setOpen(false);
       router.push(n.link);
@@ -189,7 +243,7 @@ export function NotificationBell() {
             {unreadCount > 0 && (
               <button
                 type="button"
-                onClick={markAllRead}
+                onClick={_markAllRead}
                 className="text-xs font-medium text-primary transition-colors hover:text-primary/80"
               >
                 Mark all as read
@@ -198,7 +252,7 @@ export function NotificationBell() {
             {notifications.length > 0 && (
               <button
                 type="button"
-                onClick={clearAll}
+                onClick={_clearAll}
                 className="text-xs font-medium text-muted-foreground transition-colors hover:text-destructive"
               >
                 Clear
@@ -217,8 +271,7 @@ export function NotificationBell() {
             </div>
           ) : (
             notifications.map((n) => {
-              const Icon = TYPE_ICON[n.type] ?? InformationCircleIcon;
-              const iconColor = TYPE_COLOR[n.type] ?? 'text-muted-foreground';
+              const { icon: Icon, color: iconColor } = TYPE_CONFIG[n.type] ?? DEFAULT_TYPE_CONFIG;
 
               return (
                 <button

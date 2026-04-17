@@ -7,12 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
-  BanknotesIcon,
-  CheckCircleIcon,
-  ClockIcon,
   ExclamationTriangleIcon,
-  ArrowTopRightOnSquareIcon,
-  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -51,6 +46,7 @@ interface PayoutSettingsProps {
   connectStatus: ConnectStatus;
   campaigns: CampaignBalance[];
   withdrawals: Withdrawal[];
+  connectAvailable: boolean;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────
@@ -73,13 +69,13 @@ function formatDate(iso: string): string {
   });
 }
 
-const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof CheckCircleIcon }> = {
-  not_started: { label: 'Not Started', variant: 'outline', icon: ClockIcon },
-  onboarding_started: { label: 'Onboarding In Progress', variant: 'secondary', icon: ArrowPathIcon },
-  pending_verification: { label: 'Pending Verification', variant: 'secondary', icon: ClockIcon },
-  verified: { label: 'Verified', variant: 'default', icon: CheckCircleIcon },
-  restricted: { label: 'Restricted', variant: 'destructive', icon: ExclamationTriangleIcon },
-  rejected: { label: 'Rejected', variant: 'destructive', icon: ExclamationTriangleIcon },
+const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+  not_started: { label: 'Not Started', variant: 'outline' },
+  onboarding_started: { label: 'Onboarding In Progress', variant: 'secondary' },
+  pending_verification: { label: 'Pending Verification', variant: 'secondary' },
+  verified: { label: 'Verified', variant: 'default' },
+  restricted: { label: 'Pending Review', variant: 'secondary' },
+  rejected: { label: 'Needs Attention', variant: 'secondary' },
 };
 
 const WITHDRAWAL_STATUS_CONFIG: Record<string, { label: string; className: string }> = {
@@ -87,13 +83,13 @@ const WITHDRAWAL_STATUS_CONFIG: Record<string, { label: string; className: strin
   approved: { label: 'Approved', className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
   processing: { label: 'Processing', className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
   completed: { label: 'Completed', className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
-  rejected: { label: 'Rejected', className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
-  failed: { label: 'Failed', className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
+  rejected: { label: 'Needs Review', className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' },
+  failed: { label: 'Unsuccessful', className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
 };
 
 // ─── Component ───────────────────────────────────────────────────────
 
-export function PayoutSettingsClient({ connectStatus, campaigns, withdrawals }: PayoutSettingsProps) {
+export function PayoutSettingsClient({ connectStatus, campaigns, withdrawals, connectAvailable }: PayoutSettingsProps) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [withdrawAmounts, setWithdrawAmounts] = useState<Record<string, string>>({});
@@ -139,25 +135,6 @@ export function PayoutSettingsClient({ connectStatus, campaigns, withdrawals }: 
     }
   }, []);
 
-  const handleOpenDashboard = useCallback(async () => {
-    setLoading('dashboard');
-    try {
-      const res = await fetch('/api/v1/user/stripe-connect/dashboard', {
-        method: 'POST',
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error?.message ?? 'Failed to generate link');
-        return;
-      }
-      window.open(data.data.dashboardUrl, '_blank');
-    } catch {
-      toast.error('Something went wrong. Please try again.');
-    } finally {
-      setLoading(null);
-    }
-  }, []);
-
   const handleWithdraw = useCallback(async (campaignId: string) => {
     const amountStr = withdrawAmounts[campaignId];
     const dollars = parseFloat(amountStr);
@@ -190,7 +167,6 @@ export function PayoutSettingsClient({ connectStatus, campaigns, withdrawals }: 
   }, [withdrawAmounts, router]);
 
   const statusInfo = STATUS_CONFIG[connectStatus.status] ?? STATUS_CONFIG.not_started;
-  const StatusIcon = statusInfo.icon;
   const isVerified = connectStatus.status === 'verified';
 
   return (
@@ -198,7 +174,6 @@ export function PayoutSettingsClient({ connectStatus, campaigns, withdrawals }: 
       {/* Section 1: Account Setup / Status */}
       <section className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-950">
         <div className="flex items-center gap-3 mb-4">
-          <BanknotesIcon className="h-6 w-6 text-teal-600" />
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Payout Account
           </h2>
@@ -210,19 +185,36 @@ export function PayoutSettingsClient({ connectStatus, campaigns, withdrawals }: 
               Connect your bank account through Stripe to receive funds from your campaigns.
               Stripe handles identity verification, tax forms, and secure payouts.
             </p>
-            <Button
-              onClick={() => handleSetupAccount()}
-              disabled={loading === 'setup'}
-              className="bg-teal-700 hover:bg-teal-800"
-            >
-              {loading === 'setup' ? 'Setting up...' : 'Connect with Stripe'}
-            </Button>
+            {connectAvailable ? (
+              <Button
+                onClick={() => handleSetupAccount()}
+                disabled={loading === 'setup'}
+                className="bg-teal-700 hover:bg-teal-800"
+              >
+                {loading === 'setup' ? 'Setting up...' : 'Connect with Stripe'}
+              </Button>
+            ) : (
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/50 dark:bg-amber-900/20">
+                <div className="flex items-start gap-3">
+                  <ExclamationTriangleIcon className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                      Payouts are not available yet
+                    </p>
+                    <p className="mt-1 text-sm text-amber-700 dark:text-amber-400">
+                      Stripe Connect has not been activated on this platform.
+                      The platform administrator needs to complete the Connect platform profile
+                      in the Stripe Dashboard before campaign creators can receive payouts.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <Badge variant={statusInfo.variant} className="gap-1.5">
-                <StatusIcon className="h-3.5 w-3.5" />
+              <Badge variant={statusInfo.variant}>
                 {statusInfo.label}
               </Badge>
               {connectStatus.payoutCurrency && (
@@ -245,21 +237,10 @@ export function PayoutSettingsClient({ connectStatus, campaigns, withdrawals }: 
                   onClick={handleResumeOnboarding}
                   disabled={loading === 'onboarding'}
                 >
-                  <ArrowPathIcon className="h-4 w-4 mr-2" />
                   {connectStatus.status === 'restricted' ? 'Fix Account Issues' : connectStatus.status === 'pending_verification' ? 'Complete Verification' : 'Resume Onboarding'}
                 </Button>
               )}
 
-              {isVerified && (
-                <Button
-                  variant="outline"
-                  onClick={handleOpenDashboard}
-                  disabled={loading === 'dashboard'}
-                >
-                  <ArrowTopRightOnSquareIcon className="h-4 w-4 mr-2" />
-                  Stripe Dashboard
-                </Button>
-              )}
             </div>
           </div>
         )}
@@ -317,6 +298,7 @@ export function PayoutSettingsClient({ connectStatus, campaigns, withdrawals }: 
                           step="0.01"
                           max={campaign.availableBalance / 100}
                           placeholder="Amount"
+                          aria-label="Withdrawal amount"
                           value={withdrawAmounts[campaign.id] ?? ''}
                           onChange={(e) =>
                             setWithdrawAmounts((prev) => ({
@@ -403,8 +385,7 @@ export function PayoutSettingsClient({ connectStatus, campaigns, withdrawals }: 
       {/* Empty state */}
       {campaigns.length === 0 && (
         <section className="rounded-lg border border-dashed border-gray-300 p-8 text-center dark:border-gray-700">
-          <BanknotesIcon className="mx-auto h-10 w-10 text-gray-400" />
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             You don&apos;t have any campaigns yet. Create a campaign to start receiving funds.
           </p>
         </section>

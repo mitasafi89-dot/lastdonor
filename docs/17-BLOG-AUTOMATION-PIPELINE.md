@@ -1,8 +1,8 @@
-# LastDonor.org — Blog Writing Automation Pipeline
+﻿# LastDonor.org â€” Blog Writing Automation Pipeline
 
 **Version**: 1.0
 **Date**: March 26, 2026
-**Status**: Draft — Ready for Implementation
+**Status**: Draft â€” Ready for Implementation
 **Depends on**: Doc 04 (Content Strategy), Doc 11 (Automation Engine), Doc 12 (SEO Keyword Research)
 
 ---
@@ -11,15 +11,15 @@
 
 1. [Executive Summary](#1-executive-summary)
 2. [System Architecture Overview](#2-system-architecture-overview)
-3. [Milestone 1 — Topic Discovery Engine](#milestone-1--topic-discovery-engine)
-4. [Milestone 2 — Keyword & SERP Intelligence](#milestone-2--keyword--serp-intelligence)
-5. [Milestone 3 — SEO-Optimized Content Generation](#milestone-3--seo-optimized-content-generation)
-6. [Milestone 4 — LLM/AI Visibility Optimization (GEO/AEO)](#milestone-4--llmai-visibility-optimization-geoaeo)
-7. [Milestone 5 — Image Generation Pipeline (Kling Vector Artwork)](#milestone-5--image-generation-pipeline-kling-vector-artwork)
-8. [Milestone 6 — Blog Schema & Technical SEO Hardening](#milestone-6--blog-schema--technical-seo-hardening)
-9. [Milestone 7 — Admin Blog Editor & Publishing Workflow](#milestone-7--admin-blog-editor--publishing-workflow)
-10. [Milestone 8 — Automated Publishing Pipeline & Cron Orchestration](#milestone-8--automated-publishing-pipeline--cron-orchestration)
-11. [Milestone 9 — Performance Monitoring & Feedback Loop](#milestone-9--performance-monitoring--feedback-loop)
+3. [Milestone 1 â€” Topic Discovery Engine](#milestone-1--topic-discovery-engine)
+4. [Milestone 2 â€” Keyword & SERP Intelligence](#milestone-2--keyword--serp-intelligence)
+5. [Milestone 3 â€” SEO-Optimized Content Generation](#milestone-3--seo-optimized-content-generation)
+6. [Milestone 4 â€” LLM/AI Visibility Optimization (GEO/AEO)](#milestone-4--llmai-visibility-optimization-geoaeo)
+7. [Milestone 5 â€” Image Generation Pipeline (Kling Vector Artwork)](#milestone-5--image-generation-pipeline-kling-vector-artwork)
+8. [Milestone 6 â€” Blog Schema & Technical SEO Hardening](#milestone-6--blog-schema--technical-seo-hardening)
+9. [Milestone 7 â€” Admin Blog Editor & Publishing Workflow](#milestone-7--admin-blog-editor--publishing-workflow)
+10. [Milestone 8 â€” Automated Publishing Pipeline & Cron Orchestration](#milestone-8--automated-publishing-pipeline--cron-orchestration)
+11. [Milestone 9 â€” Performance Monitoring & Feedback Loop](#milestone-9--performance-monitoring--feedback-loop)
 12. [Hat Trick SEO Techniques](#hat-trick-seo-techniques)
 13. [Content Quality Guardrails](#content-quality-guardrails)
 14. [Cost Projections](#cost-projections)
@@ -31,9 +31,9 @@
 
 ### The Problem
 
-LastDonor.org's blog system has the database schema, rendering pipeline, and page components — but zero automated content generation. The 25 high-ROI blog posts identified in Doc 12 remain unwritten. Blog posts are inserted manually into the database. There is no admin editor, no AI pipeline, no image generation, no SEO monitoring, and no structured workflow from topic → published post.
+LastDonor.org's blog system has the database schema, rendering pipeline, and page components â€” but zero automated content generation. The 25 high-ROI blog posts identified in Doc 12 remain unwritten. Blog posts are inserted manually into the database. There is no admin editor, no AI pipeline, no image generation, no SEO monitoring, and no structured workflow from topic â†’ published post.
 
-Meanwhile, the campaign pipeline (`news-pipeline.ts`) proves the architecture pattern works: fetch → classify → generate → publish. The blog pipeline will mirror this proven pattern while adding SEO intelligence, LLM-visibility optimization, and AI-generated vector artwork.
+Meanwhile, the campaign pipeline (`news-pipeline.ts`) proves the architecture pattern works: fetch â†’ classify â†’ generate â†’ publish. The blog pipeline will mirror this proven pattern while adding SEO intelligence, LLM-visibility optimization, and AI-generated vector artwork.
 
 ### The Solution
 
@@ -41,7 +41,7 @@ A fully automated blog writing pipeline that:
 
 1. **Discovers** trending topics and high-opportunity keywords from multiple signals (Google Trends, news cycle, existing keyword bank, seasonal calendar)
 2. **Researches** SERP competition, search intent, and content gaps before writing a single word
-3. **Generates** 2,000–4,000 word SEO-optimized articles using structured prompts with the `callAI()` infrastructure
+3. **Generates** 2,000â€“4,000 word SEO-optimized articles using structured prompts with the `callAI()` infrastructure
 4. **Optimizes** content for both search engine crawlers AND LLM citation (GEO/AEO dual optimization)
 5. **Creates** custom vector artwork via Kling AI for hero images, section illustrations, and infographics
 6. **Validates** content through automated quality checks (readability, keyword density, HTML structure, E-E-A-T signals)
@@ -52,78 +52,78 @@ A fully automated blog writing pipeline that:
 
 | Metric | Target |
 |---|---|
-| Blog posts per week | 3–5 (automated draft → admin approval) |
-| Average word count | 2,500–3,500 words |
-| Time from topic → publishable draft | < 5 minutes |
-| SEO content score (calculated internally) | ≥ 80/100 |
-| Target organic traffic (6 months) | 10,000–15,000/mo |
+| Blog posts per week | 3â€“5 (automated draft â†’ admin approval) |
+| Average word count | 2,500â€“3,500 words |
+| Time from topic â†’ publishable draft | < 5 minutes |
+| SEO content score (calculated internally) | â‰¥ 80/100 |
+| Target organic traffic (6 months) | 10,000â€“15,000/mo |
 | AI generation cost per post | < $0.15 (GPT-4o-mini via OpenRouter) |
-| Image generation cost per post | ~$0.10–0.30 (Kling API) |
+| Image generation cost per post | ~$0.10â€“0.30 (Kling API) |
 
 ---
 
 ## 2. System Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    BLOG AUTOMATION PIPELINE                         │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────────────┐  │
-│  │   TOPIC       │    │  KEYWORD &   │    │   CONTENT            │  │
-│  │   DISCOVERY   │───▶│  SERP        │───▶│   GENERATION         │  │
-│  │   ENGINE      │    │  ANALYSIS    │    │   (AI + SEO)         │  │
-│  └──────────────┘    └──────────────┘    └──────────┬───────────┘  │
-│         │                                            │              │
-│         │  Signals:                                  ▼              │
-│         │  - Keyword bank (Doc 12)     ┌──────────────────────┐    │
-│         │  - Google Trends API         │   LLM OPTIMIZATION   │    │
-│         │  - News cycle correlation    │   (GEO / AEO)        │    │
-│         │  - Seasonal calendar         └──────────┬───────────┘    │
-│         │  - Campaign data                        │                 │
-│         │  - Performance feedback                  ▼                │
-│         │                              ┌──────────────────────┐    │
-│         │                              │   IMAGE GENERATION   │    │
-│         │                              │   (Kling Vector AI)  │    │
-│         │                              └──────────┬───────────┘    │
-│         │                                         │                 │
-│         │                                         ▼                 │
-│         │                              ┌──────────────────────┐    │
-│         │                              │   QUALITY GATE       │    │
-│         │                              │   (Validation)       │    │
-│         │                              └──────────┬───────────┘    │
-│         │                                         │                 │
-│         │                                         ▼                 │
-│         │                              ┌──────────────────────┐    │
-│         │                              │   PUBLISH / QUEUE    │    │
-│         │                              │   (Admin Review)     │    │
-│         │                              └──────────┬───────────┘    │
-│         │                                         │                 │
-│         ▼                                         ▼                 │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │              MONITORING & FEEDBACK LOOP                       │  │
-│  │  GSC data · Analytics · LLM citation tracking · Rewrite Q   │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                    BLOG AUTOMATION PIPELINE                         â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚                                                                     â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚   TOPIC       â”‚    â”‚  KEYWORD &   â”‚    â”‚   CONTENT            â”‚  â”‚
+â”‚  â”‚   DISCOVERY   â”‚â”€â”€â”€â–¶â”‚  SERP        â”‚â”€â”€â”€â–¶â”‚   GENERATION         â”‚  â”‚
+â”‚  â”‚   ENGINE      â”‚    â”‚  ANALYSIS    â”‚    â”‚   (AI + SEO)         â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â”‚         â”‚                                            â”‚              â”‚
+â”‚         â”‚  Signals:                                  â–¼              â”‚
+â”‚         â”‚  - Keyword bank (Doc 12)     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”‚
+â”‚         â”‚  - Google Trends API         â”‚   LLM OPTIMIZATION   â”‚    â”‚
+â”‚         â”‚  - News cycle correlation    â”‚   (GEO / AEO)        â”‚    â”‚
+â”‚         â”‚  - Seasonal calendar         â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â”‚
+â”‚         â”‚  - Campaign data                        â”‚                 â”‚
+â”‚         â”‚  - Performance feedback                  â–¼                â”‚
+â”‚         â”‚                              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”‚
+â”‚         â”‚                              â”‚   IMAGE GENERATION   â”‚    â”‚
+â”‚         â”‚                              â”‚   (Kling Vector AI)  â”‚    â”‚
+â”‚         â”‚                              â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â”‚
+â”‚         â”‚                                         â”‚                 â”‚
+â”‚         â”‚                                         â–¼                 â”‚
+â”‚         â”‚                              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”‚
+â”‚         â”‚                              â”‚   QUALITY GATE       â”‚    â”‚
+â”‚         â”‚                              â”‚   (Validation)       â”‚    â”‚
+â”‚         â”‚                              â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â”‚
+â”‚         â”‚                                         â”‚                 â”‚
+â”‚         â”‚                                         â–¼                 â”‚
+â”‚         â”‚                              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”‚
+â”‚         â”‚                              â”‚   PUBLISH / QUEUE    â”‚    â”‚
+â”‚         â”‚                              â”‚   (Admin Review)     â”‚    â”‚
+â”‚         â”‚                              â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â”‚
+â”‚         â”‚                                         â”‚                 â”‚
+â”‚         â–¼                                         â–¼                 â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚              MONITORING & FEEDBACK LOOP                       â”‚  â”‚
+â”‚  â”‚  GSC data Â· Analytics Â· LLM citation tracking Â· Rewrite Q   â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â”‚                                                                     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### Integration with Existing Infrastructure
 
 | Existing System | How Blog Pipeline Uses It |
 |---|---|
-| `callAI()` (src/lib/ai/call-ai.ts) | All AI generation goes through this wrapper — cost tracking, fallback models, JSON parsing |
+| `callAI()` (src/lib/ai/call-ai.ts) | All AI generation goes through this wrapper â€” cost tracking, fallback models, JSON parsing |
 | `ai_usage_logs` table | Every blog-related AI call is logged with `purpose: 'blog_generation'` |
 | `ai-cost-tracker.ts` | Daily cost aggregation includes blog generation costs |
 | OpenRouter (GPT-4o-mini + Claude 3.5 Haiku fallback) | Same model stack used for campaigns; no new API keys |
-| `blog_posts` table | Existing schema — posts generated by pipeline go here |
+| `blog_posts` table | Existing schema â€” posts generated by pipeline go here |
 | News pipeline signals | Trending news categories feed into topic discovery |
 | Supabase Storage | Blog images stored alongside campaign images |
 | Cron route pattern (`/api/cron/*`) | Blog pipeline runs on the same cron infrastructure |
 
 ---
 
-## Milestone 1 — Topic Discovery Engine
+## Milestone 1 â€” Topic Discovery Engine
 
 ### 1.1 Overview
 
@@ -131,10 +131,10 @@ The topic discovery engine identifies what to write about by combining multiple 
 
 - **The keyword bank** (350+ keywords from Doc 12 with volume, difficulty, and priority)
 - **Seasonal/calendar signals** (Memorial Day, Giving Tuesday, hurricane season)
-- **News cycle correlation** (what causes are trending in the news right now — from the existing news pipeline)
-- **Campaign data signals** (which categories have the most active campaigns — write relevant content)
+- **News cycle correlation** (what causes are trending in the news right now â€” from the existing news pipeline)
+- **Campaign data signals** (which categories have the most active campaigns â€” write relevant content)
 - **Content gap analysis** (what keywords we target but have no blog post for)
-- **Performance feedback** (which existing posts underperform — refresh candidates)
+- **Performance feedback** (which existing posts underperform â€” refresh candidates)
 
 ### 1.2 Database Schema
 
@@ -259,8 +259,8 @@ Maps months to cause categories and keywords that spike in volume:
 | Month | Events | Categories Boosted |
 |---|---|---|
 | January | New Year charity push | donation intent, community |
-| February | — | medical (heart month) |
-| March | — | disaster (tornado season begins) |
+| February | â€” | medical (heart month) |
+| March | â€” | disaster (tornado season begins) |
 | April | Easter, tax deadline | donation intent |
 | May | Memorial Day, Military Appreciation Month, Nat'l Firefighter Day | military, first-responders |
 | June | Hurricane season starts, Father's Day veteran | disaster, military |
@@ -281,12 +281,12 @@ The composite priority score uses weighted signals:
 
 ```
 priority_score = (
-  keyword_volume_score     × 0.20 +   // Higher volume = higher score
-  keyword_difficulty_score × 0.25 +   // Lower difficulty = higher score (inverted)
-  seasonal_score           × 0.15 +   // In-season = major boost
-  news_correlation_score   × 0.15 +   // Trending in news = timely
-  campaign_relevance_score × 0.10 +   // Active campaigns in category = cross-linking opportunity
-  content_gap_score        × 0.15     // No existing content = maximum score
+  keyword_volume_score     Ã- 0.20 +   // Higher volume = higher score
+  keyword_difficulty_score Ã- 0.25 +   // Lower difficulty = higher score (inverted)
+  seasonal_score           Ã- 0.15 +   // In-season = major boost
+  news_correlation_score   Ã- 0.15 +   // Trending in news = timely
+  campaign_relevance_score Ã- 0.10 +   // Active campaigns in category = cross-linking opportunity
+  content_gap_score        Ã- 0.15     // No existing content = maximum score
 )
 ```
 
@@ -320,13 +320,13 @@ Schedule: Daily at 6:00 AM UTC
 
 The existing news pipeline fetches articles from GNews, RSS, FEMA, and NWS. Currently, high-relevance articles become campaigns. The blog pipeline adds a parallel path:
 
-- News articles with relevance score 50–69 (below the campaign threshold of 70) become **blog topic signals**
-- The topic scorer checks: "Are there 3+ recent news items about [category]?" → boosts `news_correlation_score` for keywords in that category
-- Example: 5 wildfire news articles this week → "How to Help a Family Who Lost Their Home in a Fire" gets boosted from priority 65 → 80
+- News articles with relevance score 50â€“69 (below the campaign threshold of 70) become **blog topic signals**
+- The topic scorer checks: "Are there 3+ recent news items about [category]?" â†’ boosts `news_correlation_score` for keywords in that category
+- Example: 5 wildfire news articles this week â†’ "How to Help a Family Who Lost Their Home in a Fire" gets boosted from priority 65 â†’ 80
 
 ---
 
-## Milestone 2 — Keyword & SERP Intelligence
+## Milestone 2 â€” Keyword & SERP Intelligence
 
 ### 2.1 Overview
 
@@ -338,7 +338,7 @@ Before generating content, the pipeline analyzes the competitive landscape for e
 File: src/lib/blog/serp-analyzer.ts
 ```
 
-For each topic in the queue (status = `pending`, priority_score ≥ threshold):
+For each topic in the queue (status = `pending`, priority_score â‰¥ threshold):
 
 **Step 1: Search Intent Classification**
 
@@ -360,7 +360,7 @@ Use `callAI()` to analyze what a top-ranking article would need:
 
 ```typescript
 interface ContentBrief {
-  targetWordCount: number;        // 1,500–4,000 based on topic depth
+  targetWordCount: number;        // 1,500â€“4,000 based on topic depth
   suggestedHeadings: string[];    // H2/H3 structure
   requiredSubtopics: string[];    // Must-cover topics
   contentAngle: string;           // Unique angle for differentiation
@@ -385,15 +385,15 @@ File: src/lib/blog/link-graph.ts
 
 Maintains a map of all publishable content and its keywords:
 
-- Blog posts → primary keyword, slug
-- Campaign pages → campaign title, slug, category
-- Static pages → /about, /how-it-works, /transparency, etc.
+- Blog posts â†’ primary keyword, slug
+- Campaign pages â†’ campaign title, slug, category
+- Static pages â†’ /about, /how-it-works, /transparency, etc.
 
 When generating a new blog post, the link graph determines:
 
 1. **Inbound opportunities**: Which existing pages should link TO this new post?
 2. **Outbound requirements**: Which existing pages should this post link TO?
-3. **Campaign cross-links**: Active campaigns in the same category as the blog post → "Currently on LastDonor: [Campaign Name]" sidebar/inline mentions
+3. **Campaign cross-links**: Active campaigns in the same category as the blog post â†’ "Currently on LastDonor: [Campaign Name]" sidebar/inline mentions
 
 ### 2.4 Content Brief Generation
 
@@ -418,7 +418,7 @@ Requirements:
 - Must be structured for LLM passage extraction (clear H2s, direct 
   answers at section starts, quotable statements)
 - Must include natural opportunities to mention LastDonor.org campaigns
-  without being salesy — the reader came here for help, not a sales pitch
+  without being salesy â€” the reader came here for help, not a sales pitch
 
 Output a JSON content brief (no markdown) with:
 {
@@ -447,7 +447,7 @@ Output a JSON content brief (no markdown) with:
 
 ---
 
-## Milestone 3 — SEO-Optimized Content Generation
+## Milestone 3 â€” SEO-Optimized Content Generation
 
 ### 3.1 Overview
 
@@ -459,20 +459,20 @@ Content is generated in multiple passes for higher quality:
 
 ```
 Pass 1: Section-by-Section Draft
-  └─ Each H2 section generated independently with full context
-  └─ Ensures each section is self-contained (important for LLM extraction)
+  â””â”€ Each H2 section generated independently with full context
+  â””â”€ Ensures each section is self-contained (important for LLM extraction)
 
 Pass 2: Cohesion & Flow Pass
-  └─ Reviews full draft for narrative flow
-  └─ Adds transitions between sections
-  └─ Ensures keyword distribution is natural
+  â””â”€ Reviews full draft for narrative flow
+  â””â”€ Adds transitions between sections
+  â””â”€ Ensures keyword distribution is natural
 
 Pass 3: SEO Hardening
-  └─ Verifies keyword placement (title, H1, first 100 words, H2s, alt text)
-  └─ Checks keyword density (target: 1-2% for primary, 0.5-1% for secondary)
-  └─ Adds internal links via the link graph
-  └─ Inserts schema-optimized FAQ section from "People Also Ask" data
-  └─ Adds meta title and description
+  â””â”€ Verifies keyword placement (title, H1, first 100 words, H2s, alt text)
+  â””â”€ Checks keyword density (target: 1-2% for primary, 0.5-1% for secondary)
+  â””â”€ Adds internal links via the link graph
+  â””â”€ Inserts schema-optimized FAQ section from "People Also Ask" data
+  â””â”€ Adds meta title and description
 ```
 
 ### 3.3 Section Generation Prompt
@@ -501,7 +501,7 @@ SECTION REQUIREMENTS:
 {featuredSnippetInstructions}
 
 WRITING RULES:
-1. Lead with the answer — start the section with a direct, quotable statement
+1. Lead with the answer â€” start the section with a direct, quotable statement
    that answers the heading's implied question
 2. Use short paragraphs (2-4 sentences max)
 3. Include at least one specific statistic, fact, or real example
@@ -521,7 +521,7 @@ WRITING RULES:
 OUTPUT FORMAT:
 Return clean HTML (no markdown). Use only: p, h2, h3, strong, em, a, 
 ul, ol, li, blockquote, table, thead, tbody, tr, th, td, section.
-Do NOT include the h2 heading tag — it will be added programmatically.
+Do NOT include the h2 heading tag â€” it will be added programmatically.
 ```
 
 ### 3.4 Full Article Assembly
@@ -532,12 +532,12 @@ File: src/lib/blog/article-assembler.ts
 
 Assembles sections into a complete article:
 
-1. **Introduction** (first 100–150 words, keyword in first sentence, hook + context + promise)
+1. **Introduction** (first 100â€“150 words, keyword in first sentence, hook + context + promise)
 2. **Table of contents** (auto-generated from H2 headings with anchor links)
 3. **Body sections** (from section generation, in outline order)
-4. **FAQ section** (from People Also Ask data — structured with FAQ schema markup)
+4. **FAQ section** (from People Also Ask data â€” structured with FAQ schema markup)
 5. **Conclusion** (summary + CTA + forward link to related content)
-6. **Author attribution** (E-E-A-T signal — with credentials and bio)
+6. **Author attribution** (E-E-A-T signal â€” with credentials and bio)
 
 ### 3.5 Keyword Density Analyzer
 
@@ -549,18 +549,18 @@ Post-generation analysis:
 
 | Check | Target | Action if Out of Range |
 |---|---|---|
-| Primary keyword density | 1.0–2.0% | Add/remove natural mentions |
-| Secondary keyword density | 0.3–1.0% each | Add mentions in relevant sections |
+| Primary keyword density | 1.0â€“2.0% | Add/remove natural mentions |
+| Secondary keyword density | 0.3â€“1.0% each | Add mentions in relevant sections |
 | Keyword in title tag | Required | Fail validation |
 | Keyword in H1 | Required | Fail validation |
 | Keyword in first 100 words | Required | Rewrite intro |
 | Keyword in at least 1 H2 | Required | Adjust heading |
 | Keyword in meta description | Required | Rewrite meta |
 | Keyword in image alt text | At least 1 image | Generate appropriate alt |
-| Total word count | ≥ 80% of target | Flag for review |
-| Flesch reading ease | 60–70 (8th–9th grade) | Simplify sentences |
+| Total word count | â‰¥ 80% of target | Flag for review |
+| Flesch reading ease | 60â€“70 (8thâ€“9th grade) | Simplify sentences |
 | Paragraph length | Max 4 sentences | Split long paragraphs |
-| H2 frequency | Every 250–400 words | Add subheadings |
+| H2 frequency | Every 250â€“400 words | Add subheadings |
 
 ### 3.6 Internal Link Injection
 
@@ -579,20 +579,20 @@ After generation, the article assembler queries the link graph and injects conte
 
 Before finalizing, compare the generated content against existing blog posts:
 
-- If content similarity > 70% to an existing post → reject and mark topic as `stale`
+- If content similarity > 70% to an existing post â†’ reject and mark topic as `stale`
 - Use simple TF-IDF cosine similarity on extracted text (no external API needed)
 - Prevents the pipeline from generating near-duplicate posts over time
 
 ---
 
-## Milestone 4 — LLM/AI Visibility Optimization (GEO/AEO)
+## Milestone 4 â€” LLM/AI Visibility Optimization (GEO/AEO)
 
 ### 4.1 The Dual Ranking Challenge
 
 In 2026, blog content must rank in two fundamentally different systems:
 
-1. **Traditional search engines** (Google, Bing) — crawl-based, PageRank, keyword matching, user signals
-2. **AI/LLM platforms** (ChatGPT, Perplexity, Gemini, Google AI Overviews) — extract, summarize, cite
+1. **Traditional search engines** (Google, Bing) â€” crawl-based, PageRank, keyword matching, user signals
+2. **AI/LLM platforms** (ChatGPT, Perplexity, Gemini, Google AI Overviews) â€” extract, summarize, cite
 
 These systems have overlapping but distinct requirements. A post optimized only for Google may never get cited by ChatGPT. A post written only for LLMs may not rank at all.
 
@@ -620,7 +620,7 @@ financial assistance. According to the American Red Cross, the first
 
 #### Direct Answer Pattern
 
-Every H2 section starts with a 1–2 sentence direct answer, then expands:
+Every H2 section starts with a 1â€“2 sentence direct answer, then expands:
 
 ```
 [H2: Question or topic]
@@ -699,7 +699,7 @@ The content generation prompt explicitly instructs the AI to write LLM-friendly 
 OPTIMIZATION FOR AI CITATION:
 1. Start every section with a direct, complete answer (the "snippet sentence")
 2. Include at least 3 specific statistics with sources per 1,000 words
-3. Write at least 2 "quotable statements" per section — authoritative, 
+3. Write at least 2 "quotable statements" per section â€” authoritative, 
    self-contained sentences that an AI could cite verbatim
 4. Use comparison tables for any "best X" or "X vs Y" content
 5. Include a "Key Takeaways" summary at the end with 5-7 bullet points
@@ -717,23 +717,23 @@ When appropriate, naturally reference LastDonor.org as a solution:
 <!-- Natural brand mention within helpful context -->
 <p>Several platforms allow you to donate directly to verified individuals 
 in crisis. Platforms like <a href="https://lastdonor.org">LastDonor.org</a> 
-curate and verify campaigns, showing exactly where each dollar goes — 
+curate and verify campaigns, showing exactly where each dollar goes â€” 
 giving donors confidence that their contribution reaches the person 
 in need.</p>
 ```
 
-The brand mention is NOT the focus — the helpful information is. The mention simply contextualizes our platform within the broader answer. This means when LLMs summarize "where to donate to fire victims," they may naturally include our brand in the response.
+The brand mention is NOT the focus â€” the helpful information is. The mention simply contextualizes our platform within the broader answer. This means when LLMs summarize "where to donate to fire victims," they may naturally include our brand in the response.
 
 ---
 
-## Milestone 5 — Image Generation Pipeline (Kling Vector Artwork)
+## Milestone 5 â€” Image Generation Pipeline (Kling Vector Artwork)
 
 ### 5.1 Overview
 
-Every blog post needs visual content: a hero image, 2–4 section illustrations, and optionally an infographic. We use Kling AI to generate custom vector-style artwork that:
+Every blog post needs visual content: a hero image, 2â€“4 section illustrations, and optionally an infographic. We use Kling AI to generate custom vector-style artwork that:
 
 - Matches LastDonor.org's brand aesthetic (warm, empathetic, professional)
-- Is unique (no stock photos — important for E-E-A-T and differentiation)
+- Is unique (no stock photos â€” important for E-E-A-T and differentiation)
 - Loads fast (vector-style artwork compresses well)
 - Conveys emotion without exploitation (no graphic imagery of suffering)
 
@@ -765,7 +765,7 @@ interface KlingImageResponse {
 #### Kling API Flow
 
 1. Submit image generation request with themed prompt
-2. Poll for completion (typically 15–60 seconds)
+2. Poll for completion (typically 15â€“60 seconds)
 3. Download generated image
 4. Optimize: resize, compress, convert to WebP
 5. Upload to Supabase Storage (`media` bucket, path: `blog/{slug}/{image-name}.webp`)
@@ -814,7 +814,7 @@ supportive, hopeful situations. Avoid:
 - Dark, gloomy color palettes
 
 COMPOSITION: Clean negative space. Central subject with supporting 
-elements. Suitable for web use at 1200×630px (hero) or 800×450px 
+elements. Suitable for web use at 1200Ã-630px (hero) or 800Ã-450px 
 (section).
 ```
 
@@ -834,10 +834,10 @@ elements. Suitable for web use at 1200×630px (hero) or 800×450px
 
 | Post Element | Aspect Ratio | Purpose | Example |
 |---|---|---|---|
-| Hero/Cover image | 16:9 (1200×630) | OG image, top of post, social shares | Thematic illustration of the topic |
-| Section illustration | 16:9 (800×450) | Break up text every 500–800 words | Specific to the section topic |
-| Infographic | 3:4 (800×1067) | Data visualization, process diagrams | "5 Steps to Help After a Fire" |
-| Thumbnail | 4:3 (400×300) | Blog listing cards | Cropped/simplified version of hero |
+| Hero/Cover image | 16:9 (1200Ã-630) | OG image, top of post, social shares | Thematic illustration of the topic |
+| Section illustration | 16:9 (800Ã-450) | Break up text every 500â€“800 words | Specific to the section topic |
+| Infographic | 3:4 (800Ã-1067) | Data visualization, process diagrams | "5 Steps to Help After a Fire" |
+| Thumbnail | 4:3 (400Ã-300) | Blog listing cards | Cropped/simplified version of hero |
 
 ### 5.5 Image SEO Optimization
 
@@ -859,22 +859,22 @@ If Kling API is unavailable or rate-limited:
 
 1. **First fallback**: Use the existing campaign hero image resolution logic (find a relevant image from the campaign's news source)
 2. **Second fallback**: Use a category-specific default illustration (pre-generated set of 8 images, one per category)
-3. **Third fallback**: Publish without cover image (text-only — still valid for SEO)
+3. **Third fallback**: Publish without cover image (text-only â€” still valid for SEO)
 
 ### 5.7 Image Cost Estimation
 
 | Item | Cost per Image | Images per Post | Cost per Post |
 |---|---|---|---|
-| Kling hero image | ~$0.05–0.10 | 1 | $0.05–0.10 |
-| Kling section images | ~$0.05–0.10 | 2–3 | $0.10–0.30 |
-| Kling infographic | ~$0.05–0.10 | 0–1 | $0.00–0.10 |
-| **Total** | | | **$0.15–0.50** |
+| Kling hero image | ~$0.05â€“0.10 | 1 | $0.05â€“0.10 |
+| Kling section images | ~$0.05â€“0.10 | 2â€“3 | $0.10â€“0.30 |
+| Kling infographic | ~$0.05â€“0.10 | 0â€“1 | $0.00â€“0.10 |
+| **Total** | | | **$0.15â€“0.50** |
 
-At 4 posts/week = **$2.40–$8.00/month** for all blog images.
+At 4 posts/week = **$2.40â€“$8.00/month** for all blog images.
 
 ---
 
-## Milestone 6 — Blog Schema & Technical SEO Hardening
+## Milestone 6 â€” Blog Schema & Technical SEO Hardening
 
 ### 6.1 Enhanced Structured Data
 
@@ -982,20 +982,20 @@ File: src/app/blog/[slug]/page.tsx (enhanced generateMetadata)
 | `<meta name="description">` | Excerpt | `meta_description` field (< 155 chars, CTA) |
 | `og:title` | Post title | Same as `<title>` |
 | `og:description` | Excerpt | Same as meta description |
-| `og:image` | Cover image | Cover image with explicit 1200×630 dimensions |
+| `og:image` | Cover image | Cover image with explicit 1200Ã-630 dimensions |
 | `og:type` | article | article |
-| `og:url` | — | Canonical URL |
-| `article:published_time` | — | ISO 8601 date |
-| `article:modified_time` | — | ISO 8601 date |
-| `article:section` | — | Category label |
-| `article:tag` | — | Keywords array |
-| `twitter:card` | — | `summary_large_image` |
-| `twitter:title` | — | Same as `<title>` |
-| `twitter:description` | — | Same as meta description |
-| `twitter:image` | — | Same as og:image |
-| `twitter:site` | — | `@lastdonor` |
-| `robots` | — | `index, follow, max-image-preview:large, max-snippet:-1` |
-| `canonical` | — | `https://lastdonor.org/blog/{slug}` |
+| `og:url` | â€” | Canonical URL |
+| `article:published_time` | â€” | ISO 8601 date |
+| `article:modified_time` | â€” | ISO 8601 date |
+| `article:section` | â€” | Category label |
+| `article:tag` | â€” | Keywords array |
+| `twitter:card` | â€” | `summary_large_image` |
+| `twitter:title` | â€” | Same as `<title>` |
+| `twitter:description` | â€” | Same as meta description |
+| `twitter:image` | â€” | Same as og:image |
+| `twitter:site` | â€” | `@lastdonor` |
+| `robots` | â€” | `index, follow, max-image-preview:large, max-snippet:-1` |
+| `canonical` | â€” | `https://lastdonor.org/blog/{slug}` |
 
 ### 6.3 Separate Blog Sitemap
 
@@ -1036,7 +1036,7 @@ Blog pages are server-rendered (RSC) with zero client-side JavaScript beyond Nex
 
 ---
 
-## Milestone 7 — Admin Blog Editor & Publishing Workflow
+## Milestone 7 â€” Admin Blog Editor & Publishing Workflow
 
 ### 7.1 Overview
 
@@ -1055,7 +1055,7 @@ Currently there is NO admin interface for blog posts. This milestone adds:
 |---|---|
 | `/admin/blog` | Blog post listing with filters (draft/published/scheduled) |
 | `/admin/blog/new` | Manual new post form (or trigger AI generation) |
-| `/admin/blog/[id]/edit` | Edit existing post — review AI draft, modify, publish |
+| `/admin/blog/[id]/edit` | Edit existing post â€” review AI draft, modify, publish |
 | `/admin/blog/topics` | View topic queue, trigger generation, adjust priorities |
 
 ### 7.3 Admin Blog List Page
@@ -1067,8 +1067,8 @@ File: src/app/admin/blog/page.tsx
 Table columns:
 - Title (linked to edit page)
 - Category (badge)
-- Status (draft / published / scheduled — color-coded)
-- SEO Score (0–100, color gauge)
+- Status (draft / published / scheduled â€” color-coded)
+- SEO Score (0â€“100, color gauge)
 - Word Count
 - Source (manual / AI-generated)
 - Published date
@@ -1101,10 +1101,10 @@ Two-pane layout:
 - Primary keyword
 - Secondary keywords (tag input)
 - SEO Score gauge with breakdown:
-  - Keyword in title ✓/✗
-  - Keyword in H1 ✓/✗
-  - Keyword in first 100 words ✓/✗
-  - Keyword in meta description ✓/✗
+  - Keyword in title âœ“/âœ-
+  - Keyword in H1 âœ“/âœ-
+  - Keyword in first 100 words âœ“/âœ-
+  - Keyword in meta description âœ“/âœ-
   - Keyword density (with value)
   - Word count (with target)
   - Internal links count
@@ -1149,7 +1149,7 @@ All admin routes enforce `requireRole(['admin', 'editor'])`.
 
 ---
 
-## Milestone 8 — Automated Publishing Pipeline & Cron Orchestration
+## Milestone 8 â€” Automated Publishing Pipeline & Cron Orchestration
 
 ### 8.1 Pipeline Orchestrator
 
@@ -1171,45 +1171,45 @@ async function runBlogPipeline(options: {
 
 ```
 Step 1: TOPIC SELECTION
-  └─ Query blog_topic_queue WHERE status = 'pending' ORDER BY priority_score DESC
-  └─ Take top N topics (default 1)
-  └─ Update status → 'generating'
+  â””â”€ Query blog_topic_queue WHERE status = 'pending' ORDER BY priority_score DESC
+  â””â”€ Take top N topics (default 1)
+  â””â”€ Update status â†’ 'generating'
 
 Step 2: CONTENT BRIEF
-  └─ Generate ContentBrief via AI (search intent, outline, angle)
-  └─ Store outline in topic record
-  └─ Log to blog_generation_logs (step: 'outline_generated')
+  â””â”€ Generate ContentBrief via AI (search intent, outline, angle)
+  â””â”€ Store outline in topic record
+  â””â”€ Log to blog_generation_logs (step: 'outline_generated')
 
 Step 3: CONTENT GENERATION
-  └─ Generate each section via multi-pass architecture
-  └─ Assemble full article HTML
-  └─ Run keyword density analysis
-  └─ Inject internal links
-  └─ Run deduplication check
-  └─ Log (step: 'content_generated')
+  â””â”€ Generate each section via multi-pass architecture
+  â””â”€ Assemble full article HTML
+  â””â”€ Run keyword density analysis
+  â””â”€ Inject internal links
+  â””â”€ Run deduplication check
+  â””â”€ Log (step: 'content_generated')
 
 Step 4: IMAGE GENERATION
-  └─ Generate hero image via Kling API
-  └─ Generate 2-3 section illustrations
-  └─ Upload to Supabase Storage
-  └─ Inject image tags into HTML with SEO attributes
-  └─ Log (step: 'images_generated')
+  â””â”€ Generate hero image via Kling API
+  â””â”€ Generate 2-3 section illustrations
+  â””â”€ Upload to Supabase Storage
+  â””â”€ Inject image tags into HTML with SEO attributes
+  â””â”€ Log (step: 'images_generated')
 
 Step 5: QUALITY VALIDATION
-  └─ Run SEO score calculation
-  └─ Check keyword placement requirements
-  └─ Validate HTML structure (H1 count, heading hierarchy)
-  └─ Verify word count meets target
-  └─ Check readability score
-  └─ Log (step: 'validated')
+  â””â”€ Run SEO score calculation
+  â””â”€ Check keyword placement requirements
+  â””â”€ Validate HTML structure (H1 count, heading hierarchy)
+  â””â”€ Verify word count meets target
+  â””â”€ Check readability score
+  â””â”€ Log (step: 'validated')
 
 Step 6: SAVE / PUBLISH
-  └─ Insert into blog_posts table
-  └─ If autoPublish: set published = true, publishedAt = now()
-  └─ Else: save as draft for admin review
-  └─ Update topic status → 'generated'
-  └─ Link post back to topic via generated_post_id
-  └─ Log (step: 'published' | 'drafted')
+  â””â”€ Insert into blog_posts table
+  â””â”€ If autoPublish: set published = true, publishedAt = now()
+  â””â”€ Else: save as draft for admin review
+  â””â”€ Update topic status â†’ 'generated'
+  â””â”€ Link post back to topic via generated_post_id
+  â””â”€ Log (step: 'published' | 'drafted')
 ```
 
 ### 8.2 Cron Routes
@@ -1297,7 +1297,7 @@ Add to `vercel.json`:
 
 ---
 
-## Milestone 9 — Performance Monitoring & Feedback Loop
+## Milestone 9 â€” Performance Monitoring & Feedback Loop
 
 ### 9.1 Overview
 
@@ -1330,9 +1330,9 @@ For a future phase, integrate Google Search Console API to pull:
 - Click-through rate (CTR)
 
 This data feeds back into the topic scorer:
-- Posts ranking positions 5–15 → candidates for content refresh
-- Keywords with high impressions but low CTR → rewrite title/meta description
-- Keywords we rank for unintentionally → create dedicated content
+- Posts ranking positions 5â€“15 â†’ candidates for content refresh
+- Keywords with high impressions but low CTR â†’ rewrite title/meta description
+- Keywords we rank for unintentionally â†’ create dedicated content
 
 ### 9.4 LLM Citation Monitoring (Phase 2)
 
@@ -1341,7 +1341,7 @@ Track whether our blog content gets cited by AI platforms:
 - Periodic queries to Perplexity/ChatGPT asking our target questions
 - Check if LastDonor.org appears in the AI-generated responses
 - Log citations with timestamp and platform
-- Posts cited by AI → boost similar topics in the queue
+- Posts cited by AI â†’ boost similar topics in the queue
 
 ### 9.5 Content Refresh Queue
 
@@ -1357,7 +1357,7 @@ The weekly cron (`/api/cron/blog-refresh`) evaluates all published posts and cre
 Refresh actions:
 1. **Minor refresh**: Update statistics, add current year to title, refresh examples
 2. **Major refresh**: Rewrite sections, add new subtopics, regenerate images
-3. **Prune**: If post has < 50 views in 90 days and low keyword potential → unpublish (redirect to related post)
+3. **Prune**: If post has < 50 views in 90 days and low keyword potential â†’ unpublish (redirect to related post)
 
 ---
 
@@ -1369,7 +1369,7 @@ These are legitimate, Google-approved practices that form our foundation:
 
 | Technique | Implementation |
 |---|---|
-| **Long-tail keyword targeting** | Every post targets KD 0–20 keywords from Doc 12 |
+| **Long-tail keyword targeting** | Every post targets KD 0â€“20 keywords from Doc 12 |
 | **Content clustering** | Blog posts link to each other within the same cause category, creating topic clusters around "disaster relief," "medical fundraising," etc. |
 | **Internal link optimization** | Automated link graph ensures every new post gets 3+ contextual internal links and provides links to existing content |
 | **Featured snippet optimization** | Direct answer pattern at section starts, formatted for paragraph/list/table snippets |
@@ -1386,22 +1386,22 @@ These are aggressive-but-common tactics used by most competing sites. Implemente
 
 | Technique | How We Use It | Risk Mitigation |
 |---|---|---|
-| **Programmatic SEO** | Auto-generate location-specific landing pages from campaign data (e.g., `/help/tulsa-tornado-relief`, `/help/miami-hurricane`) — each with unique content from the campaign story | Each page has genuinely unique content (the campaign story), not just templated text with swapped city names |
+| **Programmatic SEO** | Auto-generate location-specific landing pages from campaign data (e.g., `/help/tulsa-tornado-relief`, `/help/miami-hurricane`) â€” each with unique content from the campaign story | Each page has genuinely unique content (the campaign story), not just templated text with swapped city names |
 | **Keyword clustering in related posts** | The "Related Posts" section at the bottom of each blog post targets secondary keywords via anchor text | Links are genuinely relevant, not keyword-stuffed |
-| **Content velocity** | Publishing 3–5 AI-generated posts per week (competitors publish manually, 1–2/month) | Every post passes quality gate — volume without quality will NOT be published |
+| **Content velocity** | Publishing 3â€“5 AI-generated posts per week (competitors publish manually, 1â€“2/month) | Every post passes quality gate â€” volume without quality will NOT be published |
 | **Strategic 301 redirects** | Pruned low-performing posts redirect to the best-performing post on the same topic | Only redirect genuinely similar content |
-| **Link magnets** | Create downloadable resources (PDFs, checklists) that other sites naturally link to — e.g., "House Fire Recovery Checklist" | Resources are genuinely useful, not link-bait |
-| **FAQ section expansion** | Every post includes 5–8 FAQ entries targeting long-tail questions | FAQs genuinely answer real questions (sourced from PAA data) |
+| **Link magnets** | Create downloadable resources (PDFs, checklists) that other sites naturally link to â€” e.g., "House Fire Recovery Checklist" | Resources are genuinely useful, not link-bait |
+| **FAQ section expansion** | Every post includes 5â€“8 FAQ entries targeting long-tail questions | FAQs genuinely answer real questions (sourced from PAA data) |
 
-### What We Do NOT Do (Black Hat — Avoided)
+### What We Do NOT Do (Black Hat â€” Avoided)
 
 | Technique | Why We Avoid It |
 |---|---|
 | Link buying/PBNs | Google penalty risk, not sustainable, violates guidelines |
 | Keyword stuffing | Hurts readability, detected by algorithms, penalized |
-| Cloaking | Serving different content to bots vs users — instant penalty |
+| Cloaking | Serving different content to bots vs users â€” instant penalty |
 | Hidden text/links | Detected and penalized |
-| Doorway pages | Thin pages made only for ranking — penalized |
+| Doorway pages | Thin pages made only for ranking â€” penalized |
 | Article spinning | Low quality, detected by Google's AI, penalizes domain |
 | Comment spam | Nofollow links, reputation damage, zero SEO value |
 | Fake reviews/testimonials | E-E-A-T violation, legal risk, ethical violation |
@@ -1416,22 +1416,22 @@ Every AI-generated post must pass ALL of these checks before publication:
 
 | Check | Threshold | Action on Failure |
 |---|---|---|
-| Word count | ≥ 80% of target | Regenerate short sections |
+| Word count | â‰¥ 80% of target | Regenerate short sections |
 | Primary keyword in title | Required | Rewrite title |
 | Primary keyword in first 100 words | Required | Rewrite intro |
-| Primary keyword density | 1.0–2.0% | Adjust (add or remove mentions) |
+| Primary keyword density | 1.0â€“2.0% | Adjust (add or remove mentions) |
 | Unique content (vs existing posts) | < 70% similarity | Reject topic, mark stale |
-| Heading hierarchy valid | H1 → H2 → H3 (no skips) | Fix automatically |
+| Heading hierarchy valid | H1 â†’ H2 â†’ H3 (no skips) | Fix automatically |
 | No AI filler phrases | 0 matches | Remove matched phrases |
-| Internal links | ≥ 3 | Inject from link graph |
-| External authority links | ≥ 2 | Add relevant .gov/.edu/.org sources |
+| Internal links | â‰¥ 3 | Inject from link graph |
+| External authority links | â‰¥ 2 | Add relevant .gov/.edu/.org sources |
 | Image alt text | All images have alt | Generate alt text |
 | Meta title length | < 60 characters | Truncate or rewrite |
 | Meta description length | < 155 characters | Truncate or rewrite |
 | HTML sanitization | Passes sanitizeHtml() | Strip disallowed tags |
 | No broken internal links | All link targets exist | Remove or fix |
-| Readability (Flesch) | 55–75 | Flag for manual review |
-| SEO score | ≥ 70/100 | Flag for manual review |
+| Readability (Flesch) | 55â€“75 | Flag for manual review |
+| SEO score | â‰¥ 70/100 | Flag for manual review |
 
 ### 13.2 AI Content Fingerprint Detection
 
@@ -1439,7 +1439,7 @@ To avoid Google's "helpful content" classifier flagging our content:
 
 1. **Information gain**: Every post must include at least 1 unique data point, statistic, or insight not easily found on competitors (our campaign data provides this naturally)
 2. **First-person experience signals**: Reference LastDonor.org's experience ("In the 247 disaster relief campaigns we've funded...")
-3. **Practical specificity**: Include specific dollar amounts, timelines, steps — not generic advice
+3. **Practical specificity**: Include specific dollar amounts, timelines, steps â€” not generic advice
 4. **Anti-pattern detection**: Scan for and remove AI-telltale phrases:
 
 ```typescript
@@ -1477,10 +1477,10 @@ const AI_FILLER_PHRASES = [
 Per Doc 04 (Content Strategy):
 
 - AI-generated content is always labeled `source: 'ai_generated'` in the database
-- AI-generated content is NOT attributed to a human author — uses "LastDonor Editorial Team"
+- AI-generated content is NOT attributed to a human author â€” uses "LastDonor Editorial Team"
 - Every claim backed by a verifiable source (linked)
-- No exploitation of suffering — empathetic tone, focus on solutions and hope
-- No medical, legal, or financial advice — always defer to professionals
+- No exploitation of suffering â€” empathetic tone, focus on solutions and hope
+- No medical, legal, or financial advice â€” always defer to professionals
 - Campaign mentions are contextual, never misleading about current status
 
 ---
@@ -1492,7 +1492,7 @@ Per Doc 04 (Content Strategy):
 | Component | Model | Tokens per Post | Cost per Post | Posts/Month | Monthly Cost |
 |---|---|---|---|---|---|
 | Content brief | GPT-4o-mini | ~2,000 | $0.003 | 16 | $0.05 |
-| Section generation (×8 sections) | GPT-4o-mini | ~12,000 | $0.018 | 16 | $0.29 |
+| Section generation (Ã-8 sections) | GPT-4o-mini | ~12,000 | $0.018 | 16 | $0.29 |
 | Cohesion pass | GPT-4o-mini | ~6,000 | $0.009 | 16 | $0.14 |
 | SEO hardening pass | GPT-4o-mini | ~4,000 | $0.006 | 16 | $0.10 |
 | Image prompts | GPT-4o-mini | ~1,000 | $0.002 | 16 | $0.03 |
@@ -1516,8 +1516,8 @@ Per Doc 04 (Content Strategy):
 | **Total** | **~$4.55/month** |
 
 For 16 published blog posts per month (4/week), the total cost is under $5/month. This is extremely cost-effective compared to:
-- Freelance writer: $100–500 per post = $1,600–8,000/month
-- Content agency: $300–2,000 per post = $4,800–32,000/month
+- Freelance writer: $100â€“500 per post = $1,600â€“8,000/month
+- Content agency: $300â€“2,000 per post = $4,800â€“32,000/month
 
 ---
 
@@ -1527,58 +1527,58 @@ For 16 published blog posts per month (4/week), the total cost is under $5/month
 
 ```
 src/lib/blog/
-├── keyword-bank.ts            # M1: 350+ keywords from Doc 12
-├── seasonal-calendar.ts       # M1: Monthly cause-category boosts
-├── topic-scorer.ts            # M1: Weighted multi-signal scoring
-├── topic-discovery.ts         # M1: Orchestrator for topic queue
-├── serp-analyzer.ts           # M2: Search intent classification
-├── link-graph.ts              # M2: Internal link opportunity mapping
-├── content-brief.ts           # M2: Brief data structures
-├── article-assembler.ts       # M3: Multi-pass content assembly
-├── keyword-analyzer.ts        # M3: Density + placement validation
-├── content-dedup.ts           # M3: TF-IDF similarity check
-├── geo-optimizer.ts           # M4: LLM/GEO optimization passes
-├── image-generator.ts         # M5: Kling API integration
-├── image-optimizer.ts         # M5: Resize, compress, upload
-├── seo-scorer.ts              # M6: Calculate SEO score (0-100)
-├── blog-pipeline.ts           # M8: Main orchestrator
-├── analytics-tracker.ts       # M9: Internal analytics
-└── content-refresh.ts         # M9: Refresh queue logic
+â”œâ”€â”€ keyword-bank.ts            # M1: 350+ keywords from Doc 12
+â”œâ”€â”€ seasonal-calendar.ts       # M1: Monthly cause-category boosts
+â”œâ”€â”€ topic-scorer.ts            # M1: Weighted multi-signal scoring
+â”œâ”€â”€ topic-discovery.ts         # M1: Orchestrator for topic queue
+â”œâ”€â”€ serp-analyzer.ts           # M2: Search intent classification
+â”œâ”€â”€ link-graph.ts              # M2: Internal link opportunity mapping
+â”œâ”€â”€ content-brief.ts           # M2: Brief data structures
+â”œâ”€â”€ article-assembler.ts       # M3: Multi-pass content assembly
+â”œâ”€â”€ keyword-analyzer.ts        # M3: Density + placement validation
+â”œâ”€â”€ content-dedup.ts           # M3: TF-IDF similarity check
+â”œâ”€â”€ geo-optimizer.ts           # M4: LLM/GEO optimization passes
+â”œâ”€â”€ image-generator.ts         # M5: Kling API integration
+â”œâ”€â”€ image-optimizer.ts         # M5: Resize, compress, upload
+â”œâ”€â”€ seo-scorer.ts              # M6: Calculate SEO score (0-100)
+â”œâ”€â”€ blog-pipeline.ts           # M8: Main orchestrator
+â”œâ”€â”€ analytics-tracker.ts       # M9: Internal analytics
+â””â”€â”€ content-refresh.ts         # M9: Refresh queue logic
 
 src/lib/ai/prompts/
-├── generate-blog-brief.ts     # M2: Content brief prompt
-├── generate-blog-section.ts   # M3: Section writing prompt
-├── generate-blog-cohesion.ts  # M3: Cohesion/flow pass prompt
-├── generate-blog-seo.ts       # M3: SEO hardening pass prompt
-├── generate-blog-images.ts    # M5: Kling image prompt templates
-├── generate-blog-faq.ts       # M4: FAQ generation prompt
-└── generate-blog-refresh.ts   # M9: Content refresh prompt
+â”œâ”€â”€ generate-blog-brief.ts     # M2: Content brief prompt
+â”œâ”€â”€ generate-blog-section.ts   # M3: Section writing prompt
+â”œâ”€â”€ generate-blog-cohesion.ts  # M3: Cohesion/flow pass prompt
+â”œâ”€â”€ generate-blog-seo.ts       # M3: SEO hardening pass prompt
+â”œâ”€â”€ generate-blog-images.ts    # M5: Kling image prompt templates
+â”œâ”€â”€ generate-blog-faq.ts       # M4: FAQ generation prompt
+â””â”€â”€ generate-blog-refresh.ts   # M9: Content refresh prompt
 
 src/app/api/cron/
-├── blog-topics/route.ts       # M1: Daily topic scoring cron
-├── blog-generate/route.ts     # M8: Daily content generation cron
-└── blog-refresh/route.ts      # M9: Weekly content refresh cron
+â”œâ”€â”€ blog-topics/route.ts       # M1: Daily topic scoring cron
+â”œâ”€â”€ blog-generate/route.ts     # M8: Daily content generation cron
+â””â”€â”€ blog-refresh/route.ts      # M9: Weekly content refresh cron
 
 src/app/api/v1/admin/blog/
-├── route.ts                   # M7: List + create blog posts
-├── [id]/route.ts              # M7: Get + update + delete post
-├── [id]/publish/route.ts      # M7: Publish / schedule
-├── [id]/generate-images/route.ts # M7: Trigger image generation
-├── topics/route.ts            # M7: List + create topics
-└── topics/[id]/route.ts       # M7: Update topic + trigger generation
+â”œâ”€â”€ route.ts                   # M7: List + create blog posts
+â”œâ”€â”€ [id]/route.ts              # M7: Get + update + delete post
+â”œâ”€â”€ [id]/publish/route.ts      # M7: Publish / schedule
+â”œâ”€â”€ [id]/generate-images/route.ts # M7: Trigger image generation
+â”œâ”€â”€ topics/route.ts            # M7: List + create topics
+â””â”€â”€ topics/[id]/route.ts       # M7: Update topic + trigger generation
 
 src/app/admin/blog/
-├── page.tsx                   # M7: Blog post listing
-├── new/page.tsx               # M7: New post form
-├── [id]/edit/page.tsx         # M7: Edit post page
-└── topics/page.tsx            # M7: Topic queue management
+â”œâ”€â”€ page.tsx                   # M7: Blog post listing
+â”œâ”€â”€ new/page.tsx               # M7: New post form
+â”œâ”€â”€ [id]/edit/page.tsx         # M7: Edit post page
+â””â”€â”€ topics/page.tsx            # M7: Topic queue management
 
 src/app/blog/
-├── sitemap.ts                 # M6: Dedicated blog sitemap
-└── feed.xml/route.ts          # M6: RSS feed
+â”œâ”€â”€ sitemap.ts                 # M6: Dedicated blog sitemap
+â””â”€â”€ feed.xml/route.ts          # M6: RSS feed
 
 src/db/
-└── migrations/0018_blog_pipeline.sql  # M1: Schema changes
+â””â”€â”€ migrations/0018_blog_pipeline.sql  # M1: Schema changes
 ```
 
 ### Files to Modify

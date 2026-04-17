@@ -8,7 +8,7 @@ import { refreshDonorScore } from '@/lib/donor-scoring.server';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'User Detail — Admin — LastDonor.org',
+  title: 'User Detail - Admin - LastDonor.org',
   robots: { index: false },
 };
 

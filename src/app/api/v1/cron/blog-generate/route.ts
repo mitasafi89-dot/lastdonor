@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { runBlogPipeline } from '@/lib/blog/blog-pipeline';
 import { db } from '@/db';
 import { auditLogs } from '@/db/schema';
+import { verifyCronAuth } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -11,9 +12,8 @@ export const maxDuration = 300;
  * Schedule: 8:00 AM UTC daily
  */
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  if (!verifyCronAuth(request.headers.get('authorization'))) {
+    return NextResponse.json({ ok: false, error: { code: 'UNAUTHORIZED', message: 'Invalid or missing authorization' } }, { status: 401 });
   }
 
   // Allow disabling via env
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const maxPosts = parseInt(process.env.BLOG_MAX_POSTS_PER_DAY ?? '1', 10);
-    const autoPublish = process.env.BLOG_AUTO_PUBLISH === 'true';
+    const autoPublish = process.env.BLOG_AUTO_PUBLISH !== 'false';
     const minPriority = parseInt(process.env.BLOG_MIN_PRIORITY_SCORE ?? '50', 10);
 
     const result = await runBlogPipeline({

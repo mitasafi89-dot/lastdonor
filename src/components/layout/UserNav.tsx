@@ -95,7 +95,7 @@ export function UserNav() {
             <p className="text-xs leading-none text-muted-foreground">{email}</p>
           </div>
         </DropdownMenuLabel>
-        {/* Available Funds — Fiverr-style, shown only for campaign creators */}
+        {/* Available Funds - Fiverr-style, shown only for campaign creators */}
         {balance?.hasCampaigns && (
           <>
             <DropdownMenuSeparator />

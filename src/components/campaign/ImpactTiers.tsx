@@ -1,5 +1,6 @@
 'use client';
 
+import { ArrowRightIcon } from '@heroicons/react/24/solid';
 import { cn } from '@/lib/utils';
 import { centsToDollars } from '@/lib/utils/currency';
 import type { ImpactTier } from '@/types';
@@ -16,20 +17,30 @@ export function ImpactTiers({ tiers, onSelectAmount, className }: ImpactTiersPro
   return (
     <div className={cn('space-y-3', className)}>
       <h3 className="font-display text-lg font-semibold text-card-foreground">
-        Your Impact
+        Choose your impact
       </h3>
+
       <div className="grid gap-2">
         {tiers.map((tier) => (
           <button
             key={`${tier.amount}-${tier.label}`}
             type="button"
             onClick={() => onSelectAmount?.(tier.amount)}
-            className="flex items-center justify-between rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-accent hover:bg-accent/5"
+            aria-label={`Donate ${centsToDollars(tier.amount)}: ${tier.label}`}
+            className="group flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-left transition-colors hover:bg-muted"
           >
-            <span className="text-sm text-card-foreground">{tier.label}</span>
-            <span className="font-mono text-sm font-medium text-accent">
-              {centsToDollars(tier.amount)}
-            </span>
+            <div className="flex min-w-0 items-baseline gap-3">
+              <span className="font-mono text-lg font-bold tabular-nums text-foreground">
+                {centsToDollars(tier.amount)}
+              </span>
+              <span className="truncate text-sm text-muted-foreground">
+                {tier.label}
+              </span>
+            </div>
+            <ArrowRightIcon
+              className="h-4 w-4 shrink-0 text-muted-foreground"
+              aria-hidden="true"
+            />
           </button>
         ))}
       </div>

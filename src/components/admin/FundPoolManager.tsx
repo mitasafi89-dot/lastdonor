@@ -110,7 +110,7 @@ export function FundPoolManager({ allocations: initialAllocations, summary, targ
         }),
       });
       const body = await res.json();
-      if (!res.ok) throw new Error(body.error?.message ?? 'Failed to allocate');
+      if (!res.ok) throw new Error(body.error?.code === 'VALIDATION_ERROR' ? (body.error?.message ?? 'Failed to allocate') : 'Failed to allocate');
       toast.success(`${body.data.allocated} allocations assigned`);
       setAllocateOpen(false);
       setSelected(new Set());
@@ -137,7 +137,7 @@ export function FundPoolManager({ allocations: initialAllocations, summary, targ
         }),
       });
       const body = await res.json();
-      if (!res.ok) throw new Error(body.error?.message ?? 'Failed to disburse');
+      if (!res.ok) throw new Error(body.error?.code === 'VALIDATION_ERROR' ? (body.error?.message ?? 'Failed to disburse') : 'Failed to disburse');
       toast.success(`${body.data.disbursed} allocations disbursed (${formatCents(body.data.totalDisbursed)})`);
       setDisburseOpen(false);
       setSelected(new Set());
@@ -214,6 +214,7 @@ export function FundPoolManager({ allocations: initialAllocations, summary, targ
             <input
               type="text"
               placeholder="Search campaigns…"
+              aria-label="Search campaigns"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="h-8 w-48 rounded-md border border-input bg-background pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -295,7 +296,7 @@ export function FundPoolManager({ allocations: initialAllocations, summary, targ
                         {new Date(a.createdAt).toLocaleDateString()}
                       </td>
                       <td className="hidden max-w-[200px] truncate py-3 px-4 text-muted-foreground md:table-cell">
-                        {a.notes ?? '—'}
+                        {a.notes ?? '-'}
                       </td>
                     </tr>
                   ))}

@@ -8,7 +8,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
  * Next.js route transitions. Inspired by YouTube/GitHub loading bars.
  *
  * Uses pathname + searchParams changes to detect navigation start/end.
- * No external dependencies — pure CSS animation.
+ * No external dependencies - pure CSS animation.
  */
 export function NavigationProgress() {
   const pathname = usePathname();
@@ -18,7 +18,7 @@ export function NavigationProgress() {
 
   const currentUrl = `${pathname}?${searchParams.toString()}`;
 
-  // When the URL actually changes, the new page has loaded — complete the bar
+  // When the URL actually changes, the new page has loaded - complete the bar
   useEffect(() => {
     if (prevUrlRef.current && prevUrlRef.current !== currentUrl) {
       setState('completing');
@@ -37,6 +37,7 @@ export function NavigationProgress() {
         !anchor.href ||
         anchor.target === '_blank' ||
         anchor.hasAttribute('download') ||
+        e.defaultPrevented ||
         e.ctrlKey ||
         e.metaKey ||
         e.shiftKey ||
@@ -50,12 +51,13 @@ export function NavigationProgress() {
         const url = new URL(anchor.href);
         // Only trigger for same-origin navigations
         if (url.origin !== window.location.origin) return;
-        // Skip hash-only links
-        if (url.pathname === pathname && url.search === `?${searchParams.toString()}`) return;
+        // Skip same-page links (no actual navigation)
+        const search = searchParams.toString();
+        if (url.pathname === pathname && url.search === (search ? `?${search}` : '')) return;
 
         setState('loading');
       } catch {
-        // Invalid URL — ignore
+        // Invalid URL - ignore
       }
     },
     [pathname, searchParams],

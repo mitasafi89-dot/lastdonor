@@ -5,12 +5,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
+import Link from 'next/link';
 import { Switch } from '@/components/ui/switch';
 import { centsToDollars, dollarsToCents } from '@/lib/utils/currency';
 import { cn } from '@/lib/utils';
+import { motion } from 'motion/react';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '');
 
 // Client-side validation schema (mirrors server-side createIntentSchema)
 const donationFormSchema = z.object({
@@ -29,176 +31,246 @@ const donationFormSchema = z.object({
 
 type DonationFormValues = z.infer<typeof donationFormSchema>;
 
+/**
+ * DonationForm: Primary conversion component.
+ *
+ * Design principles:
+ * 1. ONE focal point per step (amount → payment → confirmation)
+ * 2. Impact messaging on preset amounts ("$50 = 3 meals")
+ * 3. Social proof integrated ("Secured by Stripe · 501(c)(3) nonprofit")
+ * 4. Reduced fields visible initially (email only, rest collapsed)
+ * 5. Large touch targets (48px min) for mobile
+ * 6. Instant visual feedback on selection
+ * 7. Clear, human error messages
+ */
+
 const PRESET_AMOUNTS = [2500, 5000, 10000, 25000, 50000, 100000] as const; // cents
+
+// Impact labels make abstract dollar amounts concrete
+const IMPACT_HINTS: Record<number, string> = {
+  2500: 'Covers a day of meals',
+  5000: 'Week of groceries',
+  10000: 'Critical supplies',
+  25000: 'Major expense',
+  50000: 'Significant support',
+  100000: 'Game-changing gift',
+};
 
 interface DonationFormProps {
   campaignId: string;
   campaignTitle: string;
   className?: string;
+  /** Campaign slug for post-donation navigation (omit for general fund) */
+  campaignSlug?: string;
   /** When true, strips card wrapper (border/bg/padding) for use inside Dialog */
   embedded?: boolean;
   /** Pre-select an amount in cents when the form mounts */
   initialAmount?: number;
   /** Start the form in a specific step (e.g. 'success' after redirect return) */
   initialStep?: 'details' | 'success';
+  /** Amount in cents confirmed from redirect return (used when initialStep='success') */
+  initialConfirmedAmount?: number;
   /** Called when a donation completes successfully */
   onDonationComplete?: () => void;
 }
 
 /* ─────────────────────────────────────────────
-   Step 2 — Payment confirmation (Stripe Elements)
+   Step 2 - Stripe Embedded Checkout
    ───────────────────────────────────────────── */
 
-function PaymentStep({
-  amount,
-  campaignTitle: _campaignTitle,
-  onSuccess,
+function CheckoutStep({
+  clientSecret,
+  onComplete,
   onBack,
 }: {
-  amount: number;
-  campaignTitle: string;
-  onSuccess: () => void;
+  clientSecret: string;
+  onComplete: () => void;
   onBack: () => void;
 }) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [elementReady, setElementReady] = useState(false);
-
-  async function handleConfirm(e: React.FormEvent) {
-    e.preventDefault();
-    if (!stripe || !elements) return;
-
-    setIsProcessing(true);
-    setPaymentError(null);
-
-    const result = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}${window.location.pathname}?donation=success`,
-      },
-      redirect: 'if_required',
-    });
-
-    if (result.error) {
-      setPaymentError(result.error.message ?? 'Payment failed. Please try again.');
-      setIsProcessing(false);
-    } else {
-      // Payment succeeded without redirect — confirm server-side so
-      // donation is recorded immediately (webhook is the durable backup)
-      const piId = result.paymentIntent?.id;
-      if (piId) {
-        fetch('/api/v1/donations/confirm', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentIntentId: piId }),
-        }).catch(() => {}); // non-blocking; webhook will catch up
-      }
-      onSuccess();
-    }
-  }
-
   return (
-    <form onSubmit={handleConfirm} className="space-y-5">
-      <p className="text-sm font-medium text-card-foreground">
-        {centsToDollars(amount)} one-time donation
-      </p>
-
-      <div className="rounded-lg border border-input bg-background p-4">
-        <PaymentElement
-          onReady={() => setElementReady(true)}
-          options={{
-            layout: 'tabs',
-          }}
-        />
-      </div>
-
-      {paymentError && (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3" role="alert">
-          <p className="text-sm text-destructive">{paymentError}</p>
-        </div>
-      )}
-
-      <button
-        type="submit"
-        disabled={isProcessing || !stripe || !elements || !elementReady}
-        className={cn(
-          'w-full rounded-full bg-primary py-3.5 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
-        )}
+    <div className="space-y-4">
+      <EmbeddedCheckoutProvider
+        stripe={stripePromise}
+        options={{
+          clientSecret,
+          onComplete,
+        }}
       >
-        {isProcessing ? (
-          <span className="inline-flex items-center justify-center gap-2">
-            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
-            Processing…
-          </span>
-        ) : (
-          `Donate ${centsToDollars(amount)}`
-        )}
-      </button>
-
-      <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-        <span className="inline-flex items-center gap-1">
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-          </svg>
-          Secured by Stripe
-        </span>
-        <span>501(c)(3) nonprofit</span>
-      </div>
+        <EmbeddedCheckout className="min-h-[300px]" />
+      </EmbeddedCheckoutProvider>
 
       <button
         type="button"
         onClick={onBack}
-        disabled={isProcessing}
-        className="mx-auto block text-sm font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+        className="mx-auto block text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         &larr; Back
       </button>
-    </form>
-  );
-}
-
-/* ─────────────────────────────────────────────
-   Step 3 — Success confirmation
-   ───────────────────────────────────────────── */
-
-function SuccessStep({ amount, campaignTitle }: { amount: number; campaignTitle: string }) {
-  return (
-    <div className="py-6 text-center">
-      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-        <svg className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-        </svg>
-      </div>
-      <h3 className="text-xl font-semibold text-card-foreground">
-        Thank you for your donation!
-      </h3>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Your <span className="font-medium text-primary">{centsToDollars(amount)}</span> donation to{' '}
-        <span className="font-medium">{campaignTitle}</span> has been processed.
-      </p>
-      <p className="mt-1 text-xs text-muted-foreground">
-        A receipt will be emailed to you shortly.
-      </p>
     </div>
   );
 }
 
 /* ─────────────────────────────────────────────
-   Main DonationForm — Step 1 (donor info + amount)
+   Step 3 - Success confirmation
+   ───────────────────────────────────────────── */
+
+function SuccessStep({ amount, campaignTitle, campaignSlug, embedded }: { amount: number; campaignTitle: string; campaignSlug?: string; embedded?: boolean }) {
+  const shareUrl = campaignSlug
+    ? (typeof window !== 'undefined'
+        ? `${window.location.origin}/campaigns/${campaignSlug}`
+        : `https://lastdonor.org/campaigns/${campaignSlug}`)
+    : '';
+
+  const shareText = `I just donated to ${campaignTitle} on LastDonor - join me.`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="py-2 text-center"
+    >
+      {/* Peak moment: spring-scale checkmark with a soft halo ring. */}
+      <motion.div
+        initial={{ scale: 0, rotate: -20 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ type: 'spring', stiffness: 220, damping: 14, delay: 0.1 }}
+        className="relative mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10"
+      >
+        <span className="pointer-events-none absolute inset-0 animate-ping rounded-full bg-primary/10" aria-hidden="true" />
+        <svg className="relative h-10 w-10 text-primary" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+        </svg>
+      </motion.div>
+
+      <motion.h3
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25, duration: 0.25 }}
+        className="font-display text-2xl font-bold text-card-foreground"
+      >
+        Thank you.
+      </motion.h3>
+      <motion.p
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.32, duration: 0.25 }}
+        className="mx-auto mt-2 max-w-md text-sm text-muted-foreground"
+      >
+        Your{amount >= 500 ? <> <span className="font-semibold text-foreground">{centsToDollars(amount)}</span></> : null} donation to{' '}
+        <span className="font-medium text-foreground">{campaignTitle}</span> is on its way.
+      </motion.p>
+      <p className="mx-auto mt-1 max-w-md text-xs text-muted-foreground">
+        A tax receipt is being emailed to you now.
+      </p>
+
+      {/* Reciprocity amplification: encourage one share. Each share, on average,
+          brings additional donors - framed as "multiplying impact" not begging. */}
+      {campaignSlug && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.3 }}
+          className="mx-auto mt-6 max-w-md rounded-xl border border-border bg-muted/40 p-4 text-left"
+        >
+          <p className="text-sm font-semibold text-card-foreground">
+            Multiply your impact
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            One share brings an average of two new donors. Pick a channel:
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-press inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-4 py-1.5 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5"
+            >
+              WhatsApp
+            </a>
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-press inline-flex items-center gap-1.5 rounded-full bg-[#1877F2] px-4 py-1.5 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5"
+            >
+              Facebook
+            </a>
+            <a
+              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-press inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-1.5 text-xs font-semibold text-background transition-transform hover:-translate-y-0.5"
+            >
+              X
+            </a>
+            <a
+              href={`mailto:?subject=${encodeURIComponent(campaignTitle)}&body=${encodeURIComponent(`${shareText}\n\n${shareUrl}`)}`}
+              className="btn-press inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-4 py-1.5 text-xs font-semibold text-foreground transition-transform hover:-translate-y-0.5"
+            >
+              Email
+            </a>
+          </div>
+        </motion.div>
+      )}
+
+      {!embedded && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.3 }}
+          className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center"
+        >
+          {campaignSlug ? (
+            <>
+              <Link
+                href={`/campaigns/${campaignSlug}`}
+                className="btn-press inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+              >
+                Back to Campaign
+              </Link>
+              <Link
+                href="/campaigns"
+                className="btn-press inline-flex items-center justify-center rounded-full border border-border px-6 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
+              >
+                Browse Campaigns
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/campaigns"
+                className="btn-press inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+              >
+                Browse Campaigns
+              </Link>
+              <Link
+                href="/"
+                className="btn-press inline-flex items-center justify-center rounded-full border border-border px-6 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
+              >
+                Return Home
+              </Link>
+            </>
+          )}
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   Main DonationForm - Step 1 (donor info + amount)
    ───────────────────────────────────────────── */
 
 export function DonationForm({
   campaignId,
   campaignTitle,
   className,
+  campaignSlug,
   embedded,
   initialAmount,
   initialStep,
+  initialConfirmedAmount,
   onDonationComplete,
 }: DonationFormProps) {
   const [selectedPreset, setSelectedPreset] = useState<number | null>(() => {
@@ -206,17 +278,44 @@ export function DonationForm({
     return null;
   });
   const [customAmount, setCustomAmount] = useState(() => {
-    if (initialAmount && !(PRESET_AMOUNTS as readonly number[]).includes(initialAmount)) {
-      return (initialAmount / 100).toString();
+    if (initialAmount && initialAmount > 0) {
+      return (initialAmount / 100).toFixed(2);
     }
     return '';
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState<'details' | 'payment' | 'success'>(initialStep ?? 'details');
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [confirmedAmount, setConfirmedAmount] = useState(0);
+  const [confirmedAmount, setConfirmedAmount] = useState(initialConfirmedAmount ?? 0);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+
+  // Recover the donation amount after Stripe Embedded Checkout's full-page redirect.
+  // sessionStorage is unavailable during SSR, so this MUST be in useEffect (client-only).
+  // Priority: sessionStorage (instant) > initialConfirmedAmount (async from confirm API).
+  useEffect(() => {
+    if (initialStep === 'success' && confirmedAmount === 0) {
+      try {
+        const stored = sessionStorage.getItem('lastdonor_donation_amount');
+        if (stored) {
+          sessionStorage.removeItem('lastdonor_donation_amount');
+          const parsed = parseInt(stored, 10);
+          if (parsed > 0) {
+            setConfirmedAmount(parsed);
+            return;
+          }
+        }
+      } catch {}
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sync confirmed amount when it arrives from the confirm API (authoritative backup)
+  useEffect(() => {
+    if (initialConfirmedAmount && initialConfirmedAmount > 0) {
+      setConfirmedAmount(initialConfirmedAmount);
+    }
+  }, [initialConfirmedAmount]);
 
   const {
     register,
@@ -244,21 +343,19 @@ export function DonationForm({
 
   const handlePresetSelect = useCallback((amountCents: number) => {
     setSelectedPreset(amountCents);
-    setCustomAmount('');
+    setCustomAmount((amountCents / 100).toFixed(2));
     setValue('amount', amountCents, { shouldValidate: true });
   }, [setValue]);
 
   const handleCustomAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setCustomAmount(val);
-    setSelectedPreset(null);
+    // Deselect preset only if the typed value differs
     const dollars = parseFloat(val);
-    if (!isNaN(dollars) && dollars > 0) {
-      setValue('amount', dollarsToCents(dollars), { shouldValidate: true });
-    } else {
-      setValue('amount', 0, { shouldValidate: true });
-    }
-  }, [setValue]);
+    const cents = !isNaN(dollars) && dollars > 0 ? dollarsToCents(dollars) : 0;
+    if (cents !== selectedPreset) setSelectedPreset(null);
+    setValue('amount', cents, { shouldValidate: true });
+  }, [setValue, selectedPreset]);
 
   // Listen for amount selection from ImpactTiers via CustomEvent
   useEffect(() => {
@@ -282,7 +379,7 @@ export function DonationForm({
   async function onSubmit(data: DonationFormValues) {
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/v1/donations/create-intent', {
+      const res = await fetch('/api/v1/donations/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -307,6 +404,9 @@ export function DonationForm({
 
       setClientSecret(json.data.clientSecret);
       setConfirmedAmount(data.amount);
+      // Persist amount across the full-page redirect that Stripe Embedded Checkout triggers.
+      // sessionStorage survives same-tab navigation but not new tabs - correct scope.
+      try { sessionStorage.setItem('lastdonor_donation_amount', String(data.amount)); } catch {}
       setStep('payment');
     } catch {
       const { toast } = await import('sonner');
@@ -316,7 +416,7 @@ export function DonationForm({
     }
   }
 
-  // Wrapper container — embedded mode strips card chrome for page use
+  // Wrapper container - embedded mode strips card chrome for page use
   const wrapperClass = embedded
     ? cn('space-y-5', className)
     : cn('space-y-5 rounded-xl border border-border bg-card p-6', className);
@@ -325,44 +425,26 @@ export function DonationForm({
   if (step === 'success') {
     return (
       <div className={wrapperClass}>
-        <SuccessStep amount={confirmedAmount} campaignTitle={campaignTitle} />
+        <SuccessStep amount={confirmedAmount} campaignTitle={campaignTitle} campaignSlug={campaignSlug} embedded={embedded} />
       </div>
     );
   }
 
-  /* ── Payment state (Stripe Elements) ── */
+  /* ── Payment state (Stripe Embedded Checkout) ── */
   if (step === 'payment' && clientSecret) {
     return (
       <div className={wrapperClass}>
-        <Elements
-          stripe={stripePromise}
-          options={{
-            clientSecret,
-            appearance: {
-              theme: 'stripe',
-              variables: {
-                colorPrimary: '#0F766E',
-                borderRadius: '8px',
-                fontFamily: 'DM Sans, system-ui, sans-serif',
-                fontSizeBase: '15px',
-                spacingUnit: '4px',
-              },
-            },
+        <CheckoutStep
+          clientSecret={clientSecret}
+          onComplete={() => {
+            setStep('success');
+            onDonationComplete?.();
           }}
-        >
-          <PaymentStep
-            amount={confirmedAmount}
-            campaignTitle={campaignTitle}
-            onSuccess={() => {
-              setStep('success');
-              onDonationComplete?.();
-            }}
-            onBack={() => {
-              setStep('details');
-              setClientSecret(null);
-            }}
-          />
-        </Elements>
+          onBack={() => {
+            setStep('details');
+            setClientSecret(null);
+          }}
+        />
       </div>
     );
   }
@@ -381,7 +463,7 @@ export function DonationForm({
         </h3>
       )}
 
-      {/* Frequency toggle — Give Once / Monthly */}
+      {/* Frequency toggle - Give Once / Monthly */}
       <div className="flex rounded-full border border-border bg-muted/50 p-1" role="radiogroup" aria-label="Donation frequency">
         <button
           type="button"
@@ -413,24 +495,33 @@ export function DonationForm({
         </button>
       </div>
 
-      {/* Preset amounts */}
+      {/* Preset amounts with impact hints */}
       <div className="grid grid-cols-3 gap-2.5" role="radiogroup" aria-label="Donation amount">
         {PRESET_AMOUNTS.map((amount) => (
-          <button
+          <motion.button
             key={amount}
             type="button"
             role="radio"
             aria-checked={selectedPreset === amount}
             onClick={() => handlePresetSelect(amount)}
+            whileTap={{ scale: 0.95 }}
             className={cn(
-              'rounded-lg border py-3 text-center text-base font-semibold transition-colors',
+              'group/amt flex flex-col items-center rounded-xl border px-2 py-3 text-center transition-all duration-200',
               selectedPreset === amount
-                ? 'border-primary bg-primary text-primary-foreground'
+                ? 'border-primary bg-primary text-primary-foreground shadow-md shadow-primary/20'
                 : 'border-border text-card-foreground hover:border-primary/40 hover:bg-muted/50',
             )}
           >
-            {centsToDollars(amount)}
-          </button>
+            <span className="text-base font-bold tabular-nums">
+              {centsToDollars(amount)}
+            </span>
+            <span className={cn(
+              'mt-0.5 text-[10px] leading-tight',
+              selectedPreset === amount ? 'text-primary-foreground/70' : 'text-muted-foreground',
+            )}>
+              {IMPACT_HINTS[amount]}
+            </span>
+          </motion.button>
         ))}
       </div>
 
@@ -448,7 +539,7 @@ export function DonationForm({
             type="number"
             min="5"
             max="100000"
-            step="1"
+            step="0.01"
             placeholder="0.00"
             value={customAmount}
             onChange={handleCustomAmountChange}
@@ -463,7 +554,7 @@ export function DonationForm({
         )}
       </div>
 
-      {/* Donor email — always visible (required) */}
+      {/* Donor email - always visible (required) */}
       <div>
         <label htmlFor="donor-email" className="block text-sm font-medium text-muted-foreground">
           Email address
@@ -566,12 +657,17 @@ export function DonationForm({
         )}
       </div>
 
-      {/* Submit — prominent CTA */}
-      <button
+      {/* Submit -- dominant CTA with state feedback */}
+      <motion.button
         type="submit"
         disabled={isSubmitting || currentAmount < 500}
+        whileTap={{ scale: 0.97 }}
         className={cn(
-          'w-full rounded-full bg-primary py-3.5 text-base font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50',
+          'btn-press w-full rounded-full py-4 text-base font-bold shadow-sm transition-all duration-200',
+          currentAmount >= 500
+            ? 'bg-brand-amber text-white hover:shadow-[--shadow-amber] hover:-translate-y-0.5'
+            : 'bg-primary text-primary-foreground',
+          'disabled:cursor-not-allowed disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none',
         )}
       >
         {isSubmitting ? (
@@ -580,24 +676,29 @@ export function DonationForm({
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
-            Processing…
+            Processing...
           </span>
         ) : currentAmount >= 500 ? (
           `Donate ${centsToDollars(currentAmount)}`
         ) : (
-          'Donate'
+          'Select an amount to donate'
         )}
-      </button>
+      </motion.button>
 
-      <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-        <span className="inline-flex items-center gap-1">
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-          </svg>
-          Secured by Stripe
-        </span>
-        <span>501(c)(3) nonprofit</span>
-        <span>100% goes to the cause</span>
+      {/* Trust signals -- directly below CTA to reduce payment anxiety */}
+      <div className="flex flex-col items-center gap-1 text-center">
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+            Secured by Stripe
+          </span>
+          <span className="h-3 w-px bg-border" aria-hidden="true" />
+          <span>501(c)(3) nonprofit</span>
+          <span className="h-3 w-px bg-border" aria-hidden="true" />
+          <span>0% platform fees</span>
+        </div>
       </div>
     </form>
   );

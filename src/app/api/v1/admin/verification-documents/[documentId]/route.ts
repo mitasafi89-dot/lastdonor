@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import { requireRole } from '@/lib/auth';
 import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
+import { verificationDocReviewSchema } from '@/lib/validators/admin';
 
 interface Params {
   params: Promise<{ documentId: string }>;
@@ -27,22 +28,14 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     const session = await requireRole(['admin']);
 
     const body = await request.json();
-    const action = body?.action;
-    const notes = typeof body?.notes === 'string' ? body.notes.trim() : null;
-
-    if (action !== 'approve' && action !== 'reject') {
+    const parsed = verificationDocReviewSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { ok: false, error: { code: 'VALIDATION_ERROR', message: 'Action must be "approve" or "reject"', requestId } } satisfies ApiError,
+        { ok: false, error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0]?.message ?? 'Invalid input', requestId } } satisfies ApiError,
         { status: 400 },
       );
     }
-
-    if (action === 'reject' && !notes) {
-      return NextResponse.json(
-        { ok: false, error: { code: 'VALIDATION_ERROR', message: 'Notes are required when rejecting a document', requestId } } satisfies ApiError,
-        { status: 400 },
-      );
-    }
+    const { action, notes } = parsed.data;
 
     const [doc] = await db
       .select({ id: verificationDocuments.id, status: verificationDocuments.status })

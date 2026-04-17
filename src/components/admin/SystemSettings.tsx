@@ -156,7 +156,7 @@ export function SystemSettings({ initialSettings, hasSecurityQuestion: initialHa
       });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error?.message ?? 'Failed to set security question');
+        throw new Error(err.error?.code === 'VALIDATION_ERROR' ? (err.error?.message ?? 'Failed to set security question') : 'Failed to set security question');
       }
       setHasSQ(true);
       setSetupSQOpen(false);
@@ -186,14 +186,14 @@ export function SystemSettings({ initialSettings, hasSecurityQuestion: initialHa
       });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error?.message ?? 'Verification failed');
+        throw new Error(err.error?.code === 'VALIDATION_ERROR' ? (err.error?.message ?? 'Verification failed') : 'Verification failed');
       }
       const { data } = await res.json();
       setSecurityToken(data.token);
       setTokenExpiry(data.expiresAt);
       setVerifySQOpen(false);
       setVerifyAnswer('');
-      toast.success('Verified — you have 5 minutes to make changes');
+      toast.success('Verified - you have 5 minutes to make changes');
       // Open edit dialog for the pending key
       if (editingEnvKey) {
         setNewKeyValue('');
@@ -222,7 +222,7 @@ export function SystemSettings({ initialSettings, hasSecurityQuestion: initialHa
       });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error?.message ?? 'Failed to update key');
+        throw new Error(err.error?.code === 'VALIDATION_ERROR' ? (err.error?.message ?? 'Failed to update key') : 'Failed to update key');
       }
       setEditEnvOpen(false);
       setNewKeyValue('');
@@ -263,7 +263,7 @@ export function SystemSettings({ initialSettings, hasSecurityQuestion: initialHa
       });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error?.message ?? 'Failed to save');
+        throw new Error(err.error?.code === 'VALIDATION_ERROR' ? (err.error?.message ?? 'Failed to save') : 'Failed to save');
       }
       const { data } = await res.json();
       setSettings(data);

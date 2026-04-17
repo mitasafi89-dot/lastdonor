@@ -49,6 +49,16 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+export const revalidate = 120;
+
+export async function generateStaticParams() {
+  const rows = await db
+    .select({ slug: blogPosts.slug })
+    .from(blogPosts)
+    .where(eq(blogPosts.published, true));
+  return rows.map((r) => ({ slug: r.slug }));
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const [post] = await db

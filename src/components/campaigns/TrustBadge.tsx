@@ -1,12 +1,10 @@
 /**
- * Trust badges for campaigns — shows verification status, milestone progress,
- * and fund release indicators.
+ * Trust badges for campaigns - shows verification status and payout indicators.
  *
- * Designed per spec Section 5.4 and Phase 3 trust badge integration:
- * - 🔵 "ID Verified" — identity_verified
- * - 🟢 "Fully Verified" — fully_verified
- * - Milestone progress — "M1 ✓ M2 ✓ M3 ⏳"
- * - Fund release — "30% Released"
+ * Designed per spec Section 5.4:
+ * - 🔵 "ID Verified" - identity_verified
+ * - 🟢 "Fully Verified" - fully_verified
+ * - Payout status - "100% Released" (lump-sum model)
  */
 
 import { Badge } from '@/components/ui/badge';
@@ -52,53 +50,7 @@ export function VerificationBadge({ status, className, compact }: VerificationBa
   );
 }
 
-// ─── Milestone Progress Badge ────────────────────────────────────────────────
-
-type MilestoneProgressProps = {
-  milestones: Array<{
-    phase: number;
-    status: string;
-  }>;
-  className?: string;
-};
-
-export function MilestoneProgress({ milestones, className }: MilestoneProgressProps) {
-  if (!milestones || milestones.length === 0) return null;
-
-  const sorted = [...milestones].sort((a, b) => a.phase - b.phase);
-  const approvedCount = sorted.filter((m) => m.status === 'approved').length;
-
-  return (
-    <div className={cn('flex items-center gap-1.5 text-xs', className)}>
-      {sorted.map((m) => {
-        const isApproved = m.status === 'approved';
-        const isPending = m.status === 'pending';
-        const isSubmitted = m.status === 'evidence_submitted';
-
-        return (
-          <span
-            key={m.phase}
-            className={cn(
-              'inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold',
-              isApproved && 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300',
-              isSubmitted && 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-              isPending && 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
-              !isApproved && !isPending && !isSubmitted && 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
-            )}
-            title={`Phase ${m.phase}: ${m.status}`}
-          >
-            {isApproved ? '✓' : m.phase}
-          </span>
-        );
-      })}
-      <span className="text-muted-foreground">
-        {approvedCount}/{sorted.length}
-      </span>
-    </div>
-  );
-}
-
-// ─── Fund Release Indicator ──────────────────────────────────────────────────
+// ─── Payout Indicator ────────────────────────────────────────────────────────
 
 type FundReleaseIndicatorProps = {
   totalReleased: number;
@@ -128,7 +80,6 @@ export function FundReleaseIndicator({ totalReleased, raisedAmount, className }:
 
 type TrustBadgeRowProps = {
   verificationStatus: string;
-  milestones?: Array<{ phase: number; status: string }>;
   totalReleased?: number;
   raisedAmount?: number;
   className?: string;
@@ -137,25 +88,20 @@ type TrustBadgeRowProps = {
 
 export function TrustBadgeRow({
   verificationStatus,
-  milestones,
   totalReleased,
   raisedAmount,
   className,
   compact,
 }: TrustBadgeRowProps) {
   const hasVerification = ['verified', 'identity_verified', 'fully_verified'].includes(verificationStatus);
-  const hasMilestones = milestones && milestones.length > 0;
   const hasFundRelease = totalReleased && totalReleased > 0 && raisedAmount && raisedAmount > 0;
 
-  if (!hasVerification && !hasMilestones && !hasFundRelease) return null;
+  if (!hasVerification && !hasFundRelease) return null;
 
   return (
     <div className={cn('flex flex-wrap items-center gap-2', className)}>
       {hasVerification && (
         <VerificationBadge status={verificationStatus} compact={compact} />
-      )}
-      {hasMilestones && (
-        <MilestoneProgress milestones={milestones} />
       )}
       {hasFundRelease && (
         <FundReleaseIndicator

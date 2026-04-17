@@ -1,6 +1,6 @@
 /**
  * Platform settings defaults and types.
- * Client-safe — no DB imports. Server-side DB operations are in settings.server.ts.
+ * Client-safe - no DB imports. Server-side DB operations are in settings.server.ts.
  */
 
 // ─── Setting categories ─────────────────────────────────────────────────────

@@ -174,7 +174,7 @@ function parseCampaignLocation(location: string | null): ParsedLocation {
 
 /**
  * Find donor IDs from the pool who have donated (as seed) to other campaigns
- * in the last 30 days — these are candidates for repeat-donor selection.
+ * in the last 30 days - these are candidates for repeat-donor selection.
  */
 async function getRecentSeedDonorNames(): Promise<Set<string>> {
   const cutoff = new Date(Date.now() - THIRTY_DAYS_MS);

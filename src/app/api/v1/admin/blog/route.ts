@@ -9,7 +9,7 @@ import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
 
 /**
- * GET /api/v1/admin/blog — list all blog posts (including unpublished)
+ * GET /api/v1/admin/blog - list all blog posts (including unpublished)
  */
 export async function GET(request: NextRequest) {
   const requestId = randomUUID();
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /api/v1/admin/blog — create a new blog post
+ * POST /api/v1/admin/blog - create a new blog post
  */
 export async function POST(request: NextRequest) {
   const requestId = randomUUID();

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, type ReactNode } from 'react';
 import { CampaignCard } from '@/components/campaign/CampaignCard';
 import type { CampaignCategory } from '@/types';
 
@@ -27,7 +27,13 @@ interface CampaignGridProps {
   sort: string;
   searchQuery: string;
   locationFilter: string;
-  closeToTarget: boolean;
+  closeToTarget?: boolean;
+  /** Added to the API URL when loading more (e.g. status=completed) */
+  extraParams?: Record<string, string>;
+  /** Shown when there are no campaigns */
+  emptyMessage?: string;
+  /** Extra node rendered below the empty message */
+  emptyAction?: ReactNode;
 }
 
 export function CampaignGrid({
@@ -39,6 +45,9 @@ export function CampaignGrid({
   searchQuery,
   locationFilter,
   closeToTarget,
+  extraParams,
+  emptyMessage,
+  emptyAction,
 }: CampaignGridProps) {
   const [campaigns, setCampaigns] = useState(initialCampaigns);
   const [cursor, setCursor] = useState(initialCursor);
@@ -55,30 +64,38 @@ export function CampaignGrid({
       if (searchQuery) params.set('q', searchQuery);
       if (locationFilter) params.set('location', locationFilter);
       if (closeToTarget) params.set('close_to_target', '1');
+      if (extraParams) {
+        for (const [k, v] of Object.entries(extraParams)) params.set(k, v);
+      }
 
       const res = await fetch(`/api/v1/campaigns?${params.toString()}`);
       const json = await res.json();
 
       if (json.ok) {
-        setCampaigns((prev) => [...prev, ...json.data]);
+        setCampaigns((prev) => {
+          const seen = new Set(prev.map((c) => c.id));
+          const unique = (json.data as CampaignData[]).filter((c) => !seen.has(c.id));
+          return [...prev, ...unique];
+        });
         setCursor(json.meta?.cursor ?? null);
         setHasMore(json.meta?.hasMore ?? false);
       }
     } catch {
-      // Silently fail — user can retry
+      // Silently fail - user can retry
     } finally {
       setIsLoading(false);
     }
-  }, [cursor, isLoading, sort, categoryFilter, searchQuery, locationFilter, closeToTarget]);
+  }, [cursor, isLoading, sort, categoryFilter, searchQuery, locationFilter, closeToTarget, extraParams]);
 
   if (campaigns.length === 0) {
     return (
       <div className="mt-16 text-center">
         <p className="text-lg text-muted-foreground">
-          {categoryFilter
+          {emptyMessage ?? (categoryFilter
             ? 'No active campaigns in this category right now.'
-            : 'No active campaigns at the moment. Check back soon.'}
+            : 'No active campaigns at the moment. Check back soon.')}
         </p>
+        {emptyAction}
       </div>
     );
   }
@@ -97,6 +114,7 @@ export function CampaignGrid({
             location={campaign.location || campaign.subjectHometown}
             raisedAmount={campaign.raisedAmount}
             goalAmount={campaign.goalAmount}
+            donorCount={campaign.donorCount}
           />
         ))}
       </div>

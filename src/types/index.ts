@@ -102,7 +102,7 @@ export type NotificationType =
   | 'new_message'
   | 'message_flagged'
   | 'campaign_donation_received'
-  | 'campaign_milestone'
+  | 'campaign_milestone'   // Donor count milestones (10, 25, 50, 100 donors) - actively used
   | 'campaign_message_received'
   | 'withdrawal_processed'
   | 'campaign_submitted'
@@ -112,15 +112,18 @@ export type NotificationType =
   | 'campaign_cancelled'
   | 'info_request'
   | 'info_request_reminder'
-  | 'milestone_approved'
-  | 'milestone_rejected'
-  | 'fund_released'
+  | 'milestone_approved'   // Legacy: kept for historical notifications (PG enum values cannot be removed)
+  | 'milestone_rejected'   // Legacy: kept for historical notifications
+  | 'fund_released'        // Legacy: replaced by lump-sum release via verification approval
   | 'verification_approved'
   | 'verification_rejected'
   | 'verification_documents_submitted'
   | 'bulk_refund_processed'
   | 'withdrawal_completed'
-  | 'withdrawal_failed';
+  | 'withdrawal_failed'
+  | 'abandoned_donation'
+  | 'donor_reengagement'
+  | 'creator_inactivity';
 
 export type VerificationStatus = 'unverified' | 'pending' | 'verified';
 
@@ -150,9 +153,11 @@ export type SimulationConfig = {
   fundAllocation: 'pool' | 'located_beneficiary';
   beneficiaryInfo?: string;
   notes?: string;
+  /** Persisted surge state: maps surge atPercent → cycle number when triggered. */
+  surgeState?: Record<number, number>;
 };
 
-export type { TrajectoryProfile, TrajectoryType, AmountTier, SurgeEvent } from '@/lib/seed/trajectory-profiles';
+export type { TrajectoryProfile, TrajectoryType, AmountTier, SurgeEvent, SurgeState } from '@/lib/seed/trajectory-profiles';
 
 export type {
   SimulatedDonor,

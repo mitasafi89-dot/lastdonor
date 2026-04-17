@@ -7,7 +7,7 @@ import { eq, desc } from 'drizzle-orm';
 import { GovernancePanel } from '@/components/admin/GovernancePanel';
 
 export const metadata: Metadata = {
-  title: 'Campaign Governance — Admin — LastDonor.org',
+  title: 'Campaign Governance - Admin - LastDonor.org',
   robots: { index: false },
 };
 

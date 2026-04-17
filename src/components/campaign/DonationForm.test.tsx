@@ -55,14 +55,14 @@ describe('DonationForm', () => {
 
   it('selects a preset amount on click', async () => {
     render(<DonationForm {...defaultProps} />);
-    const fiftyButton = screen.getByText('$50.00');
+    const fiftyButton = screen.getByRole('radio', { name: /\$50\.00/ });
     await userEvent.click(fiftyButton);
     expect(fiftyButton).toHaveAttribute('aria-checked', 'true');
   });
 
   it('deselects preset when custom amount is entered', async () => {
     render(<DonationForm {...defaultProps} />);
-    const fiftyButton = screen.getByText('$50.00');
+    const fiftyButton = screen.getByRole('radio', { name: /\$50\.00/ });
     await userEvent.click(fiftyButton);
     expect(fiftyButton).toHaveAttribute('aria-checked', 'true');
 

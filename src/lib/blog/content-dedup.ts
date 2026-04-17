@@ -1,14 +1,14 @@
 /**
- * Content Deduplication — checks for duplicate or near-duplicate content
+ * Content Deduplication - checks for duplicate or near-duplicate content
  * and removes AI filler phrases from generated blog posts.
  */
 
 import { db } from '@/db';
 import { blogPosts } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 /**
- * Phrases to remove — only multi-word filler phrases that are unambiguously
+ * Phrases to remove - only multi-word filler phrases that are unambiguously
  * AI artifacts. Single legitimate English words (empower, leverage, etc.)
  * are NOT removed because they have valid nonprofit usage.
  */
@@ -88,7 +88,7 @@ export function calculateSimilarity(textA: string, textB: string): number {
   const allTerms = new Set([...rawTfA.keys(), ...rawTfB.keys()]);
 
   // Calculate IDF for each term (2-document corpus)
-  // If a term appears in both documents, IDF = log(2/2) = 0 — but we use log(2/df + 1)
+  // If a term appears in both documents, IDF = log(2/2) = 0 - but we use log(2/df + 1)
   // to avoid zeroing out shared terms entirely while still down-weighting them.
   const totalDocs = 2;
 
@@ -118,8 +118,9 @@ export function calculateSimilarity(textA: string, textB: string): number {
 
 /**
  * Check if new content is too similar to existing published blog posts.
- * Only loads the primaryKeyword and excerpt for initial filtering,
- * then loads full body only for same-category posts to limit memory.
+ * Bounded to the most recent 100 published posts to prevent unbounded
+ * memory growth. At 100 posts x ~5KB text each = ~500KB, well within limits.
+ * Duplicates are most likely among recent posts (same news cycle, similar keywords).
  */
 export async function isDuplicateContent(
   newContent: string,
@@ -131,7 +132,9 @@ export async function isDuplicateContent(
       bodyHtml: blogPosts.bodyHtml,
     })
     .from(blogPosts)
-    .where(eq(blogPosts.published, true));
+    .where(eq(blogPosts.published, true))
+    .orderBy(desc(blogPosts.publishedAt))
+    .limit(100);
 
   const newText = htmlToText(newContent);
 

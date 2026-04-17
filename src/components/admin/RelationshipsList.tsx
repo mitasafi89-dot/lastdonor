@@ -198,7 +198,7 @@ export function RelationshipsList({ userId }: RelationshipsListProps) {
                   )}
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">
-                      {rel.relatedDonorName ?? rel.organizationName ?? '—'}
+                      {rel.relatedDonorName ?? rel.organizationName ?? '-'}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {TYPE_LABELS[rel.relationshipType] ?? rel.relationshipType}

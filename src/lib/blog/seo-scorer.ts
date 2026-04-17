@@ -1,5 +1,5 @@
 /**
- * SEO Scorer — calculates a composite SEO score (0-100) for a blog post.
+ * SEO Scorer - calculates a composite SEO score (0-100) for a blog post.
  * Used by the quality gate and admin dashboard.
  */
 
@@ -151,7 +151,7 @@ export function calculateSeoScore(params: {
   const altRegex = /alt="[^"]+"/;
   const images = params.html.match(imgRegex) || [];
   const imagesWithAlt = images.filter((img) => altRegex.test(img));
-  // No free points for having zero images — inline images are expected
+  // No free points for having zero images - inline images are expected
   const hasInlineImages = images.length > 0;
   const allHaveAlt = images.length > 0 && imagesWithAlt.length === images.length;
   checks.push({

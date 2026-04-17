@@ -38,8 +38,8 @@ interface Campaign {
   verificationStatus: string;
   verificationNotes: string | null;
   verificationReviewedAt: string | null;
-  veriffSessionId: string | null;
-  veriffSessionUrl: string | null;
+  stripeVerificationId: string | null;
+  stripeVerificationUrl: string | null;
 }
 
 interface VerificationDocument {
@@ -80,8 +80,8 @@ const STATUS_LABELS: Record<string, string> = {
   identity_verified: 'Identity Verified (Tier 1)',
   fully_verified: 'Fully Verified',
   info_requested: 'Additional Info Needed',
-  rejected: 'Rejected',
-  suspended: 'Suspended',
+  rejected: 'Needs Review',
+  suspended: 'On Hold',
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -113,7 +113,7 @@ export function CampaignVerificationDashboard({ campaign, documents, infoRequest
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [startingVeriff, setStartingVeriff] = useState(false);
+  const [startingIdentity, setStartingIdentity] = useState(false);
   const [docType, setDocType] = useState<string>('government_id');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [respondingTo, setRespondingTo] = useState<string | null>(null);
@@ -123,8 +123,7 @@ export function CampaignVerificationDashboard({ campaign, documents, infoRequest
   const responseFileRef = useRef<HTMLInputElement>(null);
 
   const identityVerified = ['identity_verified', 'fully_verified'].includes(campaign.verificationStatus);
-  const _canStartVeriff = !identityVerified && !campaign.veriffSessionId;
-  const veriffPending = !!campaign.veriffSessionId && !identityVerified;
+  const identityPending = !!campaign.stripeVerificationId && !identityVerified;
   const canUploadDocs = ['unverified', 'pending', 'documents_uploaded', 'info_requested', 'identity_verified'].includes(
     campaign.verificationStatus,
   );
@@ -139,9 +138,9 @@ export function CampaignVerificationDashboard({ campaign, documents, infoRequest
     campaign.verificationStatus === 'documents_uploaded' ||
     campaign.verificationStatus === 'submitted_for_review';
 
-  // ── Auto-poll Veriff for decision when verification is pending ─────────
+  // ── Auto-poll Stripe Identity for decision when verification is pending ──
   useEffect(() => {
-    if (!veriffPending) return;
+    if (!identityPending) return;
 
     let cancelled = false;
     let delay = 5_000; // Start at 5s, back off to 30s
@@ -150,7 +149,7 @@ export function CampaignVerificationDashboard({ campaign, documents, infoRequest
       if (cancelled) return;
       try {
         const res = await fetch(
-          `/api/v1/verification/veriff/decision?campaignId=${encodeURIComponent(campaign.id)}`,
+          `/api/v1/verification/identity/status?campaignId=${encodeURIComponent(campaign.id)}`,
         );
         if (!res.ok) return;
         const data = await res.json();
@@ -172,14 +171,14 @@ export function CampaignVerificationDashboard({ campaign, documents, infoRequest
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [veriffPending, campaign.id, router]);
+  }, [identityPending, campaign.id, router]);
 
-  // ── Start Veriff identity verification ─────────────────────────────────
+  // ── Start identity verification ────────────────────────────────────────
 
-  const handleStartVeriff = useCallback(async (opts?: { force?: boolean }) => {
-    setStartingVeriff(true);
+  const handleStartIdentity = useCallback(async (opts?: { force?: boolean }) => {
+    setStartingIdentity(true);
     try {
-      const res = await fetch('/api/v1/verification/veriff/session', {
+      const res = await fetch('/api/v1/verification/identity/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ campaignId: campaign.id, force: opts?.force }),
@@ -198,7 +197,7 @@ export function CampaignVerificationDashboard({ campaign, documents, infoRequest
       const { toast } = await import('sonner');
       toast.error('Something went wrong. Please try again.');
     } finally {
-      setStartingVeriff(false);
+      setStartingIdentity(false);
     }
   }, [campaign.id, router]);
 
@@ -346,7 +345,7 @@ export function CampaignVerificationDashboard({ campaign, documents, infoRequest
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <p className={`font-medium ${isPending ? 'text-amber-800 dark:text-amber-200' : 'text-muted-foreground'}`}>
-                        {isPending ? 'Action Required' : req.status === 'responded' ? 'Responded' : req.status === 'closed' ? 'Closed' : 'Expired'}
+                        {isPending ? 'Your Response Needed' : req.status === 'responded' ? 'Responded' : req.status === 'closed' ? 'Closed' : 'Expired'}
                       </p>
                       {!isPending && (
                         <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground capitalize">
@@ -359,7 +358,7 @@ export function CampaignVerificationDashboard({ campaign, documents, infoRequest
                     </p>
                     {req.deadline && (
                       <p className={`mt-1 text-xs ${isPending ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`}>
-                        {isPending ? 'Respond by: ' : 'Deadline: '}{formatDate(req.deadline)}
+                        {isPending ? 'Respond by: ' : 'Due by: '}{formatDate(req.deadline)}
                       </p>
                     )}
 
@@ -468,7 +467,7 @@ export function CampaignVerificationDashboard({ campaign, documents, infoRequest
           <div className="flex items-start gap-3">
             <XCircleIcon className="mt-0.5 h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
             <div>
-              <p className="font-medium text-red-800 dark:text-red-200">Verification Rejected</p>
+              <p className="font-medium text-red-800 dark:text-red-200">Verification Needs Review</p>
               <p className="mt-1 text-sm text-red-700 dark:text-red-300">{campaign.verificationNotes}</p>
             </div>
           </div>
@@ -492,7 +491,7 @@ export function CampaignVerificationDashboard({ campaign, documents, infoRequest
       )}
 
       <div className="mt-8 space-y-8">
-        {/* ── Step 1: Identity Verification (Veriff) ────────────────────── */}
+        {/* ── Step 1: Identity Verification (Stripe Identity) ───────────── */}
         <section>
           <h2 className="font-display text-xl font-bold text-foreground">
             Step 1: Identity Verification
@@ -520,7 +519,7 @@ export function CampaignVerificationDashboard({ campaign, documents, infoRequest
                 </div>
               </CardContent>
             </Card>
-          ) : veriffPending ? (
+          ) : identityPending ? (
             <Card className="mt-4">
               <CardContent className="py-4">
                 <div className="flex items-start gap-3">
@@ -538,10 +537,10 @@ export function CampaignVerificationDashboard({ campaign, documents, infoRequest
                       <button
                         type="button"
                         className="text-sm text-muted-foreground underline hover:text-foreground disabled:opacity-50"
-                        disabled={startingVeriff}
-                        onClick={() => handleStartVeriff({ force: true })}
+                        disabled={startingIdentity}
+                        onClick={() => handleStartIdentity({ force: true })}
                       >
-                        {startingVeriff ? 'Starting...' : 'Experienced an issue? Start a new session'}
+                        {startingIdentity ? 'Starting...' : 'Experienced an issue? Start a new session'}
                       </button>
                     </p>
                   </div>
@@ -559,12 +558,12 @@ export function CampaignVerificationDashboard({ campaign, documents, infoRequest
                     </p>
                     <p className="mt-1 text-sm text-muted-foreground">
                       You&apos;ll be guided through a quick process to scan your ID and take a selfie.
-                      This is handled securely by our verification partner, Veriff.
+                      This is handled securely by Stripe.
                     </p>
                     <div className="mt-3">
-                      <Button onClick={() => handleStartVeriff()} disabled={startingVeriff}>
+                      <Button onClick={() => handleStartIdentity()} disabled={startingIdentity}>
                         <FingerPrintIcon className="mr-2 h-4 w-4" />
-                        {startingVeriff ? 'Starting...' : 'Start Identity Verification'}
+                        {startingIdentity ? 'Starting...' : 'Start Identity Verification'}
                       </Button>
                     </div>
                   </div>

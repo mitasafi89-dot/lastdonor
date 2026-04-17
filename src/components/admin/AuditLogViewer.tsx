@@ -165,7 +165,10 @@ export function AuditLogViewer({
                     <Fragment key={entry.id}>
                       <tr
                         className="cursor-pointer hover:bg-muted/30"
+                        role="button"
+                        tabIndex={0}
                         onClick={() => toggleExpanded(entry.id)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleExpanded(entry.id); } }}
                       >
                         <td className="px-2 py-2.5">
                           {entry.details ? (
@@ -197,7 +200,7 @@ export function AuditLogViewer({
                         <td className="hidden px-4 py-2.5 md:table-cell">
                           {entry.targetType && entry.targetId
                             ? `${entry.targetType}:${entry.targetId.slice(0, 8)}…`
-                            : '—'}
+                            : '-'}
                         </td>
                         <td className="px-4 py-2.5">
                           <Badge variant={SEVERITY_VARIANT[entry.severity] ?? 'secondary'}>{entry.severity}</Badge>

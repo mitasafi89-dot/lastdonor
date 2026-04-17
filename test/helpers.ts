@@ -8,7 +8,7 @@ import * as schema from '@/db/schema';
 
 /**
  * Clear all test data from the database.
- * CAUTION: This truncates tables — only use against a test database.
+ * CAUTION: This truncates tables - only use against a test database.
  */
 export async function clearDatabase() {
   await db.execute(sql`

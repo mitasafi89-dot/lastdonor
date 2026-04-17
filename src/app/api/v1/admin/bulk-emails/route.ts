@@ -9,7 +9,7 @@ import type { ApiError } from '@/types/api';
 import type { UserRole } from '@/types';
 
 /**
- * GET /api/v1/admin/bulk-emails — List all bulk emails with pagination.
+ * GET /api/v1/admin/bulk-emails - List all bulk emails with pagination.
  */
 export async function GET(request: NextRequest) {
   const requestId = randomUUID();
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /api/v1/admin/bulk-emails — Create a new bulk email (draft).
+ * POST /api/v1/admin/bulk-emails - Create a new bulk email (draft).
  *
  * Counts recipients based on the filter and campaign, stores the draft.
  */

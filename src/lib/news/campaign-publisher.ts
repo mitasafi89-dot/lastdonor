@@ -14,7 +14,7 @@ import { buildFallbackTitle } from '@/lib/ai/prompts/generate-headline';
 import { callAI } from '@/lib/ai/call-ai';
 import { generateSlug } from '@/lib/utils/slug';
 import { getCampaignPhase } from '@/lib/utils/phase';
-import { isValidEntityName, normalizeSubjectName } from '@/lib/utils/entity-validation';
+import { normalizeSubjectName, validateCampaignQuality } from '@/lib/utils/entity-validation';
 import { generateHeadlineWithRetry } from '@/lib/news/news-pipeline';
 import { fetchArticleBody } from '@/lib/news/fetch-article-body';
 import { validateMessages } from '@/lib/seed/message-validation';
@@ -22,7 +22,7 @@ import * as schema from '@/db/schema';
 import { generateTrajectoryProfile } from '@/lib/seed/trajectory-profiles';
 import { generateOrganizerIdentity } from '@/lib/seed/organizer-generator';
 import { cleanStoryHtml, validateStory } from '@/lib/ai/prompts/story-validation';
-import { resolveHeroImage } from '@/lib/news/image-validation';
+import { resolveHeroImageEnhanced } from '@/lib/news/image-resolver';
 import { getWordRange, scoreContextRichness } from '@/lib/ai/prompts/story-structures';
 import type { StoryPattern } from '@/lib/ai/prompts/story-structures';
 import type { CampaignCategory } from '@/types';
@@ -72,9 +72,9 @@ export type PublishOutcome =
 export async function publishCampaignFromNewsItem(
   newsItemId: string,
   options: {
-    /** Story patterns used recently — for anti-repetition in batch mode */
+    /** Story patterns used recently - for anti-repetition in batch mode */
     recentStoryPatterns?: StoryPattern[];
-    /** Recent campaign titles — for headline dedup */
+    /** Recent campaign titles - for headline dedup */
     recentTitles?: string[];
     /** Audit event type override (to distinguish cron vs. admin trigger) */
     auditEventType?: string;
@@ -166,17 +166,24 @@ export async function publishCampaignFromNewsItem(
   entity.sourceUrl = entity.sourceUrl || item.url;
   entity.sourceName = entity.sourceName || item.source;
   entity.name = entity.name || '';
-  entity.hometown = entity.hometown || 'Unknown';
+  entity.hometown = entity.hometown || '';
   entity.category = entity.category || effectiveCategory;
 
-  // ── Step 6: Validate entity name ──────────────────────────────────────
+  // ── Step 6: Quality gate - name, location, and confidence ────────────
 
-  if (!isValidEntityName(entity.name, item.title)) {
+  const qualityResult = validateCampaignQuality({
+    name: entity.name,
+    hometown: entity.hometown,
+    confidence: entity.confidence ?? 0,
+    articleTitle: item.title,
+  });
+
+  if (!qualityResult.pass) {
     return {
       ok: false,
       error: {
         code: 'INVALID_ENTITY',
-        message: `Extracted entity name "${entity.name}" is invalid (headline fragment, too long, or garbage)`,
+        message: qualityResult.reason,
       },
     };
   }
@@ -294,9 +301,19 @@ export async function publishCampaignFromNewsItem(
     category: entity.category,
   });
 
-  // ── Step 10: Resolve hero image ───────────────────────────────────────
+  // ── Step 10: Resolve hero image (5-tier cascade) ──────────────────────
+  //
+  // Priority: news source → OG/meta from article → Unsplash → Pexels → SVG
+  // Each tier validates URL accessibility and rejects tiny images (<5KB).
 
-  const heroImageUrl = await resolveHeroImage(item.imageUrl ?? undefined, entity.category);
+  const imageResult = await resolveHeroImageEnhanced({
+    newsImageUrl: item.imageUrl ?? undefined,
+    articleUrl: item.url,
+    category: entity.category,
+    subjectName: entity.name,
+    event: entity.event,
+    location: entity.hometown,
+  });
 
   // ── Step 11: Insert campaign ──────────────────────────────────────────
 
@@ -306,7 +323,8 @@ export async function publishCampaignFromNewsItem(
       title: campaignTitle,
       slug: campaignSlug,
       status: 'active',
-      heroImageUrl,
+      heroImageUrl: imageResult.url,
+      photoCredit: imageResult.credit,
       storyHtml,
       goalAmount: goalAmountCents,
       category: entity.category,
@@ -381,7 +399,7 @@ export async function publishCampaignFromNewsItem(
       }
     }
   } catch {
-    // Seed message generation is non-critical — the campaign is already created.
+    // Seed message generation is non-critical - the campaign is already created.
     // The simulation-engine will still function; it just won't have pre-generated messages.
   }
 
@@ -399,6 +417,8 @@ export async function publishCampaignFromNewsItem(
       goalAmount: goalAmountCents,
       storyPattern: selectedPattern,
       messagesGenerated,
+      imageSource: imageResult.source,
+      imageCredit: imageResult.credit,
     },
   });
 

@@ -35,7 +35,7 @@ async function main() {
 
   for (const n of recentNews) {
     console.log(`  [Score: ${n.relevanceScore}] [${n.category}] "${n.title}"`);
-    console.log(`    ${n.source} — ${n.url}`);
+    console.log(`    ${n.source} - ${n.url}`);
     console.log('');
   }
 

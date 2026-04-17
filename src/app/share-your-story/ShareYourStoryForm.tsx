@@ -1,77 +1,60 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { PhotoUpload } from '@/components/PhotoUpload';
-import {
-  Heart,
-  Waves,
-  Shield,
-  Star,
-  Flame,
-  Siren,
-  Users,
-  Home,
-  AlertTriangle,
-  HandHeart,
-  GraduationCap,
-  PawPrint,
-  Leaf,
-  Briefcase,
-  Trophy,
-  Palette,
-  PartyPopper,
-  HandHelping,
-  Baby,
-  Dribbble,
-  Plane,
-  UserCheck,
-  Sparkles,
-} from 'lucide-react';
+import { FundraiserPreviewModal } from './FundraiserPreviewModal';
+import { computeStartingGoal } from '@/lib/compute-starting-goal';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 const STEPS = [
-  'The Basics',
-  'Tell Their Story',
+  'Fundraiser Type',
   'Set Your Goal',
+  'Add Media',
+  'Category',
+  'Tell Their Story',
   'Review & Submit',
 ] as const;
 
-const CATEGORIES: ReadonlyArray<{ value: string; label: string; icon: typeof Heart }> = [
-  { value: 'medical', label: 'Medical', icon: Heart },
-  { value: 'disaster', label: 'Disaster Relief', icon: Waves },
-  { value: 'military', label: 'Military', icon: Shield },
-  { value: 'veterans', label: 'Veterans', icon: Star },
-  { value: 'memorial', label: 'Memorial', icon: Flame },
-  { value: 'first-responders', label: 'First Responders', icon: Siren },
-  { value: 'community', label: 'Community', icon: Users },
-  { value: 'essential-needs', label: 'Essential Needs', icon: Home },
-  { value: 'emergency', label: 'Emergency', icon: AlertTriangle },
-  { value: 'charity', label: 'Charity', icon: HandHeart },
-  { value: 'education', label: 'Education', icon: GraduationCap },
-  { value: 'animal', label: 'Animal', icon: PawPrint },
-  { value: 'environment', label: 'Environment', icon: Leaf },
-  { value: 'business', label: 'Business', icon: Briefcase },
-  { value: 'competition', label: 'Competition', icon: Trophy },
-  { value: 'creative', label: 'Creative', icon: Palette },
-  { value: 'event', label: 'Event', icon: PartyPopper },
-  { value: 'faith', label: 'Faith', icon: HandHelping },
-  { value: 'family', label: 'Family', icon: Baby },
-  { value: 'sports', label: 'Sports', icon: Dribbble },
-  { value: 'travel', label: 'Travel', icon: Plane },
-  { value: 'volunteer', label: 'Volunteer', icon: UserCheck },
-  { value: 'wishes', label: 'Wishes', icon: Sparkles },
+const CATEGORIES: ReadonlyArray<{ value: string; label: string }> = [
+  { value: 'medical', label: 'Medical' },
+  { value: 'disaster', label: 'Disaster Relief' },
+  { value: 'military', label: 'Military' },
+  { value: 'veterans', label: 'Veterans' },
+  { value: 'memorial', label: 'Memorial' },
+  { value: 'first-responders', label: 'First Responders' },
+  { value: 'community', label: 'Community' },
+  { value: 'essential-needs', label: 'Essential Needs' },
+  { value: 'emergency', label: 'Emergency' },
+  { value: 'charity', label: 'Charity' },
+  { value: 'education', label: 'Education' },
+  { value: 'animal', label: 'Animal' },
+  { value: 'environment', label: 'Environment' },
+  { value: 'business', label: 'Business' },
+  { value: 'competition', label: 'Competition' },
+  { value: 'creative', label: 'Creative' },
+  { value: 'event', label: 'Event' },
+  { value: 'faith', label: 'Faith' },
+  { value: 'family', label: 'Family' },
+  { value: 'sports', label: 'Sports' },
+  { value: 'travel', label: 'Travel' },
+  { value: 'volunteer', label: 'Volunteer' },
+  { value: 'wishes', label: 'Wishes' },
 ];
+
+const STEP_HERO = [
+  { title: "Tell us who you\u2019re raising funds for", subtitle: 'This information helps us get to know you and your fundraising needs.' },
+  { title: "Tell us how much you'd like to raise", subtitle: 'You can always change your goal as your campaign progresses.' },
+  { title: 'Add media', subtitle: 'Using a bright and clear photo helps people connect to your fundraiser instantly.' },
+  { title: 'Help us categorize your campaign', subtitle: 'This ensures donors who care about your cause can find you.' },
+  { title: 'Every story deserves to be heard', subtitle: 'A compelling story helps donors connect with your cause and give generously.' },
+  { title: "You're almost there", subtitle: 'Review your campaign and go live. Your campaign starts accepting donations right away.' },
+] as const;
 
 const RELATIONS = [
   { value: 'self', label: 'Myself' },
@@ -84,31 +67,93 @@ const RELATIONS = [
 ] as const;
 
 const DRAFT_KEY = 'lastdonor_campaign_draft';
+const PENDING_PHOTO_DB = 'lastdonor_pending_photo';
+const PENDING_PHOTO_STORE = 'files';
+
+// ── IndexedDB helpers for pending photo persistence ─────────────────────
+//
+// When an unauthenticated user selects a photo, the File object is stored
+// in IndexedDB so it survives the login redirect. localStorage can't hold
+// binary data, and blob URLs become invalid after page unload. IndexedDB
+// handles File objects natively and has generous size limits.
+
+function openPendingPhotoDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(PENDING_PHOTO_DB, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(PENDING_PHOTO_STORE)) {
+        db.createObjectStore(PENDING_PHOTO_STORE);
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function savePendingPhoto(file: File): Promise<void> {
+  try {
+    const db = await openPendingPhotoDB();
+    const tx = db.transaction(PENDING_PHOTO_STORE, 'readwrite');
+    tx.objectStore(PENDING_PHOTO_STORE).put(file, 'pendingPhoto');
+    db.close();
+  } catch {
+    // IndexedDB unavailable (private browsing, etc.) - acceptable degradation
+  }
+}
+
+async function loadPendingPhoto(): Promise<File | null> {
+  try {
+    const db = await openPendingPhotoDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(PENDING_PHOTO_STORE, 'readonly');
+      const req = tx.objectStore(PENDING_PHOTO_STORE).get('pendingPhoto');
+      req.onsuccess = () => {
+        db.close();
+        const file = req.result;
+        resolve(file instanceof File ? file : null);
+      };
+      req.onerror = () => { db.close(); resolve(null); };
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function clearPendingPhoto(): Promise<void> {
+  try {
+    const db = await openPendingPhotoDB();
+    const tx = db.transaction(PENDING_PHOTO_STORE, 'readwrite');
+    tx.objectStore(PENDING_PHOTO_STORE).delete('pendingPhoto');
+    db.close();
+  } catch {
+    // Ignore - best effort cleanup
+  }
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-interface MilestoneFormData {
-  title: string;
-  description: string;
-  fundPercentage: string;
-}
-
 interface FormData {
-  // Step 0: The Basics
-  subjectName: string;
+  // Step 0: Who are you raising funds for?
+  fundraisingFor: string;
+  // Step 1: Set Your Goal
+  goalAmount: string;
+  autoGoal: boolean;
+  // Step 2: Add Media
+  heroImageUrl: string;
+  galleryImages: string[];
+  photoCredit: string;
+  youtubeUrl: string;
+  // Step 3: Category, Location & Who
   subjectHometown: string;
-  beneficiaryRelation: string;
   category: string;
+  subjectName: string;
+  beneficiaryRelation: string;
   beneficiaryConsent: boolean;
-  // Step 1: Tell Their Story
+  // Step 4: Tell Their Story
   title: string;
   story: string;
-  // Step 2: Set Your Goal & Fund Release Plan
-  goalAmount: string;
-  milestones: MilestoneFormData[];
-  // Step 3: Review & Submit (photo + legal)
-  heroImageUrl: string;
-  photoCredit: string;
+  // Step 5: Review & Submit (legal)
   agreedToTerms: boolean;
   confirmedTruthful: boolean;
 }
@@ -116,6 +161,13 @@ interface FormData {
 type FormErrors = Partial<Record<string, string>>;
 
 const INITIAL: FormData = {
+  fundraisingFor: '',
+  goalAmount: '',
+  autoGoal: true,
+  heroImageUrl: '',
+  galleryImages: [],
+  photoCredit: '',
+  youtubeUrl: '',
   subjectName: '',
   subjectHometown: '',
   beneficiaryRelation: '',
@@ -123,14 +175,6 @@ const INITIAL: FormData = {
   beneficiaryConsent: false,
   title: '',
   story: '',
-  goalAmount: '',
-  milestones: [
-    { title: '', description: '', fundPercentage: '30' },
-    { title: '', description: '', fundPercentage: '40' },
-    { title: '', description: '', fundPercentage: '30' },
-  ],
-  heroImageUrl: '',
-  photoCredit: '',
   agreedToTerms: false,
   confirmedTruthful: false,
 };
@@ -150,19 +194,110 @@ function storyCharMessage(len: number): { text: string; color: string } {
   return { text: 'Excellent. This is the kind of detail that makes campaigns successful.', color: 'text-teal-600 dark:text-teal-400' };
 }
 
+/**
+ * Extract a YouTube video ID from common URL formats:
+ * - https://www.youtube.com/watch?v=VIDEO_ID
+ * - https://youtu.be/VIDEO_ID
+ * - https://www.youtube.com/embed/VIDEO_ID
+ * - https://www.youtube.com/shorts/VIDEO_ID
+ * Returns null if the URL is not a valid YouTube link.
+ */
+function extractYouTubeId(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname === 'youtu.be') {
+      const id = u.pathname.slice(1).split('/')[0];
+      return id && /^[\w-]{11}$/.test(id) ? id : null;
+    }
+    if (u.hostname === 'www.youtube.com' || u.hostname === 'youtube.com' || u.hostname === 'm.youtube.com') {
+      // /watch?v=ID
+      const v = u.searchParams.get('v');
+      if (v && /^[\w-]{11}$/.test(v)) return v;
+      // /embed/ID or /shorts/ID
+      const match = u.pathname.match(/^\/(embed|shorts)\/([\w-]{11})/);
+      if (match) return match[2];
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Focus trap helper for inline dialogs ───────────────────────────────────
+const FOCUSABLE = 'a[href], button:not([disabled]), textarea, input:not([disabled]), select, [tabindex]:not([tabindex="-1"])';
+
+function trapFocus(e: React.KeyboardEvent<HTMLDivElement>) {
+  if (e.key !== 'Tab') return;
+  const container = e.currentTarget.querySelector<HTMLElement>('[role="dialog"] > div') ?? e.currentTarget;
+  const focusable = container.querySelectorAll<HTMLElement>(FOCUSABLE);
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
 // ─── Component ──────────────────────────────────────────────────────────────
+
+type MediaDialog = 'closed' | 'picker' | 'youtube';
+type EditField = 'title' | 'goal' | 'story' | 'youtube' | 'category' | 'location' | 'name' | 'relationship' | null;
 
 export function ShareYourStoryForm() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(INITIAL);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [submitted, setSubmitted] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
   const [imagePreviewError, setImagePreviewError] = useState(false);
   const [showPhotoCredit, setShowPhotoCredit] = useState(false);
+  const [mediaDialog, setMediaDialog] = useState<MediaDialog>('closed');
+  const [ytInput, setYtInput] = useState('');
+  const [ytError, setYtError] = useState('');
+  const [editField, setEditField] = useState<EditField>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingGalleryFiles, setPendingGalleryFiles] = useState<File[]>([]);
+  const blobUrlRef = useRef<string | null>(null);
+  const galleryBlobUrlsRef = useRef<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { data: session } = useSession();
   const router = useRouter();
+
+  // ── Blob URL management ────────────────────────────────────────────────
+  //
+  // When an unauthenticated user selects a photo, we create a blob URL for
+  // local preview. The ref tracks the current blob URL so we can revoke it
+  // when replaced or on unmount, preventing memory leaks.
+
+  function setBlobPreview(file: File) {
+    // Revoke previous blob URL if any
+    if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+    const url = URL.createObjectURL(file);
+    blobUrlRef.current = url;
+    setPendingFile(file);
+    update('heroImageUrl', url);
+  }
+
+  function clearBlobPreview() {
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
+    setPendingFile(null);
+  }
+
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+      galleryBlobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
 
   // ── Draft persistence ──────────────────────────────────────────────────
   //
@@ -177,6 +312,14 @@ export function ShareYourStoryForm() {
       if (saved) {
         const parsed = JSON.parse(saved) as Partial<FormData & { _step: number }>;
         const { _step, ...fields } = parsed;
+        // BUG 6 fix: Sanitize stale drafts - 'charity' was removed as a fundraisingFor option
+        if (fields.fundraisingFor && !['yourself', 'someone_else'].includes(fields.fundraisingFor)) {
+          fields.fundraisingFor = '';
+        }
+        // Ensure beneficiaryRelation is consistent with fundraisingFor
+        if (fields.fundraisingFor === 'yourself' && fields.beneficiaryRelation !== 'self') {
+          fields.beneficiaryRelation = 'self';
+        }
         setForm((prev) => ({ ...prev, ...fields }));
         if (typeof _step === 'number' && _step >= 0 && _step < STEPS.length) {
           setStep(_step);
@@ -189,9 +332,32 @@ export function ShareYourStoryForm() {
     }
   }, []);
 
+  // Restore pending photo from IndexedDB after login redirect.
+  // The File object is stored before redirect and restored here to
+  // re-create the blob URL preview without requiring re-selection.
+  useEffect(() => {
+    loadPendingPhoto().then((file) => {
+      if (file) {
+        setBlobPreview(file);
+        clearPendingPhoto();
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const saveDraft = useCallback((data: FormData, currentStep: number) => {
     try {
       const { agreedToTerms: _agreedToTerms, confirmedTruthful: _confirmedTruthful, ...draftFields } = data;
+      // Exclude blob URLs from draft - they become invalid after page unload.
+      // The pending file is persisted separately in IndexedDB.
+      const heroUrl = draftFields.heroImageUrl ?? '';
+      if (heroUrl.startsWith('blob:')) {
+        draftFields.heroImageUrl = '';
+      }
+      // Exclude blob URLs from gallery images
+      draftFields.galleryImages = (draftFields.galleryImages ?? []).filter(
+        (url) => !url.startsWith('blob:'),
+      );
       localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...draftFields, _step: currentStep }));
     } catch {
       // localStorage full or unavailable, acceptable degradation
@@ -199,7 +365,7 @@ export function ShareYourStoryForm() {
   }, []);
 
   useEffect(() => {
-    if (form.subjectName || form.title || form.story) {
+    if (form.fundraisingFor || form.subjectHometown || form.category || form.subjectName || form.title || form.story) {
       saveDraft(form, step);
     }
   }, [form, step, saveDraft]);
@@ -216,114 +382,71 @@ export function ShareYourStoryForm() {
     if (field === 'heroImageUrl') setImagePreviewError(false);
   }
 
-  function updateMilestone(index: number, field: keyof MilestoneFormData, value: string) {
-    setForm((prev) => {
-      const milestones = prev.milestones.map((m, i) =>
-        i === index ? { ...m, [field]: value } : m,
-      );
-
-      // Auto-adjust other percentages to maintain 100% total
-      if (field === 'fundPercentage') {
-        const newPct = parseInt(value);
-        const MAX_PCTS = [40, 60, 60];
-        const MIN_PCT = 10;
-
-        if (!isNaN(newPct) && newPct >= 1 && 100 - newPct >= 2 * MIN_PCT) {
-          const remaining = 100 - newPct;
-          const others = [0, 1, 2].filter((j) => j !== index);
-          const oldValues = others.map((j) => parseInt(prev.milestones[j].fundPercentage) || MIN_PCT);
-          const oldSum = oldValues[0] + oldValues[1];
-
-          // Distribute remaining proportionally to current ratio
-          let val0: number;
-          let val1: number;
-          if (oldSum > 0) {
-            val0 = Math.round((remaining * oldValues[0]) / oldSum);
-            val1 = remaining - val0;
-          } else {
-            val0 = Math.round(remaining / 2);
-            val1 = remaining - val0;
-          }
-
-          // Clamp to per-phase bounds and redistribute remainder
-          val0 = Math.max(MIN_PCT, Math.min(MAX_PCTS[others[0]], val0));
-          val1 = remaining - val0;
-          val1 = Math.max(MIN_PCT, Math.min(MAX_PCTS[others[1]], val1));
-          val0 = remaining - val1;
-
-          milestones[others[0]] = { ...milestones[others[0]], fundPercentage: String(val0) };
-          milestones[others[1]] = { ...milestones[others[1]], fundPercentage: String(val1) };
-        }
-      }
-
-      return { ...prev, milestones };
-    });
-    setErrors((prev) => {
-      const updated = { ...prev };
-      delete updated[`m${index}_${field}`];
-      if (field === 'fundPercentage') {
-        delete updated.milestoneTotal;
-        delete updated[`m0_fundPercentage`];
-        delete updated[`m1_fundPercentage`];
-        delete updated[`m2_fundPercentage`];
-      }
-      return updated;
-    });
-  }
-
   // ── Step validation ────────────────────────────────────────────────────
   //
-  // Each step validates only its own fields. Photo is validated at step 3
-  // (Review & Submit) because the upload API requires authentication, and
-  // the auth gate fires at the step 2 → 3 transition. This guarantees that
-  // by the time the user sees the photo upload widget, they are signed in.
+  // Each step validates only its own fields. The Add Media step (step 2)
+  // has no required fields -- the photo is only required at step 5
+  // (Review & Submit). Authentication is deferred to the publish action
+  // so users can complete all steps without signing in first.
   function validateStep(s: number): boolean {
     const errs: FormErrors = {};
 
     if (s === 0) {
-      if (form.subjectName.trim().length < 2)
-        errs.subjectName = 'Name must be at least 2 characters';
+      if (!form.fundraisingFor)
+        errs.fundraisingFor = 'Please select who you are raising funds for';
+      if (form.fundraisingFor === 'someone_else') {
+        if (form.subjectName.trim().length < 2)
+          errs.subjectName = 'Name must be at least 2 characters';
+        if (!form.beneficiaryRelation)
+          errs.beneficiaryRelation = 'Please select your relationship';
+      }
+    } else if (s === 1) {
+      const amount = parseInt(form.goalAmount || '0', 10);
+      if (isNaN(amount) || amount < 1) errs.goalAmount = 'Minimum goal is $1';
+      else if (amount > 1_000_000_000) errs.goalAmount = 'Maximum goal is $1,000,000,000';
+    } else if (s === 2) {
+      // Add Media - no required fields; photo is validated at Review
+    } else if (s === 3) {
       if (form.subjectHometown.trim().length < 2)
         errs.subjectHometown = 'Location is required (e.g. "Austin, TX")';
-      if (!form.beneficiaryRelation)
-        errs.beneficiaryRelation = 'Please select your relationship';
       if (!form.category)
         errs.category = 'Please select a category';
-    } else if (s === 1) {
+    } else if (s === 4) {
       if (form.title.trim().length < 20)
         errs.title = `Title must be at least 20 characters (${form.title.trim().length}/20)`;
       if (form.title.trim().length > 120)
         errs.title = 'Title must be under 120 characters';
       if (form.story.trim().length < 200)
         errs.story = `Story must be at least 200 characters (${form.story.trim().length}/200)`;
-    } else if (s === 2) {
-      const cents = Math.round(parseFloat(form.goalAmount || '0') * 100);
-      if (isNaN(cents) || cents < 5000) errs.goalAmount = 'Minimum goal is $50';
-      if (cents > 5_000_000) errs.goalAmount = 'Maximum goal is $50,000';
-      form.milestones.forEach((m, i) => {
-        if (m.title.trim().length < 3)
-          errs[`m${i}_title`] = 'Title must be at least 3 characters';
-        if (m.description.trim().length < 10)
-          errs[`m${i}_description`] = 'Description must be at least 10 characters';
-        const pct = parseInt(m.fundPercentage);
-        const maxPct = i === 0 ? 40 : 60;
-        if (isNaN(pct) || pct < 10)
-          errs[`m${i}_fundPercentage`] = 'Must be at least 10%';
-        else if (pct > maxPct)
-          errs[`m${i}_fundPercentage`] = `Phase ${i + 1} cannot exceed ${maxPct}%`;
-      });
-      const total = form.milestones.reduce((sum, m) => sum + (parseInt(m.fundPercentage) || 0), 0);
-      if (total !== 100)
-        errs.milestoneTotal = `Percentages must sum to 100% (currently ${total}%)`;
-    } else if (s === 3) {
+    } else if (s === 5) {
+      // BUG 4 fix: Comprehensive validation - re-check ALL fields at Review
+      // so inline edits that broke previously-valid data are caught before submission.
       if (!form.heroImageUrl.trim())
         errs.heroImageUrl = 'A campaign photo is required';
-      if (!form.agreedToTerms)
-        errs.agreedToTerms = 'You must agree to the Terms of Service';
-      if (!form.confirmedTruthful)
-        errs.confirmedTruthful = 'You must confirm the information is truthful';
-      if (form.beneficiaryRelation && form.beneficiaryRelation !== 'self' && !form.beneficiaryConsent)
-        errs.beneficiaryConsent = 'You must confirm the named person is aware of this campaign';
+      if (form.youtubeUrl.trim() && !extractYouTubeId(form.youtubeUrl.trim()))
+        errs.youtubeUrl = 'Please enter a valid YouTube link or remove the video';
+      const goalNum = parseInt(form.goalAmount || '0', 10);
+      if (isNaN(goalNum) || goalNum < 1)
+        errs.goalAmount = 'Minimum goal is $1';
+      else if (goalNum > 1_000_000_000)
+        errs.goalAmount = 'Maximum goal is $1,000,000,000';
+      if (form.subjectHometown.trim().length < 2)
+        errs.subjectHometown = 'Location is required (e.g. "Austin, TX")';
+      if (!form.category)
+        errs.category = 'Please select a category';
+      if (form.fundraisingFor === 'someone_else') {
+        if (form.subjectName.trim().length < 2)
+          errs.subjectName = 'Beneficiary name must be at least 2 characters';
+        if (!form.beneficiaryRelation || form.beneficiaryRelation === 'self')
+          errs.beneficiaryRelation = 'Please select your relationship';
+      }
+      if (form.title.trim().length < 20)
+        errs.title = `Title must be at least 20 characters (${form.title.trim().length}/20)`;
+      if (form.title.trim().length > 120)
+        errs.title = 'Title must be under 120 characters';
+      if (form.story.trim().length < 200)
+        errs.story = `Story must be at least 200 characters (${form.story.trim().length}/200)`;
+      // Consent checks removed -- implicit when user clicks "Launch fundraiser".
     }
 
     setErrors(errs);
@@ -332,21 +455,13 @@ export function ShareYourStoryForm() {
 
   // ── Navigation ─────────────────────────────────────────────────────────
   //
-  // Auth gate: fires when the user advances from Step 2 (Set Your Goal)
-  // to Step 3 (Review & Submit). This is the last possible moment before photo
-  // upload, which requires authentication. The current step is saved in the
-  // draft so the user returns directly to Step 3 after signing in.
+  // All steps are freely navigable without authentication. Auth is deferred
+  // to the publish action so users can invest time in building their
+  // campaign before being asked to sign in. The current step is saved in
+  // the draft so the user returns to the same place after signing in.
 
   function goNext() {
     if (!validateStep(step)) return;
-
-    // Auth gate before Step 3: photo upload requires an authenticated session
-    if (step === 2 && !session?.user) {
-      saveDraft(form, 3); // save target step so user returns here after login
-      router.push('/login?callbackUrl=%2Fshare-your-story');
-      return;
-    }
-
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
   }
 
@@ -354,673 +469,1190 @@ export function ShareYourStoryForm() {
     setStep((s) => Math.max(s - 1, 0));
   }
 
-  // ── Submit ─────────────────────────────────────────────────────────────
+  // ── Preview & Submit ──────────────────────────────────────────────────
 
-  async function handleSubmit() {
-    if (!validateStep(3)) return;
-
-    // Safety net: should never reach here unauthenticated because of the
-    // auth gate at step 2 → 3. But if session expired mid-form, handle it.
+  /** Show the preview modal (validate first, auth gate for unauthenticated). */
+  function handlePreviewLaunch() {
+    // Auth gate: redirect to login if not signed in
     if (!session?.user) {
-      saveDraft(form, 3);
+      if (pendingFile) savePendingPhoto(pendingFile);
+      saveDraft(form, 5);
       router.push('/login?callbackUrl=%2Fshare-your-story');
       return;
     }
+    if (!validateStep(5)) return;
+    setShowPreview(true);
+  }
+
+  /** Actually submit the campaign (called from preview modal confirm). */
+  async function handleSubmit() {
+    // BUG 5 fix: Guard against double-submit
+    if (submitting) return;
 
     setSubmitting(true);
     try {
-      const goalCents = Math.round(parseFloat(form.goalAmount) * 100);
+      // If there's a pending file (selected while unauthenticated), upload
+      // it now that we're authenticated. Replace the blob URL with the real
+      // server URL before creating the campaign.
+      let resolvedHeroImageUrl = form.heroImageUrl.trim();
+      if (pendingFile) {
+        const uploadData = new FormData();
+        uploadData.append('file', pendingFile);
+        try {
+          const uploadRes = await fetch('/api/v1/campaign-photos', {
+            method: 'POST',
+            body: uploadData,
+          });
+          const uploadJson = await uploadRes.json();
+          if (!uploadRes.ok) {
+            const { toast } = await import('sonner');
+            toast.error(uploadJson.error?.message || 'Photo upload failed. Please try again.');
+            setSubmitting(false);
+            return;
+          }
+          resolvedHeroImageUrl = uploadJson.data.url;
+          // Update form state so the preview shows the real URL going forward
+          clearBlobPreview();
+          update('heroImageUrl', resolvedHeroImageUrl);
+          clearPendingPhoto();
+        } catch {
+          const { toast } = await import('sonner');
+          toast.error('Photo upload failed. Please check your connection and try again.');
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      // Upload any pending gallery files (selected while unauthenticated)
+      const resolvedGalleryImages = (form.galleryImages ?? []).filter(
+        (url) => !url.startsWith('blob:'),
+      );
+      if (pendingGalleryFiles.length > 0) {
+        for (const gFile of pendingGalleryFiles) {
+          const uploadData = new FormData();
+          uploadData.append('file', gFile);
+          try {
+            const uploadRes = await fetch('/api/v1/campaign-photos', {
+              method: 'POST',
+              body: uploadData,
+            });
+            const uploadJson = await uploadRes.json();
+            if (uploadRes.ok) {
+              resolvedGalleryImages.push(uploadJson.data.url);
+            }
+          } catch {
+            // Skip failed gallery uploads - non-blocking
+          }
+        }
+        // Clean up gallery blob URLs
+        galleryBlobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+        galleryBlobUrlsRef.current = [];
+        setPendingGalleryFiles([]);
+      }
+
+      const goalCents = parseInt(form.goalAmount, 10) * 100;
+
+      // BUG 3 fix: Validate session.user.name exists for "yourself" fundraisers
+      const resolvedSubjectName =
+        form.fundraisingFor === 'yourself'
+          ? (session?.user?.name ?? '').trim()
+          : form.subjectName.trim();
+
+      if (resolvedSubjectName.length < 2) {
+        const { toast } = await import('sonner');
+        toast.error(
+          form.fundraisingFor === 'yourself'
+            ? 'Your profile name is required. Please update your name in your profile settings before creating a campaign.'
+            : 'Beneficiary name must be at least 2 characters.'
+        );
+        return;
+      }
+
+      // Ensure beneficiaryRelation is valid for the "yourself" case.
+      // Stale drafts or race conditions could leave it as '' which fails
+      // server-side enum validation.
+      const resolvedRelation =
+        form.fundraisingFor === 'yourself' ? 'self' : form.beneficiaryRelation;
 
       const res = await fetch('/api/v1/user-campaigns', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          subjectName: form.subjectName.trim(),
+          subjectName: resolvedSubjectName,
           subjectHometown: form.subjectHometown.trim(),
-          beneficiaryRelation: form.beneficiaryRelation,
+          beneficiaryRelation: resolvedRelation,
           category: form.category,
-          beneficiaryConsent: form.beneficiaryRelation === 'self' ? true : form.beneficiaryConsent,
+          beneficiaryConsent: true,
           title: form.title.trim(),
           story: form.story.trim(),
           goalAmount: goalCents,
-          milestones: form.milestones.map((m) => ({
-            title: m.title.trim(),
-            description: m.description.trim(),
-            fundPercentage: parseInt(m.fundPercentage),
-          })),
-          heroImageUrl: form.heroImageUrl.trim(),
+          heroImageUrl: resolvedHeroImageUrl,
+          galleryImages: resolvedGalleryImages.length > 0 ? resolvedGalleryImages : undefined,
           photoCredit: form.photoCredit.trim() || undefined,
-          agreedToTerms: form.agreedToTerms,
-          confirmedTruthful: form.confirmedTruthful,
+          youtubeUrl: form.youtubeUrl.trim() || undefined,
+          agreedToTerms: true,
+          confirmedTruthful: true,
         }),
       });
 
-      const data = await res.json();
+      let data: Record<string, unknown> | null = null;
+      try {
+        data = await res.json();
+      } catch {
+        // Response body is not JSON (e.g. HTML error page from edge/proxy)
+      }
 
       if (!res.ok) {
         const { toast } = await import('sonner');
-        toast.error(data.error?.message || 'Failed to create campaign');
+        const msg =
+          data?.error && typeof data.error === 'object' && 'message' in data.error
+            ? String((data.error as Record<string, unknown>).message)
+            : data?.message
+              ? String(data.message)
+              : typeof data?.error === 'string'
+                ? data.error
+                : 'Failed to create campaign. Please try again.';
+        toast.error(msg, { duration: 8000 });
+        console.error(
+          `[campaign-create] status=${res.status} body=${JSON.stringify(data)}`,
+        );
         return;
       }
 
       clearDraft();
+      clearBlobPreview();
+      clearPendingPhoto();
 
-      // Redirect to congratulations page (instant-live: campaign is active now)
-      if (data.data?.slug) {
-        router.push(`/campaigns/${data.data.slug}/congratulations`);
-        return;
-      }
-
-      // Fallback if slug not available
-      setSubmitted(true);
-    } catch {
+      // Redirect to the live campaign page so the organizer sees exactly
+      // what donors see. The ?launched=true param triggers a success banner
+      // with share buttons and a verification prompt.
+      const slug = (data?.data as Record<string, unknown> | undefined)?.slug;
+      router.push(typeof slug === 'string' ? `/campaigns/${slug}?launched=true` : '/dashboard');
+      return;
+    } catch (err) {
       const { toast } = await import('sonner');
       toast.error('Something went wrong. Please try again.');
+      console.error('[campaign-create] unhandled:', err instanceof Error ? err.message : err);
     } finally {
       setSubmitting(false);
     }
   }
 
-  // ── Success state ──────────────────────────────────────────────────────
-
-  if (submitted) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-24 text-center sm:px-6 lg:px-8">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-900/30">
-          <svg className="h-8 w-8 text-teal-600 dark:text-teal-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <h1 className="font-display text-3xl font-bold text-foreground">
-          Your Campaign Is Live!
-        </h1>
-        <p className="mt-4 text-lg text-muted-foreground">
-          Your campaign is now live and accepting donations. Share it with
-          friends and family to get your first donation!
-        </p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Check your email for tips on how to share your campaign effectively.
-        </p>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-          >
-            Go to Dashboard
-          </Link>
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground hover:bg-accent"
-          >
-            Back to Home
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   // ── Render helpers ─────────────────────────────────────────────────────
 
-  const goalDollars = form.goalAmount ? parseFloat(form.goalAmount) : 0;
+  const goalDollars = form.goalAmount ? parseInt(form.goalAmount, 10) : 0;
+
+  const startingGoal = computeStartingGoal(goalDollars);
   const storyLen = form.story.trim().length;
   const storyMsg = storyCharMessage(storyLen);
   const showBeneficiaryConsent = form.beneficiaryRelation && form.beneficiaryRelation !== 'self';
-  const _totalPct = form.milestones.reduce((sum, m) => sum + (parseInt(m.fundPercentage) || 0), 0);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
-      <Breadcrumbs />
+    <div className="flex min-h-[calc(100dvh-4rem)] flex-col lg:flex-row">
+      {/* Fundraiser preview modal */}
+      {showPreview && (
+        <FundraiserPreviewModal
+          data={{
+            title: form.title,
+            story: form.story,
+            heroImageUrl: form.heroImageUrl,
+            galleryImages: form.galleryImages ?? [],
+            youtubeUrl: form.youtubeUrl || null,
+            photoCredit: form.photoCredit,
+            category: form.category,
+            subjectName: form.fundraisingFor === 'yourself'
+              ? (session?.user?.name ?? '')
+              : form.subjectName,
+            subjectHometown: form.subjectHometown,
+            goalAmount: form.goalAmount,
+            beneficiaryRelation: form.beneficiaryRelation,
+            organizerName: session?.user?.name ?? 'You',
+            organizerImage: session?.user?.image ?? null,
+          }}
+          onClose={() => setShowPreview(false)}
+          onConfirmLaunch={() => {
+            setShowPreview(false);
+            handleSubmit();
+          }}
+          launching={submitting}
+        />
+      )}
 
-      <h1 className="mt-6 font-display text-3xl font-bold text-foreground">
-        Start a Campaign
-      </h1>
-      <p className="mt-2 text-muted-foreground">
-        Tell us who needs help and why. Your campaign goes live immediately so
-        you can start sharing it right away.
-      </p>
-
-      {/* Draft restored notice */}
-      {draftRestored && step === 0 && (
-        <div className="mt-4 flex items-center justify-between rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 dark:border-teal-900 dark:bg-teal-950/30">
-          <p className="text-sm text-teal-800 dark:text-teal-200">
-            Your previous draft has been restored.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setForm(INITIAL);
-              clearDraft();
-              setDraftRestored(false);
-            }}
-            className="text-sm font-medium text-teal-700 underline hover:text-teal-900 dark:text-teal-300 dark:hover:text-teal-100"
-          >
-            Start fresh
-          </button>
+      {/* Publishing overlay */}
+      {submitting && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+          role="status"
+          aria-label="Publishing your campaign"
+        >
+          <div className="flex flex-col items-center gap-6 text-center">
+            <div className="relative h-16 w-16">
+              <div className="absolute inset-0 animate-spin rounded-full border-4 border-muted" />
+              <div className="absolute inset-0 animate-spin rounded-full border-4 border-t-primary" style={{ animationDuration: '1.2s' }} />
+            </div>
+            <div>
+              <p className="font-display text-xl font-semibold text-foreground">
+                Publishing your campaign
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Hang tight, your campaign will be live in just a moment.
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Step indicator */}
-      <nav aria-label="Campaign creation progress" className="mt-8">
-        <ol className="flex items-center gap-1 sm:gap-2">
-          {STEPS.map((label, i) => (
-            <li key={label} className="flex items-center gap-1 sm:gap-2">
-              <div
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-medium transition-colors ${
-                  i < step
-                    ? 'bg-teal-600 text-white'
-                    : i === step
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground'
-                }`}
-                aria-current={i === step ? 'step' : undefined}
-              >
-                {i < step ? (
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                  </svg>
-                ) : (
-                  i + 1
-                )}
-              </div>
-              <span
-                className={`hidden text-sm sm:inline ${
-                  i === step ? 'font-medium text-foreground' : 'text-muted-foreground'
-                }`}
-              >
-                {label}
-              </span>
-              {i < STEPS.length - 1 && (
-                <div className={`h-px w-4 sm:w-8 ${i < step ? 'bg-teal-600' : 'bg-border'}`} aria-hidden="true" />
-              )}
+      {/* Left Panel - Hero/Brand (desktop only) */}
+      <aside className="relative hidden lg:flex lg:w-[25%] lg:shrink-0 lg:flex-col lg:sticky lg:top-0 lg:h-dvh">
+        {/* Logo - anchored top-left */}
+        <div className="px-8 pt-8">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-teal/10">
+            <svg className="h-5 w-5 text-brand-teal" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
+            </svg>
+          </div>
+        </div>
+        {/* Step content - positioned above center */}
+        <div className="flex flex-1 flex-col justify-center px-8 pb-28">
+          <div>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-teal">
+              Step {step + 1} of {STEPS.length}
+            </p>
+            <h1 className="font-display text-3xl font-bold leading-tight tracking-tight text-foreground lg:text-4xl">
+              {STEP_HERO[step].title}
+            </h1>
+            <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+              {STEP_HERO[step].subtitle}
+            </p>
+          </div>
+
+          {/* Reciprocity: surface what the platform gives back, so the effort of filling
+              out the form reads as a fair trade instead of a hurdle. */}
+          <ul className="mt-10 space-y-2.5 border-t border-border pt-6">
+            <li className="flex items-start gap-2 text-sm text-foreground">
+              <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>Live in minutes. No review queue.</span>
             </li>
-          ))}
-        </ol>
-      </nav>
+            <li className="flex items-start gap-2 text-sm text-foreground">
+              <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>0% platform fees. You keep 100%.</span>
+            </li>
+            <li className="flex items-start gap-2 text-sm text-foreground">
+              <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>Save and come back - we keep your draft.</span>
+            </li>
+          </ul>
+        </div>
+      </aside>
 
-      {/* ── Step 0: The Basics ─────────────────────────────────────────── */}
-      <div className="mt-8">
-        {step === 0 && (
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="subjectName">Who needs help?</Label>
-              <Input
-                id="subjectName"
-                value={form.subjectName}
-                onChange={(e) => update('subjectName', e.target.value)}
-                maxLength={200}
-                placeholder="Their full name"
-                aria-invalid={!!errors.subjectName}
-                aria-describedby={errors.subjectName ? 'subjectName-error' : undefined}
-              />
-              {errors.subjectName && <p id="subjectName-error" className="text-sm text-red-500">{errors.subjectName}</p>}
-            </div>
+      {/* Mobile hero (compact, visible < lg) */}
+      <div className="px-6 py-8 lg:hidden">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-teal">
+          Step {step + 1} of {STEPS.length}
+        </p>
+        <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
+          {STEP_HERO[step].title}
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {STEP_HERO[step].subtitle}
+        </p>
+      </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="subjectHometown">Their location</Label>
-              <Input
-                id="subjectHometown"
-                value={form.subjectHometown}
-                onChange={(e) => update('subjectHometown', e.target.value)}
-                maxLength={200}
-                placeholder="City, State (e.g. Austin, TX)"
-                aria-invalid={!!errors.subjectHometown}
-                aria-describedby={errors.subjectHometown ? 'subjectHometown-error' : undefined}
-              />
-              {errors.subjectHometown && <p id="subjectHometown-error" className="text-sm text-red-500">{errors.subjectHometown}</p>}
-              <p className="text-xs text-muted-foreground">
-                Donors connect more with campaigns tied to a real place.
+      {/* Right Panel - Form */}
+      <div className="flex flex-1 flex-col bg-stone-50 dark:bg-gray-900/40">
+        <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-10 lg:px-12 lg:py-16">
+          {/* Draft restored notice */}
+          {draftRestored && step === 0 && (
+            <div className="mb-8 flex items-center justify-between rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 dark:border-teal-900 dark:bg-teal-950/30">
+              <p className="text-sm text-teal-800 dark:text-teal-200">
+                Your previous draft has been restored.
               </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setForm(INITIAL);
+                  setStep(0);
+                  clearDraft();
+                  clearBlobPreview();
+                  clearPendingPhoto();
+                  setDraftRestored(false);
+                }}
+                className="text-sm font-medium text-teal-700 underline hover:text-teal-900 dark:text-teal-300 dark:hover:text-teal-100"
+              >
+                Start fresh
+              </button>
             </div>
-
-            <div className="space-y-3">
-              <Label>Category</Label>
-              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Campaign category">
-                {CATEGORIES.map((cat) => {
-                  const Icon = cat.icon;
-                  const selected = form.category === cat.value;
+          )}
+          {/* ── Step 0: Who are you raising funds for? ──────────────── */}
+          {step === 0 && (
+            <div className="space-y-8">
+              <h2 className="text-2xl font-bold text-foreground">Who are you fundraising for?</h2>
+              {errors.fundraisingFor && <p className="text-sm text-red-500">{errors.fundraisingFor}</p>}
+              <div className="space-y-4" role="radiogroup" aria-label="Who are you fundraising for?">
+                {[
+                  {
+                    value: 'yourself',
+                    title: 'Yourself',
+                    description: 'Funds are delivered to your bank account for your own use',
+                    icon: (
+                      <svg className="h-7 w-7 text-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    value: 'someone_else',
+                    title: 'Someone else',
+                    description: "You'll invite a beneficiary to receive funds or distribute them yourself",
+                    icon: (
+                      <svg className="h-7 w-7 text-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
+                      </svg>
+                    ),
+                  },
+                ].map((type) => {
+                  const isSelected = form.fundraisingFor === type.value;
                   return (
                     <button
-                      key={cat.value}
+                      key={type.value}
                       type="button"
                       role="radio"
-                      aria-checked={selected}
-                      onClick={() => update('category', cat.value)}
-                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                        selected
-                          ? 'border-primary bg-primary/10 font-medium text-primary'
-                          : 'border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                      aria-checked={isSelected}
+                      onClick={() => {
+                        update('fundraisingFor', type.value);
+                        if (type.value === 'yourself') {
+                          update('beneficiaryRelation', 'self');
+                        } else if (form.beneficiaryRelation === 'self') {
+                          update('beneficiaryRelation', '');
+                        }
+                      }}
+                      className={`group flex w-full items-center gap-5 rounded-xl border-2 p-5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                        isSelected
+                          ? 'border-primary bg-primary/5 shadow-sm'
+                          : 'border-border bg-card hover:border-foreground/30 hover:shadow-sm'
                       }`}
                     >
-                      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                      {cat.label}
+                      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-colors ${
+                        isSelected ? 'bg-primary/10' : 'bg-muted'
+                      }`}>
+                        {type.icon}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">{type.title}</p>
+                        <p className="mt-0.5 text-sm leading-snug text-muted-foreground">{type.description}</p>
+                      </div>
                     </button>
                   );
                 })}
               </div>
-              {errors.category && <p className="text-sm text-red-500">{errors.category}</p>}
-            </div>
 
-            <div className="space-y-3">
-              <Label>Your relationship to this person</Label>
-              <RadioGroup
-                value={form.beneficiaryRelation}
-                onValueChange={(v) => update('beneficiaryRelation', v)}
-              >
-                {RELATIONS.map((r) => (
-                  <div className="flex items-center space-x-2" key={r.value}>
-                    <RadioGroupItem value={r.value} id={`rel-${r.value}`} />
-                    <Label htmlFor={`rel-${r.value}`} className="cursor-pointer font-normal">
-                      {r.label}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-              {errors.beneficiaryRelation && (
-                <p className="text-sm text-red-500">{errors.beneficiaryRelation}</p>
-              )}
-            </div>
-
-            {/* Soft notice when raising for someone else — binding consent is in Step 3 */}
-            {showBeneficiaryConsent && (
-              <p className="text-xs text-muted-foreground">
-                By continuing, you confirm that {form.subjectName || 'this person'} is
-                aware you are creating this campaign on their behalf.
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* ── Step 1: Tell Their Story ────────────────────────────────────── */}
-        {step === 1 && (
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="title">Campaign title</Label>
-              <p className="text-sm text-muted-foreground">
-                A specific, person-focused title that tells donors exactly what this
-                campaign is about.
-              </p>
-              <Input
-                id="title"
-                value={form.title}
-                onChange={(e) => update('title', e.target.value)}
-                maxLength={120}
-                placeholder={
-                  form.subjectName
-                    ? `Help ${form.subjectName} with...`
-                    : 'Help [Name] recover from [situation]'
-                }
-                aria-invalid={!!errors.title}
-                aria-describedby={errors.title ? 'title-error' : 'title-hint'}
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span id="title-hint">{form.title.trim().length} / 120 characters</span>
-                {form.title.trim().length > 0 && form.title.trim().length < 20 && (
-                  <span className="text-amber-500">{20 - form.title.trim().length} more needed</span>
-                )}
-              </div>
-              {errors.title && <p id="title-error" className="text-sm text-red-500">{errors.title}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="story">
-                Tell {form.subjectName ? `${form.subjectName}'s` : 'their'} story
-              </Label>
-              {/* Inline writing guidance */}
-              <div className="rounded-lg border border-border bg-muted/50 p-4">
-                <p className="text-sm font-medium text-foreground">Writing tips</p>
-                <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
-                  <li>Use their first name, not &ldquo;the patient&rdquo;</li>
-                  <li>Include one personal detail that makes them real: their hometown, a hobby, a family role</li>
-                  <li>Explain what happened in plain language, no jargon</li>
-                  <li>Be specific about the gap: what do they need that they don&apos;t have?</li>
-                  <li>Show strength, not helplessness. These are people, not victims</li>
-                </ul>
-              </div>
-              <Textarea
-                id="story"
-                value={form.story}
-                onChange={(e) => update('story', e.target.value)}
-                rows={10}
-                maxLength={10000}
-                placeholder={
-                  form.subjectName
-                    ? `${form.subjectName} is from ${form.subjectHometown || '[their hometown]'}. [Share what happened and when the situation began.]\n\n[How is this affecting ${form.subjectName} and their family right now?]\n\n[Why is help needed now? What happens if the goal isn't reached?]`
-                    : 'Start with their name and where they\'re from. Share what happened, how it\'s affecting them, and why they need help now.'
-                }
-                aria-invalid={!!errors.story}
-                aria-describedby="story-counter"
-              />
-              <div id="story-counter" className="flex justify-between text-xs">
-                <span className="text-muted-foreground">{storyLen.toLocaleString()} / 10,000 characters</span>
-                {storyMsg.text && <span className={storyMsg.color}>{storyMsg.text}</span>}
-              </div>
-              {errors.story && <p className="text-sm text-red-500">{errors.story}</p>}
-            </div>
-          </div>
-        )}
-
-        {/* ── Step 2: Set Your Goal ───────────────────────────────────────── */}
-        {step === 2 && (
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="goalAmount">Fundraising goal ($)</Label>
-              <p className="text-sm text-muted-foreground">
-                Set a goal between $50 and $50,000. You can always adjust it later.
-              </p>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                <Input
-                  id="goalAmount"
-                  type="number"
-                  min={50}
-                  max={50000}
-                  step={1}
-                  value={form.goalAmount}
-                  onChange={(e) => update('goalAmount', e.target.value)}
-                  className="pl-7"
-                  placeholder="500"
-                  aria-invalid={!!errors.goalAmount}
-                />
-              </div>
-              {errors.goalAmount && <p className="text-sm text-red-500">{errors.goalAmount}</p>}
-              {goalDollars > 0 && (
-                <p className="text-sm text-muted-foreground">
-                  Goal: <span className="font-medium text-foreground">${goalDollars.toLocaleString()}</span>
-                </p>
-              )}
-            </div>
-
-            <hr className="border-border" />
-
-            {/* Fund Release Plan */}
-            <div>
-              <h2 className="font-display text-xl font-bold text-foreground">
-                Fund Release Plan
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Campaigns with a clear plan raise up to 3x more. Donors are more
-                likely to give when they can see exactly where their money goes.
-                Break your campaign into three phases so supporters can follow
-                your progress and celebrate each milestone with you.
-              </p>
-            </div>
-
-            {form.milestones.map((milestone, i) => {
-              const phase = i + 1;
-              const maxPct = phase === 1 ? 40 : 60;
-              const dollarAmount = goalDollars > 0
-                ? Math.round(goalDollars * (parseInt(milestone.fundPercentage) || 0) / 100)
-                : 0;
-              return (
-                <div key={i} className="space-y-4 rounded-lg border border-border bg-card p-6">
-                  <h3 className="font-bold text-foreground">Phase {phase}</h3>
-
-                  <div className="space-y-2">
-                    <Label htmlFor={`milestone-${i}-title`} className="font-semibold">
-                      What will this phase cover?
-                    </Label>
+              {/* Conditional fields for "someone else" */}
+              {form.fundraisingFor === 'someone_else' && (
+                <>
+                  <div className="space-y-4">
+                    <h2 className="text-xl font-bold text-foreground">Who are you fundraising for?</h2>
                     <Input
-                      id={`milestone-${i}-title`}
-                      value={milestone.title}
-                      onChange={(e) => updateMilestone(i, 'title', e.target.value)}
+                      id="subjectName"
+                      value={form.subjectName}
+                      onChange={(e) => update('subjectName', e.target.value)}
                       maxLength={200}
-                      placeholder={
-                        phase === 1
-                          ? 'Initial expenses and urgent needs'
-                          : phase === 2
-                            ? 'Ongoing costs and progress'
-                            : 'Completion and remaining needs'
-                      }
-                      aria-invalid={!!errors[`m${i}_title`]}
+                      placeholder="Their full name"
+                      className="h-14 text-base"
+                      aria-invalid={!!errors.subjectName}
+                      aria-describedby={errors.subjectName ? 'subjectName-error' : undefined}
                     />
-                    {errors[`m${i}_title`] && (
-                      <p className="text-sm text-red-500">{errors[`m${i}_title`]}</p>
-                    )}
+                    {errors.subjectName && <p id="subjectName-error" className="text-sm text-red-500">{errors.subjectName}</p>}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor={`milestone-${i}-description`} className="font-semibold">
-                      Describe what these funds will cover
-                    </Label>
-                    <Textarea
-                      id={`milestone-${i}-description`}
-                      value={milestone.description}
-                      onChange={(e) => updateMilestone(i, 'description', e.target.value)}
-                      rows={3}
-                      maxLength={1000}
-                      placeholder={
-                        phase === 1
-                          ? 'List the most urgent expenses this campaign needs to address first.'
-                          : phase === 2
-                            ? 'Describe the next set of expenses or needs these funds will cover.'
-                            : 'Describe the final expenses or goals the remaining funds will go toward.'
-                      }
-                      aria-invalid={!!errors[`m${i}_description`]}
-                    />
-                    {errors[`m${i}_description`] && (
-                      <p className="text-sm text-red-500">{errors[`m${i}_description`]}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor={`milestone-${i}-percentage`} className="font-semibold">
-                      Percentage of funds {phase === 1 && <span className="font-normal text-muted-foreground">(max 40%)</span>}
-                    </Label>
-                    <div className="flex items-center gap-3">
-                      <div className="relative w-24">
-                        <Input
-                          id={`milestone-${i}-percentage`}
-                          type="number"
-                          min={10}
-                          max={maxPct}
-                          step={5}
-                          value={milestone.fundPercentage}
-                          onChange={(e) => updateMilestone(i, 'fundPercentage', e.target.value)}
-                          className="pr-7"
-                          aria-invalid={!!errors[`m${i}_fundPercentage`]}
-                        />
-                        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                          %
-                        </span>
-                      </div>
-                      {dollarAmount > 0 && (
-                        <span className="text-sm text-muted-foreground">
-                          ${dollarAmount.toLocaleString()}
-                        </span>
-                      )}
+                  <div className="space-y-4">
+                    <h2 className="text-xl font-bold text-foreground">What is your relationship to this person?</h2>
+                    <div className="flex flex-wrap gap-2.5" role="radiogroup" aria-label="Relationship to beneficiary">
+                      {RELATIONS.filter((r) => r.value !== 'self').map((r) => {
+                        const selected = form.beneficiaryRelation === r.value;
+                        return (
+                          <button
+                            key={r.value}
+                            type="button"
+                            role="radio"
+                            aria-checked={selected}
+                            onClick={() => update('beneficiaryRelation', r.value)}
+                            className={`rounded-full border px-4 py-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                              selected
+                                ? 'border-green-600 bg-green-50 font-medium text-green-900 dark:border-green-500 dark:bg-green-950/40 dark:text-green-100'
+                                : 'border-border bg-background text-foreground hover:border-foreground/40 hover:bg-accent/50'
+                            }`}
+                          >
+                            {r.label}
+                          </button>
+                        );
+                      })}
                     </div>
-                    {errors[`m${i}_fundPercentage`] && (
-                      <p className="text-sm text-red-500">{errors[`m${i}_fundPercentage`]}</p>
+                    {errors.beneficiaryRelation && (
+                      <p className="text-sm text-red-500">{errors.beneficiaryRelation}</p>
                     )}
                   </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ── Step 1: Set Your Goal ─────────────────────────────────── */}
+          {step === 1 && (
+            <div className="space-y-8">
+              {/* Amount input */}
+              <div className="space-y-4">
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg text-muted-foreground">$</span>
+                  <Input
+                    id="goalAmount"
+                    type="number"
+                    min={1}
+                    max={1_000_000_000}
+                    step={1}
+                    value={form.goalAmount}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      // Strip decimals and leading zeros; block negatives
+                      const sanitized = raw.replace(/[^0-9]/g, '').replace(/^0+(?=\d)/, '');
+                      // Clamp to 1 billion
+                      const num = parseInt(sanitized || '0', 10);
+                      if (num > 1_000_000_000) {
+                        update('goalAmount', '1000000000');
+                      } else {
+                        update('goalAmount', sanitized);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      // Block decimal point, minus, and 'e' keys
+                      if (e.key === '.' || e.key === '-' || e.key === 'e' || e.key === '+') {
+                        e.preventDefault();
+                      }
+                    }}
+                    className="h-14 pl-9 pr-20 text-lg [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    placeholder="Enter amount"
+                    aria-label="Fundraising goal amount in dollars"
+                    aria-invalid={!!errors.goalAmount}
+                    aria-describedby={errors.goalAmount ? 'goalAmount-error' : 'goalAmount-hint'}
+                  />
+                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 rounded bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                    USD
+                  </span>
                 </div>
-              );
-            })}
-
-            {errors.milestoneTotal && (
-              <p className="text-center text-sm text-red-500">{errors.milestoneTotal}</p>
-            )}
-          </div>
-        )}
-
-        {/* ── Step 3: Review & Submit ─────────────────────────────────────── */}
-        {step === 3 && (
-          <div className="space-y-6">
-            {/* Campaign photo — placed here because the upload API requires
-                authentication, and the auth gate fires at the step 2 → 3
-                transition. By this point the user is guaranteed to be signed in. */}
-            <div className="space-y-2">
-              <Label>Campaign photo</Label>
-              <p className="text-sm text-muted-foreground">
-                A clear photo of the person or situation. Campaigns with real photos
-                raise significantly more.
-              </p>
-
-              <PhotoUpload
-                value={form.heroImageUrl}
-                onChange={(url) => update('heroImageUrl', url)}
-                error={errors.heroImageUrl}
-              />
-
-              <div className="rounded-lg border border-border bg-muted/50 p-4">
-                <p className="text-sm font-medium text-foreground">Photo tips</p>
-                <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
-                  <li>Show the person&apos;s face when possible. People donate to people</li>
-                  <li>Use a clear, well-lit image (JPEG, PNG, or WebP, up to 5 MB)</li>
-                  <li>Show strength and dignity, not helplessness</li>
-                  <li>You must have the right to share this photo</li>
-                </ul>
+                {errors.goalAmount && <p id="goalAmount-error" className="text-sm text-red-500">{errors.goalAmount}</p>}
+                <p id="goalAmount-hint" className="text-base text-muted-foreground">
+                  <span className="underline cursor-pointer hover:text-foreground">Fundraisers like yours</span>{' '}
+                  typically aim to raise{' '}
+                  <span className="font-medium text-foreground">$5,000</span>
+                </p>
               </div>
 
-              {!showPhotoCredit ? (
-                <button
-                  type="button"
-                  onClick={() => setShowPhotoCredit(true)}
-                  className="text-xs font-medium text-primary hover:underline"
-                >
-                  + Add photo credit
-                </button>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="photoCredit">
-                    Photo credit <span className="text-muted-foreground">(optional)</span>
-                  </Label>
-                  <Input
-                    id="photoCredit"
-                    value={form.photoCredit}
-                    onChange={(e) => update('photoCredit', e.target.value)}
-                    maxLength={200}
-                    placeholder="Photo by Jane Smith"
-                  />
-                </div>
-              )}
-            </div>
-
-            <hr className="border-border" />
-
-            {/* Campaign preview card */}
-            <div>
-              <h2 className="font-display text-xl font-bold text-foreground">
-                Review Your Campaign
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Check the details below, then agree to our guidelines and submit.
-              </p>
-            </div>
-
-            <div className="overflow-hidden rounded-lg border border-border bg-card">
-              {/* Hero image preview */}
-              {form.heroImageUrl && !imagePreviewError && (
-                <div className="relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={form.heroImageUrl}
-                    alt=""
-                    className="aspect-[3/2] w-full object-cover"
-                    onError={() => setImagePreviewError(true)}
-                  />
-                  {form.photoCredit && (
-                    <p className="absolute bottom-2 right-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">
-                      {form.photoCredit}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              <div className="space-y-4 p-6">
-                {/* Title & subject */}
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-display text-lg font-semibold text-foreground">{form.title}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {form.subjectName} &middot; {form.subjectHometown}
+              {/* Automated goal setting card */}
+              <div className="rounded-xl border border-border bg-muted/30 p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-1.5">
+                    <span className="inline-block rounded border border-green-600 bg-green-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-green-800 dark:border-green-500 dark:bg-green-950/40 dark:text-green-300">
+                      Recommended
+                    </span>
+                    <h3 className="text-base font-bold text-foreground">Automated goal setting</h3>
+                    <p className="text-base leading-relaxed text-muted-foreground">
+                      To help build momentum, we&apos;ll gradually adjust your goal as donations come in.{' '}
+                      <span className="underline cursor-pointer hover:text-foreground">More details</span>
                     </p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => setStep(0)}
-                    className="shrink-0 text-xs font-medium text-primary hover:underline"
+                    role="switch"
+                    aria-checked={form.autoGoal}
+                    aria-label="Automated goal setting"
+                    onClick={() => update('autoGoal', !form.autoGoal)}
+                    className={`relative mt-1 inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                      form.autoGoal
+                        ? 'bg-green-600'
+                        : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
                   >
-                    Edit
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ${
+                        form.autoGoal ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
                   </button>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Category</p>
-                    <p className="text-sm font-medium text-foreground">
-                      {CATEGORIES.find((c) => c.value === form.category)?.label}
-                    </p>
+              {goalDollars > 0 && form.autoGoal && (
+                <div className="flex items-center gap-2 px-1">
+                  <svg className="h-5 w-5 shrink-0 text-green-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                  </svg>
+                  <p className="text-base text-muted-foreground">
+                    Your starting goal would be:{' '}
+                    <span className="font-bold text-foreground">${startingGoal.toLocaleString()}</span>
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Step 2: Add Media ─────────────────────────────────────── */}
+          {step === 2 && (
+            <div className="space-y-8">
+              <div className="space-y-3">
+                <h2 className="text-2xl font-bold text-foreground">
+                  Add a cover photo or video
+                </h2>
+                <p className="text-base text-muted-foreground">
+                  Cover media helps tell your story. You can upload up to 5 photos
+                  and add a YouTube video. If you find better media later,
+                  you can always change it.
+                </p>
+              </div>
+
+              {/* ── Photo grid ────────────────────────────────────── */}
+              {form.heroImageUrl && (() => {
+                const allImages = [form.heroImageUrl, ...(form.galleryImages ?? [])];
+                const canAddMore = allImages.length < 5;
+                return (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3">
+                      {allImages.map((url, i) => (
+                        <div
+                          key={`${url}-${i}`}
+                          className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={url}
+                            alt={i === 0 ? 'Main campaign photo' : `Campaign photo ${i + 1}`}
+                            className="h-full w-full object-cover"
+                            onError={() => {
+                              setForm((prev) => ({ ...prev, galleryImages: (prev.galleryImages ?? []).filter((u) => u !== url) }));
+                            }}
+                          />
+                          {/* Main photo badge */}
+                          {i === 0 && (
+                            <span className="absolute top-1.5 left-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+                              Main
+                            </span>
+                          )}
+                          {/* Remove button */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (i === 0) {
+                                // Removing hero: promote first gallery image to hero
+                                const gallery = form.galleryImages ?? [];
+                                if (gallery.length > 0) {
+                                  const [newHero, ...rest] = gallery;
+                                  clearBlobPreview();
+                                  setForm((prev) => ({
+                                    ...prev,
+                                    heroImageUrl: newHero,
+                                    galleryImages: rest,
+                                  }));
+                                } else {
+                                  clearBlobPreview();
+                                  update('heroImageUrl', '');
+                                }
+                              } else {
+                                // Removing a gallery image
+                                const idx = i - 1;
+                                setForm((prev) => ({
+                                  ...prev,
+                                  galleryImages: (prev.galleryImages ?? []).filter((_, gi) => gi !== idx),
+                                }));
+                              }
+                            }}
+                            className="absolute top-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-black/80"
+                            aria-label={`Remove photo ${i + 1}`}
+                          >
+                            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                          </button>
+                        </div>
+                      ))}
+
+                      {/* Add more button */}
+                      {canAddMore && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            fileInputRef.current?.click();
+                          }}
+                          className="flex aspect-square flex-col items-center justify-center rounded-lg border-2 border-dashed border-border text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-accent/30 hover:text-foreground"
+                          aria-label="Add another photo"
+                        >
+                          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                          <span className="mt-1 text-xs">Add photo</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Photo credit */}
+                    {!showPhotoCredit ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowPhotoCredit(true)}
+                        className="text-xs font-medium text-primary hover:underline"
+                      >
+                        + Add photo credit
+                      </button>
+                    ) : (
+                      <div className="space-y-2">
+                        <Label htmlFor="photoCredit">
+                          Photo credit <span className="text-muted-foreground">(optional)</span>
+                        </Label>
+                        <Input
+                          id="photoCredit"
+                          value={form.photoCredit}
+                          onChange={(e) => update('photoCredit', e.target.value)}
+                          maxLength={200}
+                          placeholder="Photo by Jane Smith"
+                        />
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Goal</p>
-                    <p className="text-sm font-medium text-foreground">${goalDollars.toLocaleString()}</p>
+                );
+              })()}
+
+              {/* ── YouTube preview ───────────────────────────────── */}
+              {form.youtubeUrl && (() => {
+                const videoId = extractYouTubeId(form.youtubeUrl);
+                return videoId ? (
+                  <div className="space-y-2">
+                    <div className="group relative overflow-hidden rounded-lg border border-border">
+                      <iframe
+                        src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+                        title="YouTube video preview"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="aspect-video w-full"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => update('youtubeUrl', '')}
+                        className="absolute top-2 right-2 rounded bg-black/60 px-2.5 py-1 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-black/80"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Relationship</p>
-                    <p className="text-sm font-medium text-foreground">
-                      {RELATIONS.find((r) => r.value === form.beneficiaryRelation)?.label}
-                    </p>
+                ) : null;
+              })()}
+
+              {/* ── Upload area (opens picker dialog) ────────────── */}
+              {!form.heroImageUrl && !form.youtubeUrl && (
+                <button
+                  type="button"
+                  onClick={() => setMediaDialog('picker')}
+                  className="flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border px-6 py-16 text-center transition-colors hover:border-foreground/30 hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  aria-label="Upload a photo or video"
+                >
+                  <svg className="mb-3 h-10 w-10 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                  </svg>
+                  <p className="text-sm text-muted-foreground">Upload a photo or video</p>
+                </button>
+              )}
+
+              {/* ── Add second media type ─────────────────────────── */}
+              {(form.heroImageUrl && !form.youtubeUrl) && (
+                <button
+                  type="button"
+                  onClick={() => { setYtInput(''); setYtError(''); setMediaDialog('youtube'); }}
+                  className="flex items-center gap-2 text-xs font-medium text-primary hover:underline"
+                >
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z" />
+                    <path fill="white" d="M9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                  </svg>
+                  Add a YouTube video
+                </button>
+              )}
+              {(!form.heroImageUrl && form.youtubeUrl) && (
+                <button
+                  type="button"
+                  onClick={() => setMediaDialog('picker')}
+                  className="flex items-center gap-2 text-xs font-medium text-primary hover:underline"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                  </svg>
+                  Upload a photo
+                </button>
+              )}
+
+              {/* ── Media picker dialog (overlay) ────────────────── */}
+              {mediaDialog !== 'closed' && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+                  onClick={() => setMediaDialog('closed')}
+                  onKeyDown={trapFocus}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label={mediaDialog === 'picker' ? 'Choose media type' : 'Add YouTube video'}
+                >
+                  <div
+                    className="relative mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-900"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {mediaDialog === 'picker' && (
+                      <div className="space-y-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMediaDialog('closed');
+                            fileInputRef.current?.click();
+                          }}
+                          className="flex w-full items-center gap-3 rounded-lg px-4 py-3.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                        >
+                          <svg className="h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                          </svg>
+                          Upload a photo
+                        </button>
+                        <hr className="border-border" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setYtInput(form.youtubeUrl || '');
+                            setYtError('');
+                            setMediaDialog('youtube');
+                          }}
+                          className="flex w-full items-center gap-3 rounded-lg px-4 py-3.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                        >
+                          <svg className="h-5 w-5 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z" />
+                            <path fill="white" d="M9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                          </svg>
+                          Add a YouTube video
+                        </button>
+                        <hr className="border-border" />
+                        <button
+                          type="button"
+                          onClick={() => setMediaDialog('closed')}
+                          className="flex w-full items-center justify-center rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
+
+                    {mediaDialog === 'youtube' && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-bold text-foreground">Paste a YouTube link</h3>
+                          <button
+                            type="button"
+                            onClick={() => setMediaDialog('closed')}
+                            className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                            aria-label="Close"
+                          >
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="relative">
+                            <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.193-9.193a4.5 4.5 0 00-6.364 0l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                            </svg>
+                            <Input
+                              value={ytInput}
+                              onChange={(e) => { setYtInput(e.target.value); setYtError(''); }}
+                              placeholder="YouTube link"
+                              className="pl-9"
+                              aria-label="YouTube link"
+                              aria-invalid={!!ytError}
+                              autoFocus
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  const trimmed = ytInput.trim();
+                                  if (!trimmed) { setYtError('Please paste a YouTube link'); return; }
+                                  const id = extractYouTubeId(trimmed);
+                                  if (!id) { setYtError('Please enter a valid YouTube link'); return; }
+                                  update('youtubeUrl', trimmed);
+                                  setMediaDialog('closed');
+                                }
+                              }}
+                            />
+                          </div>
+                          {ytError && <p className="text-sm text-red-500">{ytError}</p>}
+                          <p className="text-sm text-muted-foreground">
+                            If you want to use a video from your device, please upload it to YouTube first.
+                          </p>
+                        </div>
+                        <div className="flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const trimmed = ytInput.trim();
+                              if (!trimmed) { setYtError('Please paste a YouTube link'); return; }
+                              const id = extractYouTubeId(trimmed);
+                              if (!id) { setYtError('Please enter a valid YouTube link'); return; }
+                              update('youtubeUrl', trimmed);
+                              setMediaDialog('closed');
+                            }}
+                            className="rounded-full bg-foreground px-6 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                          >
+                            Add video
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
+              )}
 
-                {/* Story preview */}
-                <div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground">Story</p>
-                    <button
-                      type="button"
-                      onClick={() => setStep(1)}
-                      className="text-xs font-medium text-primary hover:underline"
-                    >
-                      Edit
-                    </button>
-                  </div>
-                  <div className="mt-1 max-h-40 overflow-y-auto text-sm text-foreground whitespace-pre-wrap">
-                    {form.story}
-                  </div>
+            </div>
+          )}
+
+          {/* ── Step 3: Category & Location ────────────────────────── */}
+          {step === 3 && (
+            <div className="space-y-10">
+              <div className="space-y-4">
+                <h2 className="text-xl font-bold text-foreground">Where will the funds go?</h2>
+                <p className="text-base text-muted-foreground">
+                  The location where the person in need is based.
+                </p>
+                <Input
+                  id="subjectHometown"
+                  value={form.subjectHometown}
+                  onChange={(e) => update('subjectHometown', e.target.value)}
+                  maxLength={200}
+                  placeholder="City, State (e.g. Austin, TX)"
+                  className="h-14 text-base"
+                  aria-invalid={!!errors.subjectHometown}
+                  aria-describedby={errors.subjectHometown ? 'subjectHometown-error' : undefined}
+                />
+                {errors.subjectHometown && <p id="subjectHometown-error" className="text-sm text-red-500">{errors.subjectHometown}</p>}
+              </div>
+
+              <div className="space-y-4">
+                <h2 className="text-xl font-bold text-foreground">What best describes why you&apos;re fundraising?</h2>
+                <div className="flex flex-wrap gap-2.5" role="radiogroup" aria-label="Campaign category">
+                  {CATEGORIES.map((cat) => {
+                    const selected = form.category === cat.value;
+                    return (
+                      <button
+                        key={cat.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        onClick={() => update('category', cat.value)}
+                        className={`rounded-full border px-4 py-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                          selected
+                            ? 'border-green-600 bg-green-50 font-medium text-green-900 dark:border-green-500 dark:bg-green-950/40 dark:text-green-100'
+                            : 'border-border bg-background text-foreground hover:border-foreground/40 hover:bg-accent/50'
+                        }`}
+                      >
+                        {cat.label}
+                      </button>
+                    );
+                  })}
                 </div>
+                {errors.category && <p className="text-sm text-red-500">{errors.category}</p>}
+              </div>
+            </div>
+          )}
 
-                {/* Fund Release Plan summary */}
-                <div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold text-muted-foreground">Fund Release Plan</p>
-                    <button
-                      type="button"
-                      onClick={() => setStep(2)}
-                      className="text-xs font-medium text-primary hover:underline"
-                    >
-                      Edit
-                    </button>
-                  </div>
-                  <div className="mt-1 space-y-1">
-                    {form.milestones.map((m, i) => (
-                      <p key={i} className="text-sm text-foreground">
-                        <span className="text-muted-foreground">Phase {i + 1}:</span>{' '}
-                        {m.title || <span className="italic text-muted-foreground">Untitled</span>}{' '}
-                        <span className="text-muted-foreground">
-                          ({m.fundPercentage}%{goalDollars > 0 && ` / $${Math.round(goalDollars * (parseInt(m.fundPercentage) || 0) / 100).toLocaleString()}`})
-                        </span>
+          {/* ── Step 4: Tell Their Story ─────────────────────────────────── */}
+          {step === 4 && (
+            <div className="space-y-10">
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-foreground">Campaign title</h2>
+                <p className="text-base text-muted-foreground">
+                  A specific, person-focused title that tells donors exactly what this
+                  campaign is about.
+                </p>
+                <Input
+                  id="title"
+                  value={form.title}
+                  onChange={(e) => update('title', e.target.value)}
+                  maxLength={120}
+                  placeholder={
+                    form.subjectName
+                      ? `Help ${form.subjectName} with...`
+                      : 'Help [Name] recover from [situation]'
+                  }
+                  aria-invalid={!!errors.title}
+                  aria-describedby={errors.title ? 'title-error' : 'title-hint'}
+                />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span id="title-hint">{form.title.trim().length} / 120 characters</span>
+                  {form.title.trim().length > 0 && form.title.trim().length < 20 && (
+                    <span className="text-amber-500">{20 - form.title.trim().length} more needed</span>
+                  )}
+                </div>
+                {errors.title && <p id="title-error" className="text-sm text-red-500">{errors.title}</p>}
+              </div>
+
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-foreground">
+                  Tell {form.subjectName ? `${form.subjectName}'s` : 'their'} story
+                </h2>
+                <div className="rounded-lg border border-border bg-muted/50 p-5">
+                  <p className="text-base font-semibold text-foreground">Writing tips</p>
+                  <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
+                    <li>Use their first name, not &ldquo;the patient&rdquo;</li>
+                    <li>Include one personal detail that makes them real: their hometown, a hobby, a family role</li>
+                    <li>Explain what happened in plain language, no jargon</li>
+                    <li>Be specific about the gap: what do they need that they don&apos;t have?</li>
+                    <li>Show strength, not helplessness. These are people, not victims</li>
+                  </ul>
+                </div>
+                <Textarea
+                  id="story"
+                  value={form.story}
+                  onChange={(e) => update('story', e.target.value)}
+                  rows={14}
+                  maxLength={10000}
+                  placeholder={
+                    form.subjectName
+                      ? `${form.subjectName} is from ${form.subjectHometown || '[their hometown]'}. [Share what happened and when the situation began.]\n\n[How is this affecting ${form.subjectName} and their family right now?]\n\n[Why is help needed now? What happens if the goal isn't reached?]`
+                      : 'Start with their name and where they\'re from. Share what happened, how it\'s affecting them, and why they need help now.'
+                  }
+                  aria-invalid={!!errors.story}
+                  aria-describedby="story-counter"
+                />
+                <div id="story-counter" className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{storyLen.toLocaleString()} / 10,000 characters</span>
+                  {storyMsg.text && <span className={storyMsg.color}>{storyMsg.text}</span>}
+                </div>
+                {errors.story && <p className="text-sm text-red-500">{errors.story}</p>}
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 5: Review & Submit ───────────────────────────────── */}
+          {step === 5 && (
+            <div className="space-y-10">
+
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">
+                  Review Your Campaign
+                </h2>
+                <p className="mt-3 text-base text-muted-foreground">
+                  Check the details below, then agree to our guidelines and submit.
+                </p>
+              </div>
+
+              {/* Auth notice for unauthenticated users */}
+              {!session?.user && (
+                <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-5 py-4 dark:border-blue-900 dark:bg-blue-950/30">
+                  <svg className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                  </svg>
+                  <p className="text-sm leading-relaxed text-blue-800 dark:text-blue-200">
+                    To publish your campaign, you&apos;ll need to sign in or create an account.
+                    Your progress is saved automatically.
+                  </p>
+                </div>
+              )}
+
+              <div className="overflow-hidden rounded-lg border border-border bg-card">
+                {/* Photo preview */}
+                {form.heroImageUrl && !imagePreviewError ? (
+                  <div className="relative group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={form.heroImageUrl}
+                      alt=""
+                      className="aspect-[3/2] w-full object-cover"
+                      onError={() => setImagePreviewError(true)}
+                    />
+                    {form.photoCredit && (
+                      <p className="absolute bottom-2 right-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">
+                        {form.photoCredit}
                       </p>
-                    ))}
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        fileInputRef.current?.click();
+                      }}
+                      className="absolute top-2 right-2 rounded bg-black/60 px-2.5 py-1 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-black/80"
+                    >
+                      Change
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      fileInputRef.current?.click();
+                    }}
+                    className="flex w-full flex-col items-center justify-center gap-2 px-6 py-10 text-center transition-colors hover:bg-accent/50"
+                  >
+                    <svg className="h-8 w-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                    </svg>
+                    <p className="text-sm font-medium text-primary">Add a cover photo</p>
+                  </button>
+                )}
+                {errors.heroImageUrl && (
+                  <p className="px-6 py-2 text-sm text-red-500">{errors.heroImageUrl}</p>
+                )}
+                {/* YouTube video preview in review */}
+                {form.youtubeUrl && (() => {
+                  const videoId = extractYouTubeId(form.youtubeUrl);
+                  return videoId ? (
+                    <div className="border-t border-border p-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm text-muted-foreground">YouTube video</p>
+                        <button
+                          type="button"
+                          onClick={() => setEditField('youtube')}
+                          className="text-sm font-medium text-primary hover:underline"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                      <iframe
+                        src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+                        title="YouTube video preview"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="aspect-video w-full rounded-lg"
+                      />
+                    </div>
+                  ) : null;
+                })()}
+                {errors.youtubeUrl && (
+                  <p className="px-6 py-2 text-sm text-red-500">{errors.youtubeUrl}</p>
+                )}
+
+                <div className="space-y-6 p-8">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Title</p>
+                      <h3 className="mt-1 font-display text-xl font-bold text-foreground">{form.title || <span className="text-muted-foreground italic">No title</span>}</h3>
+                      {errors.title && <p className="mt-1 text-sm text-red-500">{errors.title}</p>}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditField('title')}
+                      className="shrink-0 text-sm font-medium text-primary hover:underline"
+                    >
+                      Edit
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Beneficiary</p>
+                        <p className="mt-1 text-base font-medium text-foreground">
+                          {form.fundraisingFor === 'yourself'
+                            ? (session?.user?.name || 'You')
+                            : form.subjectName}
+                        </p>
+                        {errors.subjectName && <p className="mt-1 text-sm text-red-500">{errors.subjectName}</p>}
+                      </div>
+                      {form.fundraisingFor !== 'yourself' && (
+                        <button
+                          type="button"
+                          onClick={() => setEditField('name')}
+                          className="shrink-0 text-sm font-medium text-primary hover:underline"
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Location</p>
+                        <p className="mt-1 text-base font-medium text-foreground">{form.subjectHometown}</p>
+                        {errors.subjectHometown && <p className="mt-1 text-sm text-red-500">{errors.subjectHometown}</p>}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setEditField('location')}
+                        className="shrink-0 text-sm font-medium text-primary hover:underline"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Category</p>
+                        <p className="mt-1 text-base font-medium text-foreground">
+                          {CATEGORIES.find((c) => c.value === form.category)?.label}
+                        </p>
+                        {errors.category && <p className="mt-1 text-sm text-red-500">{errors.category}</p>}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setEditField('category')}
+                        className="shrink-0 text-sm font-medium text-primary hover:underline"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Goal</p>
+                        <p className="mt-1 text-base font-medium text-foreground">${goalDollars.toLocaleString()}</p>
+                        {errors.goalAmount && <p className="mt-1 text-sm text-red-500">{errors.goalAmount}</p>}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setEditField('goal')}
+                        className="shrink-0 text-sm font-medium text-primary hover:underline"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    {form.fundraisingFor !== 'yourself' && (
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Relationship</p>
+                          <p className="mt-1 text-base font-medium text-foreground">
+                            {RELATIONS.find((r) => r.value === form.beneficiaryRelation)?.label}
+                          </p>
+                          {errors.beneficiaryRelation && <p className="mt-1 text-sm text-red-500">{errors.beneficiaryRelation}</p>}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setEditField('relationship')}
+                          className="shrink-0 text-sm font-medium text-primary hover:underline"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">Story</p>
+                      <button
+                        type="button"
+                        onClick={() => setEditField('story')}
+                        className="text-sm font-medium text-primary hover:underline"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    <div className="mt-2 max-h-60 overflow-y-auto text-base leading-relaxed text-foreground whitespace-pre-wrap">
+                      {form.story}
+                    </div>
+                    {errors.story && <p className="mt-1 text-sm text-red-500">{errors.story}</p>}
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Legal agreements */}
-            <div className="space-y-4 rounded-lg border border-border bg-card p-6">
-              <p className="text-sm font-medium text-foreground">Before submitting</p>
-
-              <div className="flex items-start space-x-3">
-                <Checkbox
-                  id="agreedToTerms"
-                  checked={form.agreedToTerms}
-                  onCheckedChange={(v) => update('agreedToTerms', v === true)}
-                  aria-invalid={!!errors.agreedToTerms}
-                />
-                <Label htmlFor="agreedToTerms" className="cursor-pointer text-sm font-normal leading-relaxed">
-                  I agree to LastDonor&apos;s{' '}
+              {/* Passive legal notice (replaces mandatory checkboxes) */}
+              <div className="rounded-lg border border-border bg-muted/30 px-6 py-5">
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  By clicking &ldquo;Launch fundraiser&rdquo; you agree to LastDonor&apos;s{' '}
                   <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary underline">
                     Terms of Service
                   </a>{' '}
@@ -1028,80 +1660,432 @@ export function ShareYourStoryForm() {
                   <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary underline">
                     Privacy Policy
                   </a>
-                  . I understand that LastDonor does not charge a platform fee,
-                  and that payment processing fees (2.9% + $0.30) apply to each donation.
-                </Label>
+                  , and confirm that the information you&apos;ve provided is accurate.
+                  LastDonor does not charge a platform fee; payment processing fees
+                  (2.9%&nbsp;+&nbsp;$0.30) apply to each donation.
+                </p>
+                {showBeneficiaryConsent && (
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    By continuing, you confirm that{' '}
+                    {form.subjectName || 'the person named above'} is aware you are creating
+                    this campaign on their behalf.
+                  </p>
+                )}
               </div>
-              {errors.agreedToTerms && <p className="ml-8 text-sm text-red-500">{errors.agreedToTerms}</p>}
 
-              <div className="flex items-start space-x-3">
-                <Checkbox
-                  id="confirmedTruthful"
-                  checked={form.confirmedTruthful}
-                  onCheckedChange={(v) => update('confirmedTruthful', v === true)}
-                  aria-invalid={!!errors.confirmedTruthful}
-                />
-                <Label htmlFor="confirmedTruthful" className="cursor-pointer text-sm font-normal leading-relaxed">
-                  I confirm that all information in this campaign is accurate and
-                  truthful. I understand that creating a fraudulent campaign may
-                  result in account suspension and legal action.
-                </Label>
+              <div className="rounded-lg border border-border bg-muted/50 p-6">
+                <p className="text-base font-semibold text-foreground">What happens next?</p>
+                <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted-foreground">
+                  <li>Your campaign goes live immediately and can start accepting donations</li>
+                  <li>Share your campaign link with friends, family, and social media</li>
+                  <li>You&apos;ll receive an email with tips to maximize your reach</li>
+                </ul>
               </div>
-              {errors.confirmedTruthful && <p className="ml-8 text-sm text-red-500">{errors.confirmedTruthful}</p>}
 
-              {/* Beneficiary consent — only when raising for someone else */}
-              {showBeneficiaryConsent && (
-                <>
-                  <div className="flex items-start space-x-3">
-                    <Checkbox
-                      id="beneficiaryConsent"
-                      checked={form.beneficiaryConsent}
-                      onCheckedChange={(v) => update('beneficiaryConsent', v === true)}
-                      aria-invalid={!!errors.beneficiaryConsent}
-                    />
-                    <Label htmlFor="beneficiaryConsent" className="cursor-pointer text-sm font-normal leading-relaxed">
-                      {form.subjectName || 'The person named above'} is aware that I am
-                      creating this campaign on their behalf and has given consent for
-                      their story to be shared publicly.
-                    </Label>
+              {/* ── Inline Edit Modals ─────────────────────────────── */}
+              {editField && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+                  onClick={() => setEditField(null)}
+                  onKeyDown={trapFocus}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label={`Edit ${editField}`}
+                >
+                  <div
+                    className={`relative mx-4 w-full rounded-xl bg-white p-6 shadow-xl dark:bg-gray-900 ${editField === 'story' ? 'max-w-2xl' : 'max-w-lg'}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="mb-5 flex items-center justify-between">
+                      <h3 className="text-lg font-bold text-foreground">
+                        {editField === 'title' && 'Edit title'}
+                        {editField === 'goal' && 'Edit fundraising goal'}
+                        {editField === 'story' && 'Edit story'}
+                        {editField === 'youtube' && 'Edit YouTube video'}
+                        {editField === 'category' && 'Edit category'}
+                        {editField === 'location' && 'Edit location'}
+                        {editField === 'name' && 'Edit beneficiary name'}
+                        {editField === 'relationship' && 'Edit relationship'}
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => setEditField(null)}
+                        className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                        aria-label="Close"
+                      >
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* ── Title ──────────────────────────────────── */}
+                    {editField === 'title' && (
+                      <div className="space-y-3">
+                        <Input
+                          value={form.title}
+                          onChange={(e) => update('title', e.target.value)}
+                          maxLength={120}
+                          placeholder="Campaign title"
+                          className="h-12 text-base"
+                          autoFocus
+                        />
+                        <div className="flex justify-end text-sm text-muted-foreground">
+                          {form.title.trim().length} / 120
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── Goal ───────────────────────────────────── */}
+                    {editField === 'goal' && (
+                      <div className="space-y-4">
+                        <div className="relative">
+                          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg text-muted-foreground">$</span>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={1_000_000_000}
+                            step={1}
+                            value={form.goalAmount}
+                            onChange={(e) => {
+                              const sanitized = e.target.value.replace(/[^0-9]/g, '').replace(/^0+(?=\d)/, '');
+                              const num = parseInt(sanitized || '0', 10);
+                              update('goalAmount', num > 1_000_000_000 ? '1000000000' : sanitized);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === '.' || e.key === '-' || e.key === 'e' || e.key === '+') e.preventDefault();
+                            }}
+                            className="h-14 pl-9 pr-20 text-lg [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                            placeholder="Enter amount"
+                            autoFocus
+                          />
+                          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 rounded bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                            USD
+                          </span>
+                        </div>
+                        <div className="rounded-xl border border-border bg-muted/30 p-5">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="space-y-1.5">
+                              <span className="inline-block rounded border border-green-600 bg-green-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-green-800 dark:border-green-500 dark:bg-green-950/40 dark:text-green-300">
+                                Recommended
+                              </span>
+                              <h4 className="text-base font-bold text-foreground">Automated goal setting</h4>
+                              <p className="text-sm leading-relaxed text-muted-foreground">
+                                To help build momentum, we&apos;ll gradually adjust your goal as donations come in.
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              role="switch"
+                              aria-checked={form.autoGoal}
+                              aria-label="Automated goal setting"
+                              onClick={() => update('autoGoal', !form.autoGoal)}
+                              className={`relative mt-1 inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                                form.autoGoal ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-600'
+                              }`}
+                            >
+                              <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ${
+                                form.autoGoal ? 'translate-x-6' : 'translate-x-1'
+                              }`} />
+                            </button>
+                          </div>
+                        </div>
+                        {goalDollars > 0 && form.autoGoal && (
+                          <div className="flex items-center gap-2">
+                            <svg className="h-5 w-5 shrink-0 text-green-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                            </svg>
+                            <p className="text-sm text-muted-foreground">
+                              Your starting goal would be:{' '}
+                              <span className="font-bold text-foreground">${startingGoal.toLocaleString()}</span>
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* ── Story ──────────────────────────────────── */}
+                    {editField === 'story' && (
+                      <div className="space-y-3">
+                        <Textarea
+                          value={form.story}
+                          onChange={(e) => update('story', e.target.value)}
+                          rows={14}
+                          maxLength={10000}
+                          className="text-base leading-relaxed"
+                          autoFocus
+                        />
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">{storyLen.toLocaleString()} / 10,000 characters</span>
+                          {storyMsg.text && <span className={storyMsg.color}>{storyMsg.text}</span>}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── YouTube ────────────────────────────────── */}
+                    {editField === 'youtube' && (
+                      <div className="space-y-3">
+                        <Input
+                          value={form.youtubeUrl}
+                          onChange={(e) => update('youtubeUrl', e.target.value)}
+                          placeholder="Paste a YouTube link"
+                          className="h-12 text-base"
+                          autoFocus
+                        />
+                        {form.youtubeUrl && !extractYouTubeId(form.youtubeUrl) && (
+                          <p className="text-sm text-red-500">Please enter a valid YouTube link</p>
+                        )}
+                        {form.youtubeUrl && (
+                          <button
+                            type="button"
+                            onClick={() => { update('youtubeUrl', ''); setEditField(null); }}
+                            className="text-sm font-medium text-red-500 hover:underline"
+                          >
+                            Remove video
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* ── Category ───────────────────────────────── */}
+                    {editField === 'category' && (
+                      <div className="flex flex-wrap gap-2.5" role="radiogroup" aria-label="Campaign category">
+                        {CATEGORIES.map((cat) => {
+                          const selected = form.category === cat.value;
+                          return (
+                            <button
+                              key={cat.value}
+                              type="button"
+                              role="radio"
+                              aria-checked={selected}
+                              onClick={() => { update('category', cat.value); setEditField(null); }}
+                              className={`rounded-full border px-4 py-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                                selected
+                                  ? 'border-green-600 bg-green-50 font-medium text-green-900 dark:border-green-500 dark:bg-green-950/40 dark:text-green-100'
+                                  : 'border-border bg-background text-foreground hover:border-foreground/40 hover:bg-accent/50'
+                              }`}
+                            >
+                              {cat.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* ── Location ───────────────────────────────── */}
+                    {editField === 'location' && (
+                      <div className="space-y-3">
+                        <Input
+                          value={form.subjectHometown}
+                          onChange={(e) => update('subjectHometown', e.target.value)}
+                          maxLength={200}
+                          placeholder="City, State (e.g. Austin, TX)"
+                          className="h-12 text-base"
+                          autoFocus
+                        />
+                      </div>
+                    )}
+
+                    {/* ── Name ───────────────────────────────────── */}
+                    {editField === 'name' && (
+                      <div className="space-y-3">
+                        <Input
+                          value={form.subjectName}
+                          onChange={(e) => update('subjectName', e.target.value)}
+                          maxLength={200}
+                          placeholder="Their full name"
+                          className="h-12 text-base"
+                          autoFocus
+                        />
+                      </div>
+                    )}
+
+                    {/* ── Relationship ───────────────────────────── */}
+                    {editField === 'relationship' && (
+                      <div className="flex flex-wrap gap-2.5" role="radiogroup" aria-label="Relationship to beneficiary">
+                        {RELATIONS.map((r) => {
+                          const selected = form.beneficiaryRelation === r.value;
+                          return (
+                            <button
+                              key={r.value}
+                              type="button"
+                              role="radio"
+                              aria-checked={selected}
+                              onClick={() => { update('beneficiaryRelation', r.value); setEditField(null); }}
+                              className={`rounded-full border px-4 py-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                                selected
+                                  ? 'border-green-600 bg-green-50 font-medium text-green-900 dark:border-green-500 dark:bg-green-950/40 dark:text-green-100'
+                                  : 'border-border bg-background text-foreground hover:border-foreground/40 hover:bg-accent/50'
+                              }`}
+                            >
+                              {r.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* ── Save button (text inputs only) ─────────── */}
+                    {['title', 'goal', 'story', 'youtube', 'location', 'name'].includes(editField) && (
+                      <div className="mt-5 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // BUG 7 fix: Validate YouTube URL before saving
+                            if (editField === 'youtube' && form.youtubeUrl.trim() && !extractYouTubeId(form.youtubeUrl.trim())) {
+                              return; // Error already shown inline above the button
+                            }
+                            setEditField(null);
+                          }}
+                          className="rounded-full bg-foreground px-6 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  {errors.beneficiaryConsent && <p className="ml-8 text-sm text-red-500">{errors.beneficiaryConsent}</p>}
-                </>
+                </div>
               )}
             </div>
+          )}
 
-            {/* Instant-live info */}
-            <div className="rounded-lg border border-border bg-muted/50 p-4">
-              <p className="text-sm font-medium text-foreground">What happens next?</p>
-              <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
-                <li>Your campaign goes live immediately and can start accepting donations</li>
-                <li>Share your campaign link with friends, family, and social media</li>
-                <li>You&apos;ll receive an email with tips to maximize your reach</li>
-              </ul>
+          {/* Hidden file input -- rendered outside step conditionals so it exists
+              at all steps (Step 2 media, Step 5 review "Add/Change photo").
+              BUG 1 fix: Previously only rendered inside {step === 2}. */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/avif"
+            className="hidden"
+            aria-hidden="true"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              e.target.value = '';
+
+              const MAX_SIZE = 5 * 1024 * 1024;
+              const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+              if (!ACCEPTED.includes(file.type)) {
+                const { toast } = await import('sonner');
+                toast.error('Please upload a JPEG, PNG, or WebP image.');
+                return;
+              }
+              if (file.size > MAX_SIZE) {
+                const { toast } = await import('sonner');
+                toast.error('Image must be under 5 MB.');
+                return;
+              }
+
+              // Determine if this is a hero image or a gallery image
+              const isHero = !form.heroImageUrl;
+              const totalImages = 1 + (form.galleryImages?.length ?? 0);
+              if (!isHero && totalImages >= 5) {
+                const { toast } = await import('sonner');
+                toast.error('You can upload up to 5 photos total.');
+                return;
+              }
+
+              // If authenticated, upload immediately for a permanent URL.
+              // If not, create a local blob URL for preview and defer
+              // the upload to publish time. This removes all friction from
+              // the media step for unauthenticated users.
+              if (session?.user) {
+                const formData = new FormData();
+                formData.append('file', file);
+                try {
+                  const res = await fetch('/api/v1/campaign-photos', {
+                    method: 'POST',
+                    body: formData,
+                  });
+                  const data = await res.json();
+                  if (!res.ok) {
+                    const { toast } = await import('sonner');
+                    toast.error(data.error?.message || 'Upload failed. Please try again.');
+                    return;
+                  }
+                  if (isHero) {
+                    clearBlobPreview();
+                    update('heroImageUrl', data.data.url);
+                  } else {
+                    setForm((prev) => ({
+                      ...prev,
+                      galleryImages: [...(prev.galleryImages ?? []), data.data.url],
+                    }));
+                  }
+                } catch {
+                  const { toast } = await import('sonner');
+                  toast.error('Upload failed. Please check your connection and try again.');
+                }
+              } else {
+                // Unauthenticated: local preview only, upload deferred to publish
+                if (isHero) {
+                  setBlobPreview(file);
+                } else {
+                  const blobUrl = URL.createObjectURL(file);
+                  galleryBlobUrlsRef.current.push(blobUrl);
+                  setPendingGalleryFiles((prev) => [...prev, file]);
+                  setForm((prev) => ({
+                    ...prev,
+                    galleryImages: [...(prev.galleryImages ?? []), blobUrl],
+                  }));
+                }
+              }
+            }}
+          />
+        </div>
+
+        {/* ── Navigation ─────────────────────────────────────────────── */}
+        <div className="sticky bottom-0 border-t border-border bg-stone-50 dark:bg-gray-900">
+          {/* Progress bar */}
+          <div className="h-1 w-full bg-border/40">
+            <div
+              className="h-full bg-primary transition-all duration-500 ease-out"
+              style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
+              role="progressbar"
+              aria-valuenow={step + 1}
+              aria-valuemin={1}
+              aria-valuemax={STEPS.length}
+              aria-label={`Step ${step + 1} of ${STEPS.length}`}
+            />
+          </div>
+          <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
+            {step > 0 ? (
+              <button
+                type="button"
+                onClick={goBack}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-accent"
+                aria-label="Go back"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                </svg>
+              </button>
+            ) : (
+              <div />
+            )}
+
+            <div className="flex items-center gap-3">
+              {step === 2 && (
+                <button
+                  type="button"
+                  onClick={goNext}
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Skip for now
+                </button>
+              )}
+              {step < STEPS.length - 1 ? (
+                <Button onClick={goNext} type="button" className="rounded-full px-8">
+                  Continue
+                </Button>
+              ) : (
+                <Button onClick={handlePreviewLaunch} disabled={submitting} type="button" className="rounded-full px-8">
+                  {session?.user ? 'Preview & Launch' : 'Sign in & Launch'}
+                </Button>
+              )}
             </div>
           </div>
-        )}
-      </div>
-
-      {/* ── Navigation ────────────────────────────────────────────────────── */}
-      <div className="mt-8 flex justify-between">
-        {step > 0 ? (
-          <Button variant="outline" onClick={goBack} type="button" className="rounded-full">
-            Back
-          </Button>
-        ) : (
-          <div />
-        )}
-
-        {step < STEPS.length - 1 ? (
-          <Button onClick={goNext} type="button" className="rounded-full">
-            Continue
-          </Button>
-        ) : (
-          <Button onClick={handleSubmit} disabled={submitting} type="button" className="rounded-full">
-            {submitting ? 'Publishing...' : 'Publish Campaign'}
-          </Button>
-        )}
+        </div>
       </div>
     </div>
   );

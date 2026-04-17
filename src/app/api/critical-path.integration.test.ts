@@ -100,7 +100,7 @@ describe('Critical Path Integration', () => {
         .from(schema.campaigns)
         .where(eq(schema.campaigns.id, campaign.id));
 
-      // Over-goal is allowed — we don't cap raisedAmount
+      // Over-goal is allowed - we don't cap raisedAmount
       expect(updated.raisedAmount).toBe(11500);
       expect(updated.raisedAmount).toBeGreaterThan(updated.goalAmount);
     });

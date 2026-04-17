@@ -242,7 +242,7 @@ export function RefundBatchDashboard() {
                         }
                       </div>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        {batch.reason} — {formatRelativeTime(batch.createdAt)}
+                        {batch.reason} - {formatRelativeTime(batch.createdAt)}
                       </p>
                     </div>
                     <div className="flex items-center gap-6 text-right">
@@ -316,10 +316,10 @@ export function RefundBatchDashboard() {
                             {expandedRecords.map((record) => (
                               <tr key={record.id}>
                                 <td className="py-2">{record.donorName ?? 'Unknown'}</td>
-                                <td className="hidden py-2 text-muted-foreground sm:table-cell">{record.donorEmail ?? '—'}</td>
+                                <td className="hidden py-2 text-muted-foreground sm:table-cell">{record.donorEmail ?? '-'}</td>
                                 <td className="py-2 text-right tabular-nums">{formatCents(record.amount)}</td>
                                 <td className="hidden py-2 font-mono text-xs text-muted-foreground md:table-cell">
-                                  {record.stripeRefundId ? record.stripeRefundId.slice(0, 16) + '…' : '—'}
+                                  {record.stripeRefundId ? record.stripeRefundId.slice(0, 16) + '…' : '-'}
                                 </td>
                                 <td className="py-2">
                                   <Badge variant={RECORD_STATUS_VARIANT[record.status] ?? 'outline'} className="text-xs">

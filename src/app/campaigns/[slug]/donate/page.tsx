@@ -69,6 +69,14 @@ export default async function DonatePage({ params, searchParams }: PageProps) {
     ? rawAmount
     : undefined;
   const isDonationSuccess = resolvedParams.donation === 'success';
+  // On Stripe redirect return, the amount is in the URL (server-rendered, zero flash).
+  // This is the primary source; sessionStorage and confirm API are fallbacks.
+  const confirmedAmountFromUrl = isDonationSuccess && rawAmount && rawAmount >= 500 && rawAmount <= 10_000_000
+    ? rawAmount
+    : undefined;
+  const sessionId = typeof resolvedParams.session_id === 'string'
+    ? resolvedParams.session_id
+    : undefined;
   const paymentIntentId = typeof resolvedParams.payment_intent === 'string'
     ? resolvedParams.payment_intent
     : undefined;
@@ -83,6 +91,8 @@ export default async function DonatePage({ params, searchParams }: PageProps) {
       donorCount={campaign.donorCount}
       initialAmount={initialAmount}
       isDonationSuccess={isDonationSuccess}
+      confirmedAmount={confirmedAmountFromUrl}
+      sessionId={sessionId}
       paymentIntentId={paymentIntentId}
     />
   );

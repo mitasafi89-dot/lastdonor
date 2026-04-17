@@ -20,10 +20,16 @@ export function DashboardMobileNav({ hasCampaigns }: { hasCampaigns: boolean }) 
             <Bars3Icon className="h-5 w-5" />
           </button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0">
+        <SheetContent side="left" className="w-60 p-0">
           <SheetTitle className="sr-only">Navigation menu</SheetTitle>
-          <div onClick={() => setOpen(false)}>
-            <DashboardSidebar hasCampaigns={hasCampaigns} />
+          <div
+            className="h-full bg-[#F9FAFB]"
+            onClick={(e) => {
+              // Close sheet only when a navigation link is clicked (not Account expand button)
+              if ((e.target as HTMLElement).closest('a')) setOpen(false);
+            }}
+          >
+            <DashboardSidebar hasCampaigns={hasCampaigns} collapsed={false} />
           </div>
         </SheetContent>
       </Sheet>

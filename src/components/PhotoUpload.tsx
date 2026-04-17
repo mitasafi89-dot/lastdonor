@@ -193,7 +193,7 @@ export function PhotoUpload({ value, onChange, error, disabled }: PhotoUploadPro
               Click to upload or drag and drop
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              JPEG, PNG, or WebP — up to 5 MB
+              JPEG, PNG, or WebP - up to 5 MB
             </p>
           </>
         )}

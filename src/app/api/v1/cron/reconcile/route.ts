@@ -2,14 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { campaigns, donations, auditLogs, fundPoolAllocations, notifications, users } from '@/db/schema';
 import { eq, and, sql, lt } from 'drizzle-orm';
+import { logError } from '@/lib/errors';
+import { verifyCronAuth } from '@/lib/cron-auth';
+import { randomUUID } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  const requestId = randomUUID();
+  if (!verifyCronAuth(request.headers.get('authorization'))) {
+    return NextResponse.json({ ok: false, error: { code: 'UNAUTHORIZED', message: 'Invalid cron authorization.', requestId } }, { status: 401 });
   }
 
   try {
@@ -17,6 +20,8 @@ export async function GET(request: NextRequest) {
       discrepancies: 0,
       archived: 0,
       fundPoolAlerts: 0,
+      echoColumnFixes: 0,
+      activeCampaignDrifts: 0,
       errors: [] as string[],
     };
 
@@ -26,42 +31,29 @@ export async function GET(request: NextRequest) {
       .from(campaigns)
       .where(eq(campaigns.status, 'completed'));
 
+    // Batch: get real + seed totals for all completed campaigns in one query
+    const campaignIds = completedCampaigns.map((c) => c.id);
+    const donationTotals = campaignIds.length > 0
+      ? await db
+          .select({
+            campaignId: donations.campaignId,
+            realTotal: sql<number>`coalesce(sum(case when ${donations.source} = 'real' and ${donations.refunded} = false then ${donations.amount} else 0 end), 0)::int`,
+            seedTotal: sql<number>`coalesce(sum(case when ${donations.source} = 'seed' and ${donations.refunded} = false then ${donations.amount} else 0 end), 0)::int`,
+            donorCount: sql<number>`count(case when ${donations.source} = 'real' and ${donations.refunded} = false then 1 end)::int`,
+          })
+          .from(donations)
+          .where(sql`${donations.campaignId} in ${campaignIds}`)
+          .groupBy(donations.campaignId)
+      : [];
+
+    const totalsMap = new Map(donationTotals.map((t) => [t.campaignId, t]));
+
     for (const campaign of completedCampaigns) {
       try {
-        // Get sum of real, non-refunded donations from DB
-        const [dbTotal] = await db
-          .select({
-            totalAmount: sql<number>`coalesce(sum(${donations.amount}), 0)::int`,
-            donorCount: sql<number>`count(*)::int`,
-          })
-          .from(donations)
-          .where(
-            and(
-              eq(donations.campaignId, campaign.id),
-              eq(donations.source, 'real'),
-              eq(donations.refunded, false),
-            ),
-          );
-
-        // Check for discrepancy (stripe reconciliation skipped for seed-only campaigns)
-        const realDonationTotal = dbTotal.totalAmount;
-        // dbRaisedReal includes seed donations - using realDonationTotal instead
-
-        // Get actual seed total
-        const [seedTotal] = await db
-          .select({
-            totalAmount: sql<number>`coalesce(sum(${donations.amount}), 0)::int`,
-          })
-          .from(donations)
-          .where(
-            and(
-              eq(donations.campaignId, campaign.id),
-              eq(donations.source, 'seed'),
-              eq(donations.refunded, false),
-            ),
-          );
-
-        const expectedTotal = realDonationTotal + seedTotal.totalAmount;
+        const totals = totalsMap.get(campaign.id);
+        const realDonationTotal = totals?.realTotal ?? 0;
+        const seedTotalAmount = totals?.seedTotal ?? 0;
+        const expectedTotal = realDonationTotal + seedTotalAmount;
         const discrepancy = Math.abs(campaign.raisedAmount - expectedTotal);
 
         if (discrepancy > 100) {
@@ -77,7 +69,7 @@ export async function GET(request: NextRequest) {
               campaignRaisedAmount: campaign.raisedAmount,
               calculatedTotal: expectedTotal,
               realTotal: realDonationTotal,
-              seedTotal: seedTotal.totalAmount,
+              seedTotal: seedTotalAmount,
               discrepancy,
             },
           });
@@ -116,7 +108,7 @@ export async function GET(request: NextRequest) {
       results.archived++;
     }
 
-    // 3. Fund Pool health check — alert admin if pending funds exceed $1,000
+    // 3. Fund Pool health check - alert admin if pending funds exceed $1,000
     const [pendingPool] = await db
       .select({
         count: sql<number>`count(*)::int`,
@@ -146,17 +138,91 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // 4. Transaction Salt: Reconcile ALL active campaigns (not just completed)
+    // Detects drift caused by non-atomic operations, ORM bugs, or manual DB edits
+    const activeCampaignDrifts = await db.execute<{
+      id: string;
+      slug: string;
+      stored: number;
+      derived: number;
+    }>(sql`
+      SELECT c.id, c.slug, c.raised_amount AS stored,
+             COALESCE(SUM(d.amount) FILTER (WHERE d.refunded = false), 0)::int AS derived
+      FROM campaigns c
+      LEFT JOIN donations d ON d.campaign_id = c.id
+      WHERE c.status IN ('active', 'last_donor_zone', 'paused')
+      GROUP BY c.id
+      HAVING c.raised_amount != COALESCE(SUM(d.amount) FILTER (WHERE d.refunded = false), 0)::int
+    `);
+
+    for (const row of activeCampaignDrifts) {
+      results.activeCampaignDrifts++;
+
+      await db.insert(auditLogs).values({
+        eventType: 'reconcile.integrity_drift',
+        targetType: 'campaign',
+        targetId: row.id,
+        severity: 'critical',
+        details: {
+          slug: row.slug,
+          storedRaisedAmount: row.stored,
+          derivedRaisedAmount: row.derived,
+          drift: Math.abs(row.stored - row.derived),
+        },
+      });
+
+      // Auto-correct
+      await db.update(campaigns)
+        .set({ raisedAmount: row.derived, updatedAt: new Date() })
+        .where(eq(campaigns.id, row.id));
+    }
+
+    // 5. Echo Column Drift: Reconcile pre-computed counter columns
+    // Fix message_count, update_count, seed_donation_count if they diverge from actual counts
+    const echoFixCount = await db.execute(sql`
+      WITH message_counts AS (
+        SELECT campaign_id, COUNT(*)::int AS cnt FROM campaign_messages GROUP BY campaign_id
+      ),
+      update_counts AS (
+        SELECT campaign_id, COUNT(*)::int AS cnt FROM campaign_updates GROUP BY campaign_id
+      ),
+      seed_counts AS (
+        SELECT campaign_id, COUNT(*)::int AS cnt FROM donations WHERE source = 'seed' GROUP BY campaign_id
+      )
+      UPDATE campaigns SET
+        message_count = COALESCE(mc.cnt, 0),
+        update_count = COALESCE(uc.cnt, 0),
+        seed_donation_count = COALESCE(sc.cnt, 0),
+        updated_at = NOW()
+      FROM campaigns c2
+      LEFT JOIN message_counts mc ON mc.campaign_id = c2.id
+      LEFT JOIN update_counts uc ON uc.campaign_id = c2.id
+      LEFT JOIN seed_counts sc ON sc.campaign_id = c2.id
+      WHERE campaigns.id = c2.id
+        AND (
+          campaigns.message_count != COALESCE(mc.cnt, 0)
+          OR campaigns.update_count != COALESCE(uc.cnt, 0)
+          OR campaigns.seed_donation_count != COALESCE(sc.cnt, 0)
+        )
+    `);
+
+    if (echoFixCount && typeof echoFixCount === 'object' && 'count' in echoFixCount) {
+      results.echoColumnFixes = Number(echoFixCount.count) || 0;
+    }
+
     // Log completion
     await db.insert(auditLogs).values({
       eventType: 'cron.reconcile',
-      severity: results.discrepancies > 0 || results.errors.length > 0 ? 'warning' : 'info',
+      severity: results.discrepancies > 0 || results.activeCampaignDrifts > 0 || results.errors.length > 0 ? 'warning' : 'info',
       details: results,
     });
 
     return NextResponse.json({ ok: true, data: results });
   } catch (error) {
+    logError(error, { requestId, route: '/api/v1/cron/reconcile', method: 'GET' });
+
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : 'Unknown error' },
+      { ok: false, error: { code: 'INTERNAL_ERROR', message: 'Reconciliation processing failed.', requestId } },
       { status: 500 },
     );
   }

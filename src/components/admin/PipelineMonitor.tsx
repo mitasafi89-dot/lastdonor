@@ -575,6 +575,7 @@ function ReviewQueueSection({
                       }
                       disabled={saving === item.id}
                       title={item.adminFlagged ? 'Unflag' : 'Flag bad extraction'}
+                      aria-label={item.adminFlagged ? 'Unflag' : 'Flag bad extraction'}
                     >
                       <FlagIcon className="h-4 w-4" />
                     </Button>

@@ -7,7 +7,7 @@ import type { Metadata } from 'next';
 import type { ImpactTier } from '@/types';
 
 export const metadata: Metadata = {
-  title: 'Edit Campaign — Admin — LastDonor.org',
+  title: 'Edit Campaign - Admin - LastDonor.org',
   robots: { index: false },
 };
 

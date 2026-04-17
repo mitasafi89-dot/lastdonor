@@ -62,18 +62,18 @@ CRITICAL RULES FOR THE "name" FIELD:
 - Include military rank or title prefix only if part of how the person is known (e.g. "Sgt. James Lee").
 
 IF NO REAL PERSON'S NAME IS FOUND IN THE ARTICLE:
-- Create a short descriptive subject identifier based on the article context.
-- Use patterns like: "The [Lastname] Family", "[Role] from [City]", "[City] [Event Type] Survivors", "[Community] Family".
-- Examples: "The Torres Family", "Firefighter from St. Cloud", "Paradise Wildfire Survivors", "MacArthur Park Victim".
-- Keep it under 6 words, empathetic, and specific enough to differentiate this campaign.
-- NEVER return an empty string "" for "name". Always provide either a real name or a descriptive identifier.
+- Set "confidence" to 25 or lower. Articles without named individuals are unlikely to produce good campaigns.
+- For "name", use the most specific identifier you can: "The [Lastname] Family" if a surname is mentioned, or "[Rank/Title] [Lastname]" if a last name is available in any form.
+- If absolutely NO surname or proper name appears anywhere in the article, set "name" to "UNIDENTIFIED" and "confidence" to 10.
+- NEVER fabricate a descriptive phrase as a name. The following are FORBIDDEN as names: "Young Woman", "Local Resident", "Area Family", "Roommate from [City]", "Elderly Man", "Community Member", or any combination of generic descriptors.
+- NEVER return an empty string "" for "name".
 
 ANTI-FABRICATION RULES (CRITICAL):
 - "age": ONLY include the person's age if it is EXPLICITLY stated in the article text. If the article does not mention their age, return null. NEVER estimate or guess an age.
 - "family": ONLY include family members who are EXPLICITLY named or described in the article. If the article says "survived by his wife" but does not name her, include { "name": "wife (unnamed)", "relation": "wife" }. If NO family is mentioned in the article at all, return an EMPTY array []. NEVER invent family members.
 - "eventDate": ONLY include if a specific date is mentioned in the article. Return null otherwise. NEVER guess dates.
 - "sourceUrl": Use the EXACT full article URL provided in the ARTICLE BODY section. NEVER construct or shorten URLs. If no URL is available, return an empty string "".
-- "confidence": Rate 0-100 how confident you are in the extraction accuracy. Factors: Was a real name found? Were dates explicit? Was the article detailed enough?
+- "confidence": Rate 0-100 how confident you are in the extraction accuracy. This MUST be low (< 30) if no real person name was found in the article. High confidence (70+) requires: a real full name, a specific location, and detailed event context.
 
 Extract ALL other available information. If a field is not available in the article, use null.
 
@@ -81,13 +81,13 @@ For suggestedGoal, estimate an appropriate fundraising goal in whole dollars bas
 
 Return ONLY valid JSON, no markdown fencing:
 {
-  "name": string (real person's full name, OR a short descriptive identifier if no name found — NEVER empty),
+  "name": string (real person's full name, OR a short descriptive identifier if no name found - NEVER empty),
   "age": number | null (ONLY if explicitly stated in article),
   "event": string,
   "eventDate": string | null (ISO date format, ONLY if explicitly stated),
   "unit": string | null (military unit, if applicable),
   "department": string | null (fire/police department, if applicable),
-  "hometown": string (city, state),
+  "hometown": string (city, state - MUST be a real specific place. If the article does not mention a location, set confidence below 25 and use the most specific location you can infer from context. NEVER use "Unknown", "Unspecified", or "N/A"),
   "family": [{ "name": string, "relation": string, "age": number | null }] (ONLY family members mentioned in article, empty array [] if none mentioned),
   "category": "${input.category}",
   "suggestedGoal": number,

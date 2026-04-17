@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { campaigns, donations, auditLogs, refundBatches, refundRecords } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import { cancelCampaignSchema } from '@/lib/validators/verification';
 import { notifyBulkRefundCompleted } from '@/lib/notifications';
@@ -11,6 +11,7 @@ import { findSimilarCampaigns } from '@/lib/utils/similar-campaigns';
 import { resend } from '@/lib/resend';
 import { stripe } from '@/lib/stripe';
 import { randomUUID } from 'crypto';
+import { bulkOpSemaphore } from '@/lib/concurrency-limiter';
 import type { ApiError } from '@/types/api';
 import type { CampaignStatus, CampaignCategory, UserRole } from '@/types';
 
@@ -83,23 +84,25 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Mark as cancelled
-    await db.update(campaigns).set({
-      status: 'cancelled',
-      cancellationReason: reason,
-      cancellationNotes: notes ?? null,
-      cancelledAt: new Date(),
-      updatedAt: new Date(),
-    }).where(eq(campaigns.id, campaignId));
+    // Mark as cancelled + audit log atomically
+    await db.transaction(async (tx) => {
+      await tx.update(campaigns).set({
+        status: 'cancelled',
+        cancellationReason: reason,
+        cancellationNotes: notes ?? null,
+        cancelledAt: new Date(),
+        updatedAt: new Date(),
+      }).where(eq(campaigns.id, campaignId));
 
-    await db.insert(auditLogs).values({
-      eventType: 'campaign.cancelled',
-      actorId: session.user?.id ?? null,
-      actorRole: session.user?.role as UserRole,
-      targetType: 'campaign',
-      targetId: campaignId,
-      severity: 'critical',
-      details: { title: campaign.title, previousStatus: campaign.status, reason, notes, refundAll, notifyDonors },
+      await tx.insert(auditLogs).values({
+        eventType: 'campaign.cancelled',
+        actorId: session.user?.id ?? null,
+        actorRole: session.user?.role as UserRole,
+        targetType: 'campaign',
+        targetId: campaignId,
+        severity: 'critical',
+        details: { title: campaign.title, previousStatus: campaign.status, reason, notes, refundAll, notifyDonors },
+      });
     });
 
     let refundSummary: { totalDonors: number; totalAmount: number; failedCount: number } | null = null;
@@ -147,6 +150,22 @@ async function processBulkRefund(p: {
   adminId: string;
   reason: string;
 }): Promise<{ totalDonors: number; totalAmount: number; failedCount: number }> {
+  const release = await bulkOpSemaphore.acquire();
+  try {
+    return await _processBulkRefundInner(p);
+  } finally {
+    release();
+  }
+}
+
+async function _processBulkRefundInner(p: {
+  campaignId: string;
+  campaignTitle: string;
+  campaignCategory: CampaignCategory;
+  campaignLocation: string | null;
+  adminId: string;
+  reason: string;
+}): Promise<{ totalDonors: number; totalAmount: number; failedCount: number }> {
   // Fetch all un-refunded real donations
   const eligibleDonations = await db
     .select({
@@ -180,8 +199,15 @@ async function processBulkRefund(p: {
     totalAmount,
   }).returning({ id: refundBatches.id });
 
-  let refundedCount = 0;
-  let failedCount = 0;
+  // Phase 1: Call Stripe for all refunds OUTSIDE any DB transaction.
+  // Collect results in memory first to avoid holding connections during I/O.
+  const refundResults: Array<{
+    donationId: string;
+    amount: number;
+    stripeRefundId: string | null;
+    errorMessage: string | null;
+    status: 'completed' | 'failed';
+  }> = [];
 
   for (const donation of eligibleDonations) {
     let stripeRefundId: string | null = null;
@@ -199,42 +225,51 @@ async function processBulkRefund(p: {
       }
     }
 
-    // Record individual refund result
-    await db.insert(refundRecords).values({
-      batchId: batch.id,
-      donationId: donation.id,
-      amount: donation.amount,
-      stripeRefundId,
-      status,
-      errorMessage,
-      processedAt: new Date(),
-    });
+    refundResults.push({ donationId: donation.id, amount: donation.amount, stripeRefundId, errorMessage, status });
+  }
 
-    if (status === 'completed') {
-      // Mark donation as refunded
-      await db.update(donations).set({ refunded: true }).where(eq(donations.id, donation.id));
-      refundedCount++;
-    } else {
-      failedCount++;
+  // Phase 2: Persist all results in a single transaction (no external I/O inside).
+  const refundedCount = refundResults.filter((r) => r.status === 'completed').length;
+  const failedCount = refundResults.filter((r) => r.status === 'failed').length;
+
+  await db.transaction(async (tx) => {
+    // Insert all refund records in batch
+    await tx.insert(refundRecords).values(
+      refundResults.map((r) => ({
+        batchId: batch.id,
+        donationId: r.donationId,
+        amount: r.amount,
+        stripeRefundId: r.stripeRefundId,
+        status: r.status,
+        errorMessage: r.errorMessage,
+        processedAt: new Date(),
+      })),
+    );
+
+    // Mark all successful donations as refunded in one UPDATE
+    const refundedIds = refundResults.filter((r) => r.status === 'completed').map((r) => r.donationId);
+    if (refundedIds.length > 0) {
+      await tx.update(donations)
+        .set({ refunded: true })
+        .where(sql`${donations.id} IN ${refundedIds}`);
     }
-  }
 
-  // Update batch totals
-  await db.update(refundBatches).set({
-    refundedCount,
-    failedCount,
-    status: failedCount === 0 ? 'completed' : 'partial_failure',
-    completedAt: new Date(),
-  }).where(eq(refundBatches.id, batch.id));
+    // Update batch totals + zero out campaign amounts
+    await tx.update(refundBatches).set({
+      refundedCount,
+      failedCount,
+      status: failedCount === 0 ? 'completed' : 'partial_failure',
+      completedAt: new Date(),
+    }).where(eq(refundBatches.id, batch.id));
 
-  // Since campaign is cancelled with full refund, zero out amounts
-  if (refundedCount > 0) {
-    await db.update(campaigns).set({
-      raisedAmount: 0,
-      donorCount: 0,
-      updatedAt: new Date(),
-    }).where(eq(campaigns.id, p.campaignId));
-  }
+    if (refundedCount > 0) {
+      await tx.update(campaigns).set({
+        raisedAmount: 0,
+        donorCount: 0,
+        updatedAt: new Date(),
+      }).where(eq(campaigns.id, p.campaignId));
+    }
+  });
 
   // Send per-donor refund notification emails with similar campaign recommendations
   sendDonorRefundEmails({
@@ -261,14 +296,14 @@ async function processBulkRefund(p: {
 // ─── Per-Donor Refund Email Sender ──────────────────────────────────────────
 
 const CANCELLATION_REASON_MESSAGES: Record<string, string> = {
-  identity_fraud: 'After thorough review, our verification team found that the campaigner could not be verified.',
-  fabricated_story: 'After thorough review, our verification team found that the campaign story could not be verified with authentic supporting documents.',
-  document_forgery: 'After thorough review, our verification team found that the submitted documents were not authentic.',
-  campaigner_non_responsive: 'The campaigner did not provide the required evidence within the deadline.',
-  duplicate_campaign: 'This campaign was identified as a duplicate of an existing campaign.',
-  legal_compliance: 'This campaign was cancelled following a compliance review.',
-  campaigner_requested: 'The campaign organizer requested the cancellation of this campaign.',
-  terms_violation: 'This campaign was cancelled due to a violation of our platform terms.',
+  identity_fraud: 'After a careful review, our team was unable to verify the identity of the campaigner.',
+  fabricated_story: 'After a careful review, our team was unable to confirm the campaign details with supporting documents.',
+  document_forgery: 'After a careful review, our team found concerns with the submitted documents.',
+  campaigner_non_responsive: 'The campaigner did not respond to our requests for additional information within the given timeframe.',
+  duplicate_campaign: 'This campaign was found to be a duplicate of an existing campaign on the platform.',
+  legal_compliance: 'This campaign was removed following a routine compliance review.',
+  campaigner_requested: 'The campaign organizer requested the removal of this campaign.',
+  terms_violation: 'This campaign was removed because it did not meet our community guidelines.',
 };
 
 async function sendDonorRefundEmails(p: {
@@ -289,7 +324,7 @@ async function sendDonorRefundEmails(p: {
 
   const reasonMessage = CANCELLATION_REASON_MESSAGES[p.reason] ?? p.reason;
 
-  // Deduplicate by email — send one email per unique donor email
+  // Deduplicate by email - send one email per unique donor email
   const seen = new Set<string>();
   for (const donation of p.eligibleDonations) {
     if (seen.has(donation.donorEmail)) continue;

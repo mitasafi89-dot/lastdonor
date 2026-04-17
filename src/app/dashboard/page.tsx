@@ -1,456 +1,367 @@
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { auth } from '@/lib/auth';
 import { db } from '@/db';
-import { donations, campaigns, users, campaignUpdates, campaignMilestones } from '@/db/schema';
-import { eq, desc, sql, and, or, inArray } from 'drizzle-orm';
-import { centsToDollars } from '@/lib/utils/currency';
+import { donations, campaigns } from '@/db/schema';
+import { eq, desc, sql, and, or } from 'drizzle-orm';
+import { centsToDollars, centsToDollarsWhole } from '@/lib/utils/currency';
 import { formatDate } from '@/lib/utils/dates';
-import { BadgeDisplay } from '@/components/user/BadgeDisplay';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { ProgressBar } from '@/components/campaign/ProgressBar';
 import {
-  MegaphoneIcon,
-  HeartIcon,
-  ArrowRightIcon,
   ExclamationTriangleIcon,
-  MagnifyingGlassIcon,
-} from '@heroicons/react/24/outline';
-import type { UserBadge } from '@/types';
+  ArrowRightIcon,
+  CheckBadgeIcon,
+} from '@heroicons/react/24/solid';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Dashboard — LastDonor.org',
+  title: 'Dashboard - LastDonor.org',
   robots: { index: false },
 };
 
 async function getDashboardData(userId: string, userEmail: string) {
-  // Compute stats from actual donation rows (not denormalized user fields)
-  // users.campaignsSupported is inflated (incremented per donation, not per unique campaign)
-  // users.totalDonated is never decremented on refund
-  // Match by userId OR donorEmail to catch donations made before userId linking was fixed
   const donorMatch = or(eq(donations.userId, userId), eq(donations.donorEmail, userEmail))!;
+  const realDonationFilter = and(donorMatch, eq(donations.source, 'real'), eq(donations.refunded, false));
 
-  const [userRow] = await db
-    .select({
-      lastDonorCount: users.lastDonorCount,
-      badges: users.badges,
-    })
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
-
-  const [donationStats] = await db
-    .select({
-      totalDonated: sql<number>`COALESCE(SUM(${donations.amount}), 0)::int`,
-      campaignsSupported: sql<number>`COUNT(DISTINCT ${donations.campaignId})::int`,
-    })
-    .from(donations)
-    .where(
-      and(
-        donorMatch,
-        eq(donations.source, 'real'),
-        eq(donations.refunded, false),
-      ),
-    );
-
-  // My campaigns (user-created)
-  const myCampaigns = await db
-    .select({
-      id: campaigns.id,
-      title: campaigns.title,
-      slug: campaigns.slug,
-      status: campaigns.status,
-      goalAmount: campaigns.goalAmount,
-      raisedAmount: campaigns.raisedAmount,
-      donorCount: campaigns.donorCount,
-      verificationStatus: campaigns.verificationStatus,
-      createdAt: campaigns.createdAt,
-    })
-    .from(campaigns)
-    .where(eq(campaigns.creatorId, userId))
-    .orderBy(desc(campaigns.createdAt));
-
-  // Pending actions: milestones that are "reached" but need evidence
-  let pendingMilestones: { campaignTitle: string; phase: number; campaignSlug: string }[] = [];
-  const activeCampaignIds = myCampaigns
-    .filter((c) => c.status === 'active' || c.status === 'last_donor_zone')
-    .map((c) => c.id);
-
-  if (activeCampaignIds.length > 0) {
-    pendingMilestones = await db
+  // Run independent queries in parallel
+  const [donationStatsResult, myCampaigns, recentDonations] = await Promise.all([
+    db
       .select({
+        totalDonated: sql<number>`COALESCE(SUM(${donations.amount}), 0)::int`,
+        totalCount: sql<number>`count(${donations.id})::int`,
+      })
+      .from(donations)
+      .where(realDonationFilter),
+
+    db
+      .select({
+        id: campaigns.id,
+        title: campaigns.title,
+        slug: campaigns.slug,
+        status: campaigns.status,
+        goalAmount: campaigns.goalAmount,
+        raisedAmount: campaigns.raisedAmount,
+        donorCount: campaigns.donorCount,
+        verificationStatus: campaigns.verificationStatus,
+        heroImageUrl: campaigns.heroImageUrl,
+        updatedAt: campaigns.updatedAt,
+      })
+      .from(campaigns)
+      .where(eq(campaigns.creatorId, userId))
+      .orderBy(desc(campaigns.createdAt)),
+
+    db
+      .select({
+        id: donations.id,
+        amount: donations.amount,
+        createdAt: donations.createdAt,
         campaignTitle: campaigns.title,
-        phase: campaignMilestones.phase,
         campaignSlug: campaigns.slug,
       })
-      .from(campaignMilestones)
-      .innerJoin(campaigns, eq(campaignMilestones.campaignId, campaigns.id))
-      .where(
-        and(
-          inArray(campaignMilestones.campaignId, activeCampaignIds),
-          eq(campaignMilestones.status, 'reached'),
-        ),
-      );
-  }
+      .from(donations)
+      .innerJoin(campaigns, eq(donations.campaignId, campaigns.id))
+      .where(realDonationFilter)
+      .orderBy(desc(donations.createdAt))
+      .limit(3),
+  ]);
 
-  // Campaigns needing verification
+  const donationStats = donationStatsResult[0];
+
   const needsVerification = myCampaigns.filter(
     (c) =>
       (c.status === 'active' || c.status === 'last_donor_zone') &&
+      c.donorCount > 0 &&
       (c.verificationStatus === 'unverified' || c.verificationStatus === 'info_requested'),
   );
 
-  // Recent donations made by user (last 5)
-  const recentDonations = await db
-    .select({
-      id: donations.id,
-      amount: donations.amount,
-      createdAt: donations.createdAt,
-      campaignTitle: campaigns.title,
-      campaignSlug: campaigns.slug,
-    })
-    .from(donations)
-    .innerJoin(campaigns, eq(donations.campaignId, campaigns.id))
-    .where(and(donorMatch, eq(donations.source, 'real'), eq(donations.refunded, false)))
-    .orderBy(desc(donations.createdAt))
-    .limit(5);
-
-  // Recent campaign updates for campaigns the user donated to (non-refunded real donations only)
-  const campaignIdSubquery = db
-    .selectDistinct({ id: campaigns.id })
-    .from(campaigns)
-    .innerJoin(donations, eq(donations.campaignId, campaigns.id))
-    .where(
-      and(
-        donorMatch,
-        eq(donations.source, 'real'),
-        eq(donations.refunded, false),
-      ),
-    );
-
-  const recentUpdates = await db
-    .select({
-      id: campaignUpdates.id,
-      title: campaignUpdates.title,
-      createdAt: campaignUpdates.createdAt,
-      campaignTitle: campaigns.title,
-      campaignSlug: campaigns.slug,
-    })
-    .from(campaignUpdates)
-    .innerJoin(campaigns, eq(campaignUpdates.campaignId, campaigns.id))
-    .where(sql`${campaignUpdates.campaignId} IN (${campaignIdSubquery})`)
-    .orderBy(desc(campaignUpdates.createdAt))
-    .limit(5);
-
   return {
-    user: {
-      totalDonated: donationStats?.totalDonated ?? 0,
-      campaignsSupported: donationStats?.campaignsSupported ?? 0,
-      lastDonorCount: userRow?.lastDonorCount ?? 0,
-      badges: userRow?.badges ?? [],
-    },
+    totalDonated: donationStats?.totalDonated ?? 0,
+    totalDonations: donationStats?.totalCount ?? 0,
     myCampaigns,
     recentDonations,
-    recentUpdates,
-    pendingMilestones,
     needsVerification,
   };
 }
 
 export default async function DashboardPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/login?callbackUrl=/dashboard');
+  const session = (await auth())!;
 
   const {
-    user,
+    totalDonated,
+    totalDonations,
     myCampaigns,
     recentDonations,
-    recentUpdates,
-    pendingMilestones,
     needsVerification,
-  } = await getDashboardData(session.user.id, session.user.email ?? '');
-  const badges = (user.badges ?? []) as UserBadge[];
+  } = await getDashboardData(session.user!.id!, session.user!.email ?? '');
+
   const activeCampaigns = myCampaigns.filter(
     (c) => c.status === 'active' || c.status === 'last_donor_zone',
   );
+  const hasUrgentActions = needsVerification.length > 0;
+  const firstName = (session.user.name ?? 'User').split(' ')[0];
 
   return (
-    <>
-      <h1 className="font-display text-3xl font-bold text-foreground">Dashboard</h1>
-      <p className="mt-1 text-muted-foreground">
-        Welcome back, {session.user.name ?? 'Donor'}
-      </p>
-
-      {/* Stats Cards */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Donated
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="font-mono text-3xl font-bold text-brand-teal">
-              {centsToDollars(user.totalDonated)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Campaigns Supported
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="font-mono text-3xl font-bold text-foreground">
-              {user.campaignsSupported}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Last Donor Wins
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="font-mono text-3xl font-bold text-brand-amber">
-              {user.lastDonorCount}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Active Campaigns
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="font-mono text-3xl font-bold text-foreground">
-              {activeCampaigns.length}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Pending Actions */}
-      {(pendingMilestones.length > 0 || needsVerification.length > 0) && (
-        <section className="mt-6">
-          <h2 className="font-display text-lg font-bold text-foreground">Action Required</h2>
-          <div className="mt-3 space-y-2">
-            {pendingMilestones.map((m) => (
-              <Link
-                key={`${m.campaignSlug}-${m.phase}`}
-                href={`/dashboard/campaigns/${m.campaignSlug}/milestones`}
-                className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm transition-colors hover:bg-amber-100 dark:border-amber-900 dark:bg-amber-950/30 dark:hover:bg-amber-950/50"
-              >
-                <ExclamationTriangleIcon className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
-                <span>
-                  <strong>{m.campaignTitle}</strong> &ndash; Phase {m.phase} milestone reached. Submit evidence to release funds.
-                </span>
-                <ArrowRightIcon className="ml-auto h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-              </Link>
-            ))}
+    <div className="flex gap-8">
+      <div className="min-w-0 flex-1 space-y-8">
+        {/* Urgent actions */}
+        {hasUrgentActions && (
+          <div className="space-y-2">
             {needsVerification.map((c) => (
               <Link
                 key={c.id}
                 href={`/dashboard/campaigns/${c.id}/verification`}
-                className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm transition-colors hover:bg-amber-100 dark:border-amber-900 dark:bg-amber-950/30 dark:hover:bg-amber-950/50"
+                className="flex items-center gap-3 rounded-xl border border-brand-amber/30 bg-brand-amber/10 p-3.5 text-sm transition-colors hover:bg-brand-amber/20"
               >
-                <ExclamationTriangleIcon className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
-                <span>
-                  <strong>{c.title}</strong> &ndash;{' '}
+                <ExclamationTriangleIcon className="h-5 w-5 shrink-0 text-brand-amber" />
+                <span className="flex-1 text-foreground">
+                  <strong>{c.title}</strong> -{' '}
                   {c.verificationStatus === 'info_requested'
-                    ? 'Additional information requested for verification.'
-                    : 'Complete verification to enable fund releases.'}
+                    ? 'Additional info needed for verification.'
+                    : 'Verify your identity to receive your funds.'}
                 </span>
-                <ArrowRightIcon className="ml-auto h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                <ArrowRightIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
               </Link>
             ))}
           </div>
-        </section>
-      )}
+        )}
 
-      {/* Quick Actions */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Link
-          href="/share-your-story"
-          className="flex items-center gap-3 rounded-lg border border-border p-4 transition-colors hover:border-primary hover:bg-muted/40"
-        >
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-teal/10">
-            <MegaphoneIcon className="h-5 w-5 text-brand-teal" />
-          </div>
-          <div>
-            <p className="font-medium text-foreground">Start a Campaign</p>
-            <p className="text-sm text-muted-foreground">Share your story and raise funds</p>
-          </div>
-        </Link>
-        <Link
-          href="/campaigns"
-          className="flex items-center gap-3 rounded-lg border border-border p-4 transition-colors hover:border-primary hover:bg-muted/40"
-        >
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-amber/10">
-            <MagnifyingGlassIcon className="h-5 w-5 text-brand-amber" />
-          </div>
-          <div>
-            <p className="font-medium text-foreground">Browse Campaigns</p>
-            <p className="text-sm text-muted-foreground">Discover campaigns and donate</p>
-          </div>
-        </Link>
-        <Link
-          href="/dashboard/donations"
-          className="flex items-center gap-3 rounded-lg border border-border p-4 transition-colors hover:border-primary hover:bg-muted/40"
-        >
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-950/30">
-            <HeartIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
-          </div>
-          <div>
-            <p className="font-medium text-foreground">Donation History</p>
-            <p className="text-sm text-muted-foreground">View all your past donations</p>
-          </div>
-        </Link>
-      </div>
+        <div>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-[26px]">
+            Welcome back, {firstName}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Here&apos;s what&apos;s happening with your campaigns.
+          </p>
+        </div>
 
-      {/* Badges */}
-      {badges.length > 0 && (
-        <section className="mt-6">
-          <h2 className="font-display text-lg font-bold text-foreground">Earned Badges</h2>
-          <div className="mt-3">
-            <BadgeDisplay badges={badges} />
-          </div>
-        </section>
-      )}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <StatCard
+            label="Total Donated"
+            value={centsToDollars(totalDonated)}
+            sub="Across all campaigns"
+          />
+          <StatCard
+            label="Active Campaigns"
+            value={activeCampaigns.length.toString()}
+            sub="Running right now"
+          />
+          <StatCard
+            label="Total Donations"
+            value={totalDonations.toString()}
+            sub="Total contributions"
+          />
+        </div>
 
-      {/* Two-column layout: Recent Donations + Campaign Updates */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        {/* Recent Donations */}
-        <section>
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-bold text-foreground">Recent Donations</h2>
-            <Link href="/dashboard/donations" className="text-sm font-medium text-brand-teal hover:underline">
-              View all
-            </Link>
-          </div>
-          {recentDonations.length === 0 ? (
-            <Card className="mt-3">
-              <CardContent className="py-8 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No donations yet.{' '}
-                  <Link href="/campaigns" className="text-brand-teal underline">
-                    Browse campaigns
-                  </Link>
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="mt-3 space-y-2">
-              {recentDonations.map((d) => (
-                <Card key={d.id}>
-                  <CardContent className="flex items-center justify-between py-3">
-                    <div className="min-w-0 flex-1">
-                      <Link
-                        href={`/campaigns/${d.campaignSlug}`}
-                        className="text-sm font-medium text-brand-teal hover:underline"
-                      >
-                        {d.campaignTitle}
-                      </Link>
-                      <p className="text-xs text-muted-foreground">{formatDate(d.createdAt)}</p>
-                    </div>
-                    <span className="shrink-0 font-mono text-sm font-semibold text-foreground">
-                      {centsToDollars(d.amount)}
-                    </span>
-                  </CardContent>
-                </Card>
-              ))}
+        {/* My Campaigns */}
+        {myCampaigns.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-lg font-bold text-foreground">My Campaigns</h2>
+              <Link
+                href="/dashboard/campaigns"
+                className="text-sm font-semibold text-primary transition-colors hover:underline"
+              >
+                View all
+              </Link>
             </div>
-          )}
-        </section>
 
-        {/* Campaign Updates */}
-        <section>
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-bold text-foreground">Campaign Updates</h2>
-            <Link href="/dashboard/updates" className="text-sm font-medium text-brand-teal hover:underline">
-              View all
-            </Link>
-          </div>
-          {recentUpdates.length === 0 ? (
-            <Card className="mt-3">
-              <CardContent className="py-8 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No updates yet. Donate to a campaign to see updates here.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="mt-3 space-y-2">
-              {recentUpdates.map((upd) => (
-                <Card key={upd.id}>
-                  <CardContent className="py-3">
-                    <p className="text-sm font-medium text-foreground">{upd.title}</p>
-                    <div className="mt-1 flex items-center justify-between">
-                      <Link
-                        href={`/campaigns/${upd.campaignSlug}`}
-                        className="text-xs text-brand-teal hover:underline"
-                      >
-                        {upd.campaignTitle}
-                      </Link>
-                      <span className="text-xs text-muted-foreground">{formatDate(upd.createdAt)}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
+            <div className="mt-4 space-y-3">
+              {myCampaigns.slice(0, 4).map((c) => {
+                const pct =
+                  c.goalAmount > 0
+                    ? Math.min(100, Math.round((c.raisedAmount / c.goalAmount) * 100))
+                    : 0;
+                const statusLabel =
+                  c.status === 'last_donor_zone'
+                    ? 'Last Donor Zone'
+                    : c.status.charAt(0).toUpperCase() + c.status.slice(1);
 
-      {/* My Campaigns Summary */}
-      {myCampaigns.length > 0 && (
-        <section className="mt-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-bold text-foreground">My Campaigns</h2>
-            <Link href="/dashboard/campaigns" className="text-sm font-medium text-brand-teal hover:underline">
-              Manage all
-            </Link>
-          </div>
-          <div className="mt-3 space-y-2">
-            {myCampaigns.slice(0, 3).map((c) => {
-              const pct = c.goalAmount > 0 ? Math.min(100, Math.round((c.raisedAmount / c.goalAmount) * 100)) : 0;
-              return (
-                <Card key={c.id}>
-                  <CardContent className="py-3">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0 flex-1">
-                        <Link
-                          href={`/dashboard/campaigns/${c.id}`}
-                          className="text-sm font-medium text-brand-teal hover:underline"
-                        >
-                          {c.title}
-                        </Link>
-                        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                          <Badge variant={c.status === 'active' || c.status === 'last_donor_zone' ? 'default' : 'secondary'} className="text-xs">
-                            {c.status === 'last_donor_zone' ? 'Last Donor Zone' : c.status}
-                          </Badge>
-                          <span>{c.donorCount} donors</span>
-                          <span>{centsToDollars(c.raisedAmount)} / {centsToDollars(c.goalAmount)}</span>
-                        </div>
-                        <div className="mt-2 h-1.5 w-full rounded-full bg-muted">
-                          <div
-                            className="h-full rounded-full bg-brand-teal transition-all"
-                            style={{ width: `${pct}%` }}
+                return (
+                  <div
+                    key={c.id}
+                    className="group rounded-xl border border-border bg-card p-4 shadow-[--shadow-elevation-1] transition-all hover:shadow-[--shadow-elevation-2]"
+                  >
+                    <div className="flex gap-4">
+                      {c.heroImageUrl ? (
+                        <div className="relative h-16 w-[88px] shrink-0 overflow-hidden rounded-lg bg-muted">
+                          <Image
+                            src={c.heroImageUrl}
+                            alt={c.title}
+                            fill
+                            className="object-cover"
+                            sizes="88px"
+                            unoptimized
                           />
+                        </div>
+                      ) : (
+                        <div className="flex h-16 w-[88px] shrink-0 items-center justify-center rounded-lg bg-muted">
+                          <span className="font-display text-lg font-bold text-muted-foreground/40">{c.title.charAt(0)}</span>
+                        </div>
+                      )}
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/dashboard/campaigns/${c.id}`}
+                            className="truncate text-sm font-semibold text-card-foreground transition-colors hover:text-primary"
+                          >
+                            {c.title}
+                          </Link>
+                          <span className="shrink-0 rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                            {statusLabel}
+                          </span>
+                        </div>
+
+                        <p className="mt-1 text-xs tabular-nums text-muted-foreground">
+                          <span className="font-mono font-semibold text-foreground">
+                            {centsToDollarsWhole(c.raisedAmount)}
+                          </span>{' '}
+                          raised of {centsToDollarsWhole(c.goalAmount)}
+                        </p>
+
+                        <div className="mt-2">
+                          <ProgressBar
+                            raisedAmount={c.raisedAmount}
+                            goalAmount={c.goalAmount}
+                            compact
+                          />
+                          <div className="mt-1.5 flex items-center justify-between">
+                            <span className="text-xs font-semibold tabular-nums text-muted-foreground">
+                              {pct}% funded
+                            </span>
+                            {c.status === 'completed' && c.updatedAt && (
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <CheckBadgeIcon className="h-3.5 w-3.5 text-brand-green" />
+                                Completed {formatDate(c.updatedAt)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex items-center gap-3 border-t border-border pt-3">
+                          <Link
+                            href={`/campaigns/${c.slug}`}
+                            className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                          >
+                            View
+                          </Link>
+                          <Link
+                            href={`/dashboard/campaigns/${c.id}`}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary transition-colors hover:underline"
+                          >
+                            Manage
+                          </Link>
                         </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {myCampaigns.length === 0 && (
+          <section className="rounded-2xl border border-border bg-card p-8 text-center shadow-[--shadow-elevation-1]">
+            <p className="text-sm font-semibold text-card-foreground">
+              No campaigns yet
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Start your first campaign to raise funds for what matters.
+            </p>
+            <Link
+              href="/share-your-story"
+              className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              Create Campaign
+            </Link>
+          </section>
+        )}
+      </div>
+
+      {/* Right sidebar */}
+      <aside className="hidden w-[280px] shrink-0 xl:block">
+        <div className="space-y-6">
+          <div>
+            <div className="flex items-center justify-between">
+              <h3 className="font-display text-[15px] font-bold text-foreground">
+                Recent Donations
+              </h3>
+              <Link
+                href="/dashboard/finances"
+                className="text-xs font-semibold text-primary transition-colors hover:underline"
+              >
+                View all
+              </Link>
+            </div>
+
+            <div className="mt-3 space-y-2.5">
+              {recentDonations.length === 0 ? (
+                <p className="py-4 text-center text-xs text-muted-foreground">No donations yet.</p>
+              ) : (
+                recentDonations.map((d) => (
+                  <div
+                    key={d.id}
+                    className="rounded-xl border border-border bg-card p-3.5 shadow-[--shadow-elevation-1]"
+                  >
+                    <p className="truncate text-[13px] font-medium text-card-foreground">
+                      {d.campaignTitle}
+                    </p>
+                    <div className="mt-0.5 flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        {formatDate(d.createdAt)}
+                      </span>
+                      <span className="font-mono text-sm font-bold tabular-nums text-foreground">
+                        {centsToDollars(d.amount)}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </section>
-      )}
-    </>
+
+          <div>
+            <h3 className="font-display text-[15px] font-bold text-foreground">Quick Links</h3>
+            <div className="mt-3 space-y-0.5">
+              {[
+                { href: '/dashboard/finances', label: 'Finances' },
+                { href: '/dashboard/settings', label: 'Account' },
+              ].map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="block rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: string;
+  sub: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-5 shadow-[--shadow-elevation-1]">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 font-mono text-[24px] font-bold tabular-nums text-card-foreground">
+        {value}
+      </p>
+      <p className="mt-0.5 text-xs text-muted-foreground">{sub}</p>
+    </div>
   );
 }

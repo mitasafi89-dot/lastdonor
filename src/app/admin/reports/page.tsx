@@ -3,11 +3,15 @@ import { auth } from '@/lib/auth';
 import { db } from '@/db';
 import { donations, campaigns } from '@/db/schema';
 import { eq, sql, gte, and, desc } from 'drizzle-orm';
-import { FinancialReports } from '@/components/admin/FinancialReports';
+import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 
+const FinancialReports = dynamic(
+  () => import('@/components/admin/FinancialReports').then((m) => ({ default: m.FinancialReports }))
+);
+
 export const metadata: Metadata = {
-  title: 'Financial Reports — Admin — LastDonor.org',
+  title: 'Financial Reports - Admin - LastDonor.org',
   robots: { index: false },
 };
 

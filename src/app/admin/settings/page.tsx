@@ -8,7 +8,7 @@ import { getAllSettings } from '@/lib/settings.server';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Settings — Admin — LastDonor.org',
+  title: 'Settings - Admin - LastDonor.org',
   robots: { index: false },
 };
 

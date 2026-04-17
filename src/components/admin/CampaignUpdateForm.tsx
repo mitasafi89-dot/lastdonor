@@ -33,7 +33,7 @@ export function CampaignUpdateForm({ campaignId }: CampaignUpdateFormProps) {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error?.message ?? 'Failed to create update');
+        throw new Error(data.error?.code === 'VALIDATION_ERROR' ? (data.error?.message ?? 'Failed to create update') : 'Failed to create update');
       }
 
       router.push(`/admin/campaigns/${campaignId}`);

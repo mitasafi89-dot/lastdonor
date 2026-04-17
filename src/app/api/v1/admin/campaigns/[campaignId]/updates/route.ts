@@ -4,9 +4,11 @@ import { campaigns, campaignUpdates } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { requireRole, UnauthorizedError, ForbiddenError } from '@/lib/auth';
 import { sanitizeHtml } from '@/lib/utils/sanitize';
+import { notifyCampaignUpdateDigest } from '@/lib/notifications';
 import { revalidatePath } from 'next/cache';
 import { randomUUID } from 'crypto';
 import type { ApiResponse, ApiError } from '@/types/api';
+import { adminCampaignUpdateSchema } from '@/lib/validators/admin';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -15,7 +17,7 @@ interface Params {
 }
 
 /**
- * GET /api/v1/admin/campaigns/[campaignId]/updates — list updates for a campaign
+ * GET /api/v1/admin/campaigns/[campaignId]/updates - list updates for a campaign
  */
 export async function GET(request: NextRequest, { params }: Params) {
   const requestId = randomUUID();
@@ -68,7 +70,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 }
 
 /**
- * POST /api/v1/admin/campaigns/[campaignId]/updates — create a new campaign update
+ * POST /api/v1/admin/campaigns/[campaignId]/updates - create a new campaign update
  */
 export async function POST(request: NextRequest, { params }: Params) {
   const requestId = randomUUID();
@@ -87,7 +89,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 
     // Verify campaign exists
     const [campaign] = await db
-      .select({ id: campaigns.id, slug: campaigns.slug })
+      .select({ id: campaigns.id, slug: campaigns.slug, title: campaigns.title, raisedAmount: campaigns.raisedAmount, goalAmount: campaigns.goalAmount })
       .from(campaigns)
       .where(eq(campaigns.id, campaignId))
       .limit(1);
@@ -101,21 +103,14 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
 
     const body = await request.json();
-    const { title, bodyHtml, imageUrl } = body;
-
-    if (!title || typeof title !== 'string' || title.trim().length === 0) {
+    const parsed = adminCampaignUpdateSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { ok: false, error: { code: 'VALIDATION_ERROR', message: 'Title is required', field: 'title', requestId } } satisfies ApiError,
+        { ok: false, error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0]?.message ?? 'Invalid input', requestId } } satisfies ApiError,
         { status: 400 },
       );
     }
-
-    if (!bodyHtml || typeof bodyHtml !== 'string' || bodyHtml.trim().length === 0) {
-      return NextResponse.json(
-        { ok: false, error: { code: 'VALIDATION_ERROR', message: 'Body is required', field: 'bodyHtml', requestId } } satisfies ApiError,
-        { status: 400 },
-      );
-    }
+    const { title, bodyHtml, imageUrl } = parsed.data;
 
     const [created] = await db
       .insert(campaignUpdates)
@@ -123,12 +118,29 @@ export async function POST(request: NextRequest, { params }: Params) {
         campaignId,
         title: title.trim(),
         bodyHtml: sanitizeHtml(bodyHtml),
-        imageUrl: imageUrl && typeof imageUrl === 'string' ? imageUrl.trim() : null,
+        imageUrl: imageUrl?.trim() ?? null,
       })
       .returning();
 
     revalidatePath(`/campaigns/${campaign.slug}`);
     revalidatePath(`/admin/campaigns/${campaignId}`);
+
+    // Notify subscribers (fire-and-forget)
+    const plainText = bodyHtml ? bodyHtml.replace(/<[^>]+>/g, '') : '';
+    const excerpt = plainText.substring(0, 300);
+    const progressPercent = campaign.goalAmount > 0
+      ? Math.min(Math.round((campaign.raisedAmount / campaign.goalAmount) * 100), 100)
+      : 0;
+    notifyCampaignUpdateDigest({
+      campaignId,
+      campaignTitle: campaign.title,
+      campaignSlug: campaign.slug,
+      updateTitle: title.trim(),
+      updateExcerpt: excerpt,
+      progressPercent,
+      raisedCents: campaign.raisedAmount,
+      goalCents: campaign.goalAmount,
+    }).catch((err) => console.error('[admin-campaign-update] notify error:', err));
 
     const response: ApiResponse<typeof created> = { ok: true, data: created };
     return NextResponse.json(response, { status: 201 });

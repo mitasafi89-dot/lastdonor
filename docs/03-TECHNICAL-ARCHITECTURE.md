@@ -1,4 +1,4 @@
-# LastDonor.org — Technical Architecture
+# LastDonor.org - Technical Architecture
 
 **Version**: 0.1 (Pre-Development)
 **Date**: March 19, 2026
@@ -25,7 +25,7 @@
 | **File Storage** | Supabase Storage or Cloudflare R2 | Campaign images, user uploads |
 | **Email** | Resend | Transactional emails (receipts, updates), newsletter integration |
 | **Image Generation** | Kling AI | Abstract illustrations, textures, decorative elements for categories without federal photo sources. Never for people/faces. |
-| **Analytics** | Plausible | Privacy-first, no cookies, GDPR/CCPA compliant — trust signal for donors |
+| **Analytics** | Plausible | Privacy-first, no cookies, GDPR/CCPA compliant - trust signal for donors |
 | **Hosting** | Vercel | Optimized for Next.js, global CDN, automatic HTTPS, preview deployments |
 | **DNS/Domain** | Cloudflare | DDoS protection, fast DNS, page rules |
 | **Error Tracking** | Sentry | Catch frontend/backend errors before users report them |
@@ -43,7 +43,7 @@
                        │
 ┌──────────────────────▼──────────────────────────────────────┐
 │                        VERCEL                               │
-│              (Next.js App — SSR/SSG/ISR)                     │
+│              (Next.js App - SSR/SSG/ISR)                     │
 │                                                             │
 │  ┌──────────────┐ ┌──────────────┐ ┌──────────────────────┐ │
 │  │  Public Pages │ │  API Routes  │ │  Admin Dashboard     │ │
@@ -98,7 +98,7 @@ last_donor_id   UUID REFERENCES users(id)
 ```
 id              UUID PRIMARY KEY
 campaign_id     UUID REFERENCES campaigns(id) NOT NULL
-user_id         UUID REFERENCES users(id) (nullable — guest donations)
+user_id         UUID REFERENCES users(id) (nullable - guest donations)
 stripe_payment_id TEXT NOT NULL
 amount          INTEGER NOT NULL (in cents)
 donor_name      TEXT NOT NULL
@@ -172,7 +172,7 @@ source          TEXT (e.g., 'homepage', 'campaign_page', 'blog')
 | `/api/campaigns` | POST | Create campaign (admin auth) |
 | `/api/campaigns/[id]` | PUT | Update campaign (admin auth) |
 | `/api/donations/create-intent` | POST | Create Stripe payment intent |
-| `/api/donations/webhook` | POST | Stripe webhook — confirm payment, update campaign |
+| `/api/donations/webhook` | POST | Stripe webhook - confirm payment, update campaign |
 | `/api/newsletter/subscribe` | POST | Add email to newsletter |
 | `/api/blog` | GET | List published posts (public) |
 | `/api/admin/stats` | GET | Dashboard analytics (admin auth) |
@@ -232,14 +232,14 @@ Server:
 
 | Concern | Solution |
 |---------|----------|
-| Payment data | Never touches our server — Stripe.js handles all card data |
-| SQL injection | Drizzle ORM parameterized queries — no raw SQL |
+| Payment data | Never touches our server - Stripe.js handles all card data |
+| SQL injection | Drizzle ORM parameterized queries - no raw SQL |
 | XSS | React auto-escapes, CSP headers, sanitize campaign HTML |
 | CSRF | SameSite cookies, Stripe webhook signature verification |
 | Auth | Bcrypt password hashing, HttpOnly cookies, short session expiry |
 | Rate limiting | Vercel Edge middleware rate limiting on donation + auth endpoints |
 | DDoS | Cloudflare in front of Vercel |
-| Secrets | Environment variables only — never committed. Vercel encrypted env. |
+| Secrets | Environment variables only - never committed. Vercel encrypted env. |
 | Admin access | Role-based access control, admin routes behind auth middleware |
 | Data privacy | Plausible (no cookies), minimal PII collection, encrypted at rest (Supabase) |
 
@@ -259,7 +259,7 @@ Server:
 - Vercel Cron Job (or external: GitHub Actions) fetches RSS feeds on schedule
 - Parses entries, stores in `news_items` table with title, link, source, date, summary
 - Admin dashboard shows latest items with "Create Campaign From This" button
-- No public-facing news page in MVP — news is internal editorial fuel only
+- No public-facing news page in MVP - news is internal editorial fuel only
 
 ---
 

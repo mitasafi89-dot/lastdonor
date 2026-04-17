@@ -1,5 +1,5 @@
 /**
- * Link Graph — manages internal linking between blog posts and site pages.
+ * Link Graph - manages internal linking between blog posts and site pages.
  * Ensures every new post gets contextual internal links and contributes
  * to the site's overall link structure.
  */

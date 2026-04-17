@@ -5,14 +5,14 @@ import { BlogPostsList } from '@/components/admin/BlogPostsList';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Blog Posts — Admin — LastDonor.org',
+  title: 'Blog Posts - Admin - LastDonor.org',
   robots: { index: false },
 };
 
 export const revalidate = 60;
 
 export default async function AdminBlogPage() {
-  /* Select only the columns the UI needs — excludes heavy bodyHtml, faqData, etc. */
+  /* Select only the columns the UI needs - excludes heavy bodyHtml, faqData, etc. */
   const [rows, statusCounts] = await Promise.all([
     db
       .select({
@@ -48,7 +48,7 @@ export default async function AdminBlogPage() {
   return (
     <div>
       <h1 className="text-xl font-semibold tracking-tight text-foreground">Blog posts</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Manage blog content — create, edit, and publish articles.</p>
+      <p className="mt-1 text-sm text-muted-foreground">Manage blog content - create, edit, and publish articles.</p>
       <div className="mt-6">
         <BlogPostsList
           initialPosts={rows.map((p) => ({

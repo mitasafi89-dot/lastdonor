@@ -79,7 +79,7 @@ const NAV_GROUPS: NavGroup[] = [
     adminOnly: true,
     items: [
       { href: '/admin/verification', label: 'Verification Queue', icon: ShieldCheckIcon },
-      { href: '/admin/fund-releases', label: 'Fund Releases', icon: BanknotesIcon },
+      { href: '/admin/payouts', label: 'Payouts', icon: BanknotesIcon },
       { href: '/admin/governance', label: 'Governance', icon: ExclamationTriangleIcon },
       { href: '/admin/info-requests', label: 'Info Requests', icon: InformationCircleIcon },
       { href: '/admin/communications', label: 'Communications', icon: EnvelopeIcon },
@@ -166,12 +166,12 @@ export function AdminSidebar({ role }: { role: string }) {
 
         return (
           <div key={group.label}>
-            {/* CDS divider — 1px border between groups */}
+            {/* CDS divider - 1px border between groups */}
             {filteredGroupIdx > 0 && (
               <div className="my-2 border-t border-border" />
             )}
 
-            {/* CDS section header — 11px semibold, uppercase tracking, 16px horizontal padding */}
+            {/* CDS section header - 11px semibold, uppercase tracking, 16px horizontal padding */}
             {isCollapsible ? (
               <button
                 onClick={() => toggleGroup(group.label)}
@@ -192,7 +192,7 @@ export function AdminSidebar({ role }: { role: string }) {
               </p>
             )}
 
-            {/* CDS nav items — 32px row height, 4px left active indicator */}
+            {/* CDS nav items - 32px row height, 4px left active indicator */}
             <div
               className={cn(
                 'overflow-hidden transition-all duration-150',
@@ -229,7 +229,7 @@ export function AdminSidebar({ role }: { role: string }) {
       })}
       </div>
 
-      {/* Sound toggle — CDS utility footer */}
+      {/* Sound toggle - CDS utility footer */}
       <div className="border-t border-border px-4 py-3">
         <button
           type="button"

@@ -1,15 +1,16 @@
-/**
- * Blog Pipeline Orchestrator — the master pipeline that coordinates
- * all steps: topic selection → brief → content generation → images →
- * quality validation → save/publish.
+﻿/**
+ * Blog Pipeline Orchestrator - the master pipeline that coordinates
+ * all steps: topic selection â†’ brief â†’ content generation â†’ images â†’
+ * quality validation â†’ save/publish.
  */
 
 import { db } from '@/db';
 import { blogTopicQueue, blogPosts, blogGenerationLogs, auditLogs } from '@/db/schema';
-import { eq, desc, and, lt } from 'drizzle-orm';
+import { eq, desc, and, lt, sql } from 'drizzle-orm';
 import { generateContentBrief } from './content-brief';
 import { assembleArticle } from './article-assembler';
 import { isDuplicateContent } from './content-dedup';
+import { canPublishNow } from './publishing-guardrails';
 import { applyGeoOptimization, generateAuthorByline } from './geo-optimizer';
 import { calculateSeoScore } from './seo-scorer';
 import { generateBlogImage, getFallbackImage } from './image-generator';
@@ -24,6 +25,8 @@ import {
   deduplicateKeyTakeaways,
 } from './html-formatter';
 import { generateSlug } from '@/lib/utils/slug';
+import { pipelineLog } from '@/lib/server-logger';
+import { randomUUID } from 'crypto';
 
 export interface PipelineOptions {
   maxPosts?: number;
@@ -33,6 +36,7 @@ export interface PipelineOptions {
 }
 
 export interface PipelineResult {
+  executionId: string;
   topicsProcessed: number;
   postsCreated: number;
   postsPublished: number;
@@ -64,7 +68,15 @@ export async function runBlogPipeline(
     minPriorityScore = 50,
   } = options;
 
+  const executionId = randomUUID();
+  pipelineLog("pipeline", `Execution ${executionId} started`);
+
+  // Local log helper that auto-attaches executionId to every step
+  const log = (topicId: string, step: string, metadata?: Record<string, unknown>) =>
+    logPipelineStep(topicId, step, metadata, executionId);
+
   const result: PipelineResult = {
+    executionId,
     topicsProcessed: 0,
     postsCreated: 0,
     postsPublished: 0,
@@ -72,22 +84,55 @@ export async function runBlogPipeline(
     details: [],
   };
 
-  // Step 0: Recover any topics stuck in 'generating' for over 30 minutes
-  // This happens when a previous pipeline run crashed or was killed mid-generation.
+  // Step 0: Recover stuck topics and enforce retry limits.
+  // Topics stuck in 'generating' for over 30 minutes are reset to 'pending',
+  // but only if they haven't exceeded MAX_GENERATION_ATTEMPTS (3).
+  // After max attempts, they're permanently rejected to prevent infinite loops
+  // when a topic consistently causes pipeline crashes (bad AI output, OOM, etc.).
+  const MAX_GENERATION_ATTEMPTS = 3;
   const staleThreshold = new Date(Date.now() - 30 * 60 * 1000);
+
+  // First, find all stuck topics
   const stuckTopics = await db
-    .update(blogTopicQueue)
-    .set({ status: 'pending', updatedAt: new Date() })
+    .select({ id: blogTopicQueue.id, title: blogTopicQueue.title, attemptCount: blogTopicQueue.attemptCount })
+    .from(blogTopicQueue)
     .where(
       and(
         eq(blogTopicQueue.status, 'generating'),
         lt(blogTopicQueue.updatedAt, staleThreshold),
       ),
-    )
-    .returning({ id: blogTopicQueue.id, title: blogTopicQueue.title });
+    );
 
   if (stuckTopics.length > 0) {
-    console.log(`  [pipeline] Recovered ${stuckTopics.length} stuck topic(s): ${stuckTopics.map((t) => t.title).join(', ')}`);
+    const recoverable = stuckTopics.filter((t) => t.attemptCount < MAX_GENERATION_ATTEMPTS);
+    const exhausted = stuckTopics.filter((t) => t.attemptCount >= MAX_GENERATION_ATTEMPTS);
+
+    // Reset recoverable topics to pending (will be retried with incremented attemptCount)
+    for (const topic of recoverable) {
+      await db
+        .update(blogTopicQueue)
+        .set({ status: 'pending', updatedAt: new Date() })
+        .where(eq(blogTopicQueue.id, topic.id));
+    }
+
+    // Permanently reject exhausted topics
+    for (const topic of exhausted) {
+      await db
+        .update(blogTopicQueue)
+        .set({
+          status: 'rejected',
+          rejectedReason: `Failed after ${topic.attemptCount} generation attempts`,
+          updatedAt: new Date(),
+        })
+        .where(eq(blogTopicQueue.id, topic.id));
+    }
+
+    if (recoverable.length > 0) {
+      pipelineLog("pipeline", `Recovered ${recoverable.length} stuck topic(s): ${recoverable.map((t) => t.title).join(', ')}`);
+    }
+    if (exhausted.length > 0) {
+      pipelineLog("pipeline", `Rejected ${exhausted.length} exhausted topic(s): ${exhausted.map((t) => t.title).join(', ')}`);
+    }
   }
 
   // Step 1: Select top-priority topics
@@ -116,19 +161,23 @@ export async function runBlogPipeline(
     };
 
     try {
-      // Mark topic as generating
+      // Mark topic as generating and increment attempt count
       await db
         .update(blogTopicQueue)
-        .set({ status: 'generating', updatedAt: new Date() })
+        .set({
+          status: 'generating',
+          attemptCount: sql`${blogTopicQueue.attemptCount} + 1`,
+          updatedAt: new Date(),
+        })
         .where(eq(blogTopicQueue.id, topic.id));
 
       result.topicsProcessed++;
       const topicStartMs = Date.now();
 
       // Step 2: Generate Content Brief
-      console.log(`  [pipeline] Step 2: Generating content brief for "${topic.primaryKeyword}"...`);
+      pipelineLog("pipeline", `Step 2: Generating content brief for "${topic.primaryKeyword}"...`);
       const briefStartMs = Date.now();
-      await logPipelineStep(topic.id, 'brief_started');
+      await log(topic.id, 'brief_started');
 
       const secondaryKeywords = Array.isArray(topic.secondaryKeywords)
         ? (topic.secondaryKeywords as string[])
@@ -142,6 +191,9 @@ export async function runBlogPipeline(
         newsHook: topic.newsHook,
       });
 
+      // Extract oblique constraints text for downstream passes
+      const obliqueConstraints = brief.obliqueConstraints;
+
       // Store the brief and outline
       await db
         .update(blogTopicQueue)
@@ -152,8 +204,8 @@ export async function runBlogPipeline(
         })
         .where(eq(blogTopicQueue.id, topic.id));
 
-      await logPipelineStep(topic.id, 'brief_generated');
-      console.log(`  [pipeline] Brief generated in ${((Date.now() - briefStartMs) / 1000).toFixed(1)}s`);
+      await log(topic.id, 'brief_generated');
+      pipelineLog("pipeline", `Brief generated in ${((Date.now() - briefStartMs) / 1000).toFixed(1)}s`);
 
       // Step 2b: Resolve internal link suggestions from the link graph (DB-driven)
       const causeCategory = topic.causeCategory ?? 'community';
@@ -174,9 +226,9 @@ export async function runBlogPipeline(
       }));
 
       // Step 3: Generate Full Article
-      console.log('  [pipeline] Step 3: Generating full article (multi-pass)...');
+      pipelineLog("pipeline", 'Step 3: Generating full article (multi-pass)...');
       const articleStartMs = Date.now();
-      await logPipelineStep(topic.id, 'content_started');
+      await log(topic.id, 'content_started');
 
       const article = await assembleArticle(brief, {
         primaryKeyword: topic.primaryKeyword,
@@ -184,22 +236,23 @@ export async function runBlogPipeline(
         causeCategory,
         internalLinkSuggestions,
         externalAuthoritySources,
+        obliqueConstraints,
       });
 
-      await logPipelineStep(topic.id, 'content_generated');
-      console.log(`  [pipeline] Article assembled in ${((Date.now() - articleStartMs) / 1000).toFixed(1)}s (${article.wordCount} words)`);
+      await log(topic.id, 'content_generated');
+      pipelineLog("pipeline", `Article assembled in ${((Date.now() - articleStartMs) / 1000).toFixed(1)}s (${article.wordCount} words)`);
 
       // Step 4: Deduplication Check
-      console.log('  [pipeline] Step 4: Running deduplication check...');
+      pipelineLog("pipeline", 'Step 4: Running deduplication check...');
       const dupCheck = await isDuplicateContent(article.bodyHtml);
-      console.log(`  [pipeline] Dedup result: isDuplicate=${dupCheck.isDuplicate}${dupCheck.similarity ? `, similarity=${dupCheck.similarity}` : ''}${dupCheck.similarPostSlug ? `, closestPost=${dupCheck.similarPostSlug}` : ''}`);
+      pipelineLog("pipeline", `Dedup result: isDuplicate=${dupCheck.isDuplicate}${dupCheck.similarity ? `, similarity=${dupCheck.similarity}` : ''}${dupCheck.similarPostSlug ? `, closestPost=${dupCheck.similarPostSlug}` : ''}`);
       if (dupCheck.isDuplicate) {
         await db
           .update(blogTopicQueue)
           .set({ status: 'stale', updatedAt: new Date() })
           .where(eq(blogTopicQueue.id, topic.id));
 
-        await logPipelineStep(topic.id, 'rejected_duplicate', {
+        await log(topic.id, 'rejected_duplicate', {
           similarPost: dupCheck.similarPostSlug,
           similarity: dupCheck.similarity,
         });
@@ -211,9 +264,9 @@ export async function runBlogPipeline(
       }
 
       // Step 5: Image Generation (hero + section images)
-      console.log('  [pipeline] Step 5: Generating images...');
+      pipelineLog("pipeline", 'Step 5: Generating images...');
       const imageStartMs = Date.now();
-      await logPipelineStep(topic.id, 'images_started');
+      await log(topic.id, 'images_started');
 
       let coverImageUrl: string | null = null;
       const heroImage = await generateBlogImage({
@@ -254,11 +307,11 @@ export async function runBlogPipeline(
         }
       }
 
-      await logPipelineStep(topic.id, 'images_generated', {
+      await log(topic.id, 'images_generated', {
         heroGenerated: !!heroImage,
         sectionImagesGenerated: sectionImages.length,
       });
-      console.log(`  [pipeline] Images generated in ${((Date.now() - imageStartMs) / 1000).toFixed(1)}s`);
+      pipelineLog("pipeline", `Images generated in ${((Date.now() - imageStartMs) / 1000).toFixed(1)}s`);
 
       // Step 6: Apply GEO Optimization
       let optimizedHtml = applyGeoOptimization(article.bodyHtml);
@@ -275,8 +328,8 @@ export async function runBlogPipeline(
       const readabilityScore = calculateReadabilityScore(optimizedHtml);
 
       // Step 7: Quality Validation
-      console.log('  [pipeline] Step 7: Validating quality...');
-      await logPipelineStep(topic.id, 'validation_started');
+      pipelineLog("pipeline", 'Step 7: Validating quality...');
+      await log(topic.id, 'validation_started');
 
       const seoScore = calculateSeoScore({
         html: optimizedHtml,
@@ -300,7 +353,7 @@ export async function runBlogPipeline(
           .set({ status: 'rejected', rejectedReason: `SEO score too low: ${seoScore.total}`, updatedAt: new Date() })
           .where(eq(blogTopicQueue.id, topic.id));
 
-        await logPipelineStep(topic.id, 'rejected_quality', { seoScore: seoScore.total });
+        await log(topic.id, 'rejected_quality', { seoScore: seoScore.total });
 
         postResult.status = 'rejected_quality';
         postResult.error = `SEO score ${seoScore.total} below minimum 50`;
@@ -308,7 +361,7 @@ export async function runBlogPipeline(
         continue;
       }
 
-      await logPipelineStep(topic.id, 'validated');
+      await log(topic.id, 'validated');
 
       // Step 8: Save to database
       if (dryRun) {
@@ -317,10 +370,21 @@ export async function runBlogPipeline(
         continue;
       }
 
-      await logPipelineStep(topic.id, 'saving');
+      await log(topic.id, 'saving');
 
       const postSlug = generateSlug(brief.title);
-      const shouldPublish = autoPublish && seoScore.total >= 70;
+
+      // Publishing gate: check cadence limits before auto-publishing.
+      // If the gate blocks, the post is saved as a draft instead.
+      let shouldPublish = autoPublish && seoScore.total >= 70;
+      if (shouldPublish) {
+        const publishGate = await canPublishNow(causeCategory);
+        if (!publishGate.canPublish) {
+          pipelineLog("pipeline", `Publish gate blocked: ${publishGate.reason}`);
+          await log(topic.id, 'publish_deferred', { reason: publishGate.reason });
+          shouldPublish = false;
+        }
+      }
 
       const [newPost] = await db
         .insert(blogPosts)
@@ -375,13 +439,13 @@ export async function runBlogPipeline(
         severity: 'info',
       });
 
-      await logPipelineStep(topic.id, shouldPublish ? 'published' : 'drafted', { postId: newPost.id });
+      await log(topic.id, shouldPublish ? 'published' : 'drafted', { postId: newPost.id });
 
       postResult.postId = newPost.id;
       postResult.slug = postSlug;
       result.postsCreated++;
       if (shouldPublish) result.postsPublished++;
-      console.log(`  [pipeline] Topic completed in ${((Date.now() - topicStartMs) / 1000).toFixed(1)}s — SEO:${seoScore.total} | ${article.wordCount}w`);
+      pipelineLog("pipeline", `Topic completed in ${((Date.now() - topicStartMs) / 1000).toFixed(1)}s - SEO:${seoScore.total} | ${article.wordCount}w`);
 
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
@@ -395,7 +459,7 @@ export async function runBlogPipeline(
         .set({ status: 'pending', updatedAt: new Date() })
         .where(eq(blogTopicQueue.id, topic.id));
 
-      await logPipelineStep(topic.id, 'error', { error: errMsg });
+      await log(topic.id, 'error', { error: errMsg });
     }
 
     result.details.push(postResult);
@@ -408,15 +472,17 @@ async function logPipelineStep(
   topicId: string,
   step: string,
   metadata?: Record<string, unknown>,
+  executionId?: string,
 ): Promise<void> {
   try {
     const isError = step === 'error' || step.startsWith('rejected');
+    const fullMetadata = { ...metadata, ...(executionId ? { executionId } : {}) };
     await db.insert(blogGenerationLogs).values({
       topicId,
       step,
       success: !isError,
       errorMessage: isError ? (metadata?.error as string) ?? null : null,
-      metadata: metadata ?? {},
+      metadata: fullMetadata,
     });
   } catch {
     // Non-critical: don't fail the pipeline if logging fails

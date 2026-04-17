@@ -10,19 +10,33 @@ export type GenerateHeadlineInput = {
   recentTitles?: string[];
 };
 
+/**
+ * Categories where solemn, editorial archetypes are preferred.
+ */
+const SOLEMN_CATEGORIES = new Set<string>([
+  'military', 'veterans', 'memorial', 'first-responders',
+]);
+
 export function buildGenerateHeadlinePrompt(input: GenerateHeadlineInput) {
   const recentBlock =
     input.recentTitles && input.recentTitles.length > 0
       ? `\nRECENTLY USED TITLES (you MUST use a different structural pattern from ALL of these):\n${input.recentTitles.map((t) => `- "${t}"`).join('\n')}\n`
       : '';
 
-  const systemPrompt = `You write emotionally compelling campaign headlines for a nonprofit fundraising platform. Your headline is the single most important element — it must make a stranger stop scrolling and feel something real within one second.
+  const isSolemn = SOLEMN_CATEGORIES.has(input.category);
+
+  const categoryGuidance = isSolemn
+    ? `\nCATEGORY GUIDANCE (${input.category}):\nThis is a solemn story. Prefer editorial archetypes (1-8) that convey dignity, tribute, and honor. Do NOT start with "Help" or "Support" for military, veterans, memorial, or first-responder campaigns. Use archetypes like Name + Emotional Journey, Tribute with Heart, or Location + Collective Grief.\n`
+    : `\nCATEGORY GUIDANCE (${input.category}):\nThis story benefits from warmth and an invitation to participate. You may use the invitation archetypes (9-11) which start with "Help", "Support", or "Stand with" -- but ONLY when paired with a specific person's name AND a specific outcome. You may also use any editorial archetype (1-8). Vary your approach.\n`;
+
+  const systemPrompt = `You write emotionally compelling campaign headlines for a nonprofit fundraising platform. Your headline is the single most important element - it must make a stranger stop scrolling and feel something real within one second.
 
 EMOTIONAL PRINCIPLE:
-People donate because they FEEL — not because they calculate. Your headline must trigger an immediate emotional response: compassion, urgency, protective instinct, grief, solidarity, or hope. Specificity creates emotion — a name, an age, a place, a loss makes the reader see a real human, not an abstract cause. Vague headlines feel like scams. Specific headlines feel like someone you could know.
+People donate because they FEEL - not because they calculate. Your headline must trigger an immediate emotional response: compassion, urgency, protective instinct, grief, solidarity, or hope. Specificity creates emotion - a name, an age, a place, a loss makes the reader see a real human, not an abstract cause. Vague headlines feel like scams. Specific headlines feel like someone you could know.
 
-STRUCTURAL ARCHETYPES — pick the one that fits the emotional truth of this story. Each headline you write MUST use a DIFFERENT archetype from any recent titles listed below:
+STRUCTURAL ARCHETYPES - pick the one that fits the emotional truth of this story. Each headline you write MUST use a DIFFERENT archetype from any recent titles listed below:
 
+--- Editorial Archetypes (work for ALL categories) ---
 1. Name + Emotional Journey: "Officer Chen Faces His Toughest Battle Yet"
 2. Location + Collective Grief/Hope: "Downers Grove Grieves for Daniel Figueroa"
 3. After + Devastating Loss: "After the Northridge Fire, a Family Has Nothing Left"
@@ -32,25 +46,38 @@ STRUCTURAL ARCHETYPES — pick the one that fits the emotional truth of this sto
 7. Human Cost Statement: "The Martinez Family Lost Everything in 40 Minutes"
 8. Tribute with Heart: "Cpl. Davis Gave Everything, Now It's Our Turn"
 
+--- Invitation Archetypes (for medical, disaster, emergency, essential-needs, and similar) ---
+9.  Help + Name + Specific Outcome: "Help Maria Gonzalez Access Life-Saving Treatment"
+10. Support + Name + Through Struggle: "Support the Rivera Family Through Recovery"
+11. Stand With + Name + Moment: "Stand with James as He Rebuilds After the Flood"
+${categoryGuidance}
 HARD RULES:
-- 30–75 characters (optimized for Google SERP and social card truncation)
-- Begin with the person's name, their location, or the specific event — never with a generic verb like "Help", "Support", "Donate", "Give", or "Please"
-- NEVER start with "Help" — this is the #1 most common mistake. "Help [name]" is lazy, repetitive, and sounds like begging. Every title starting with "Help" is automatically rejected.
+- 30-75 characters (optimized for Google SERP and social card truncation)
+- If you use "Help", "Support", or "Stand with" to open, you MUST follow it with the subject's real name AND a specific outcome or struggle. "Help a family" is rejected. "Help David Chen Afford Hospice Care" is accepted.
+- NEVER start with "Donate", "Give", "Please", "Giving", or "Contribute" - those sound transactional
 - Include the subject's name when a real person is identified
 - Include their location when available (local SEO + specificity)
-- The emotion must come from the FACTS of the story — a real loss, a real sacrifice, a real fight — not from adjectives or exclamation marks
-- NEVER copy or rephrase the article headline — your title must be ORIGINAL
+- The emotion must come from the FACTS of the story - a real loss, a real sacrifice, a real fight - not from adjectives or exclamation marks
+- NEVER copy or rephrase the article headline - your title must be ORIGINAL
 - No ALL CAPS words, no exclamation marks, no quotation marks around the headline
-- No clickbait, no guilt-tripping, no begging — dignity always
-- Sound like a headline a journalist would write for the front page of a local newspaper, not a GoFundMe title
-- Every headline on the platform must feel like a DIFFERENT story — never repeat patterns
-- NEVER include violent verbs like "dies", "killed", "shot", "shoots" — instead imply the loss through emotional framing
+- No clickbait, no guilt-tripping, no begging - dignity always
+- Sound like a headline from the front page of a compassionate local newspaper
+- Every headline on the platform must feel like a DIFFERENT story - never repeat patterns
+- NEVER include violent verbs like "dies", "killed", "shot", "shoots" - instead imply the loss through emotional framing
 
 BAD EXAMPLES (never write anything like these):
-- "Help Paradise firefighter" — starts with "Help", no real name, no emotion
-- "Help VA social worker dies following shooting" — starts with "Help", contains "dies", copies article headline
-- "Support the family of fallen officer" — starts with "Support", generic, no name
-- "Donate to help fire victims" — starts with "Donate", vague, no specificity
+- "Help a veteran in need" - no real name, no specific outcome
+- "Support the community" - vague, no person, no story
+- "Help VA social worker dies following shooting" - contains "dies", copies article headline
+- "Donate to help fire victims" - starts with "Donate", vague, no specificity
+- "Help someone get back on their feet" - no name, cliche
+
+GOOD EXAMPLES:
+- "Help Sarah Chen Rebuild After the Tornado Took Everything"
+- "Support Sgt. Reyes's Family Through an Impossible Year"
+- "Stand with the Okafor Family as They Start Over"
+- "After the Fire, the Nguyen Family Has Nothing Left"
+- "Officer Daniels Faces His Toughest Battle Yet"
 
 Return ONLY the headline text. No quotes, no labels, no explanation.`;
 
@@ -72,8 +99,21 @@ const MAX_LENGTH = 80;
 /** Words that signal the LLM regurgitated the article title. */
 const HEADLINE_VERBS = /\b(dies|killed|dead|deadly|shoots|shooting|shot|arrested|charged|sentenced|indicted|pleads|emerges|reported|following|fatality|multi-fatality)\b/i;
 
-/** Banned opening words — the LLM must not start with these. */
-const BANNED_PREFIXES = /^(help|donate|please|giving|contribute|support|give)\b/i;
+/** Always-banned opening words - transactional/begging tone. */
+const BANNED_PREFIXES = /^(donate|please|giving|contribute|give)\b/i;
+
+/**
+ * "Help", "Support", and "Stand" are allowed openers only when followed by
+ * a proper noun (capitalized word). This prevents lazy "Help a family" while
+ * allowing "Help Maria Gonzalez Access Treatment".
+ */
+const CONDITIONAL_PREFIXES = /^(help|support|stand with)\s+/i;
+
+/** Check proper-noun after stripping the prefix (avoids case-flag conflict). */
+function hasProperNounAfterPrefix(headline: string): boolean {
+  const rest = headline.replace(CONDITIONAL_PREFIXES, '');
+  return /^(?:the\s+)?[A-Z][a-z]/.test(rest);
+}
 
 /**
  * Compute word-level overlap ratio between two strings.
@@ -119,6 +159,11 @@ export function validateHeadline(
     return { rejected: true, reason: `starts with banned prefix` };
   }
 
+  // "Help"/"Support"/"Stand with" are allowed only when followed by a proper noun
+  if (CONDITIONAL_PREFIXES.test(cleaned) && !hasProperNounAfterPrefix(cleaned)) {
+    return { rejected: true, reason: `starts with "Help"/"Support" but not followed by a proper noun` };
+  }
+
   if (HEADLINE_VERBS.test(cleaned)) {
     return { rejected: true, reason: `contains headline verb (regurgitated article)` };
   }
@@ -157,20 +202,39 @@ export function buildFallbackTitle(
   hometown: string,
   category: CampaignCategory,
 ): string {
-  if (hometown && hometown !== 'Unknown') {
-    return `${hometown} Rallies Behind ${name}`;
+  // Solemn categories use editorial/dignified framing
+  if (SOLEMN_CATEGORIES.has(category)) {
+    if (hometown && hometown !== 'Unknown') {
+      return `${hometown} Honors ${name}`;
+    }
+    const solemnVerb: Record<string, string> = {
+      military: 'Honoring the Sacrifice of',
+      veterans: 'Standing with Veteran',
+      'first-responders': 'Rallying Behind',
+      memorial: 'Remembering',
+    };
+    return `${solemnVerb[category] ?? 'Honoring'} ${name}`;
   }
 
-  const categoryVerb: Record<string, string> = {
-    military: 'Honoring the Sacrifice of',
-    veterans: 'Standing with Veteran',
-    'first-responders': 'Rallying Behind',
-    disaster: 'Rebuilding with',
-    medical: 'Standing with',
-    memorial: 'Remembering',
-    community: 'Coming Together for',
-    'essential-needs': 'Lifting Up',
+  // Non-solemn categories use warm, invitation-style framing
+  if (hometown && hometown !== 'Unknown') {
+    return `Help ${name} Rebuild in ${hometown}`;
+  }
+
+  const warmVerb: Record<string, string> = {
+    disaster: 'Help',
+    medical: 'Support',
+    community: 'Stand with',
+    'essential-needs': 'Help',
+    emergency: 'Help',
+    charity: 'Support',
+    education: 'Support',
+    animal: 'Help',
+    environment: 'Support',
+    business: 'Help',
+    family: 'Support',
   };
 
-  return `${categoryVerb[category] ?? 'Standing with'} ${name}`;
+  const verb = warmVerb[category] ?? 'Support';
+  return `${verb} ${name} Through This Difficult Time`;
 }

@@ -6,6 +6,7 @@ import { db } from '@/db';
 import { auditLogs } from '@/db/schema';
 import { randomUUID } from 'crypto';
 import type { ApiError } from '@/types/api';
+import { logError } from '@/lib/errors';
 
 export async function GET() {
   const requestId = randomUUID();
@@ -20,8 +21,17 @@ export async function GET() {
     return NextResponse.json(error, { status: 403 });
   }
 
+  try {
   const settings = await getAllSettings();
   return NextResponse.json({ ok: true, data: settings });
+  } catch (err) {
+    logError(err, 'admin-settings-get', { requestId });
+    const error: ApiError = {
+      ok: false,
+      error: { code: 'INTERNAL_ERROR', message: 'Failed to load settings', requestId },
+    };
+    return NextResponse.json(error, { status: 500 });
+  }
 }
 
 /** Validate a single setting value against its expected type and constraints. */
@@ -196,6 +206,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json(error, { status: 400 });
   }
 
+  try {
   await updateSettings(body as unknown as Partial<SettingsMap>, session.user.id);
 
   // Audit log the settings change
@@ -211,4 +222,12 @@ export async function PATCH(request: NextRequest) {
 
   const updated = await getAllSettings();
   return NextResponse.json({ ok: true, data: updated });
+  } catch (err) {
+    logError(err, 'admin-settings-update', { requestId });
+    const error: ApiError = {
+      ok: false,
+      error: { code: 'INTERNAL_ERROR', message: 'Failed to save settings', requestId },
+    };
+    return NextResponse.json(error, { status: 500 });
+  }
 }
