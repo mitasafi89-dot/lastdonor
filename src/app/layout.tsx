@@ -7,6 +7,7 @@ import { Providers } from '@/components/Providers';
 import { SkipToContent } from '@/components/layout/SkipToContent';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { Analytics } from '@vercel/analytics/next';
 
 const dmSerifDisplay = DM_Serif_Display({
   weight: '400',
@@ -109,8 +110,8 @@ export default function RootLayout({
           <Footer />
           <Toaster richColors position="top-right" />
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
 }
-
