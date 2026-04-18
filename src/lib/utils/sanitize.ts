@@ -1,4 +1,4 @@
-import DOMPurify from 'isomorphic-dompurify';
+import sanitize from 'sanitize-html';
 
 const ALLOWED_TAGS = [
   'p', 'h2', 'h3', 'strong', 'em', 'a', 'img',
@@ -7,30 +7,24 @@ const ALLOWED_TAGS = [
   'aside', 'span',
 ];
 
-const ALLOWED_ATTR = [
-  'href', 'target', 'rel', 'src', 'alt', 'width', 'height',
-  'class', 'id', 'role', 'aria-label', 'loading',
-];
+const ALLOWED_ATTR: Record<string, string[]> = {
+  a: ['href', 'target', 'rel'],
+  img: ['src', 'alt', 'width', 'height', 'loading'],
+  '*': ['class', 'id', 'role', 'aria-label'],
+};
 
-// Strip data: URIs from src/href (SVG-in-data-URI XSS vector)
-DOMPurify.addHook('afterSanitizeAttributes', (node) => {
-  if (node.hasAttribute('src')) {
-    const src = node.getAttribute('src') ?? '';
-    if (/^\s*data:/i.test(src)) {
-      node.removeAttribute('src');
-    }
-  }
-  if (node.hasAttribute('href')) {
-    const href = node.getAttribute('href') ?? '';
-    if (/^\s*data:/i.test(href)) {
-      node.removeAttribute('href');
-    }
-  }
-});
+// Strip data: and javascript: URIs from src/href (XSS vectors)
+const ALLOWED_SCHEMES = ['http', 'https', 'mailto'];
 
 export function sanitizeHtml(dirty: string): string {
-  return DOMPurify.sanitize(dirty, {
-    ALLOWED_TAGS,
-    ALLOWED_ATTR,
+  return sanitize(dirty, {
+    allowedTags: ALLOWED_TAGS,
+    allowedAttributes: ALLOWED_ATTR,
+    allowedSchemes: ALLOWED_SCHEMES,
+    // Block data: and javascript: URIs
+    allowedSchemesByTag: {
+      img: ['http', 'https'],
+      a: ['http', 'https', 'mailto'],
+    },
   });
 }
