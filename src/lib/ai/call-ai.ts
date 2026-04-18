@@ -1,4 +1,4 @@
-import { ai, aiFallbackClient, PRIMARY_MODEL, FALLBACK_MODEL, TERTIARY_MODEL } from './openrouter';
+import { ai, getAiFallbackClient, PRIMARY_MODEL, FALLBACK_MODEL, TERTIARY_MODEL } from './openrouter';
 import { logAIUsage } from '@/lib/monitoring/ai-cost-tracker';
 import { pipelineLog, pipelineError } from '@/lib/server-logger';
 
@@ -52,7 +52,8 @@ export async function callAI<T>(opts: {
   // Build list of (client, model) pairs to try.
   // Strategy: try each model with primary key, then fallback key, then next model.
   // Skip models known to be exhausted for the day.
-  const clients = [ai, ...(aiFallbackClient ? [aiFallbackClient] : [])];
+  const fallback = getAiFallbackClient();
+  const clients = [ai, ...(fallback ? [fallback] : [])];
   const modelOrder = [PRIMARY_MODEL, FALLBACK_MODEL, TERTIARY_MODEL];
   const attempts: { client: typeof ai; model: string }[] = [];
   for (const model of modelOrder) {
