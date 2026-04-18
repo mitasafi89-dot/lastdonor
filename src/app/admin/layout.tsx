@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   const role = session?.user?.role;
