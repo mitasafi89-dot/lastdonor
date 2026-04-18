@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = 300; // ISR: revalidate every 5 minutes
+export const dynamic = 'force-dynamic';
 
 async function getHomepageData() {
   const [featuredCampaigns, activeCampaigns, stats, latestPosts, completedCount, supportedCount] =

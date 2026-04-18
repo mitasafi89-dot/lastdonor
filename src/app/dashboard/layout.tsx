@@ -5,6 +5,8 @@ import { campaigns } from '@/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 

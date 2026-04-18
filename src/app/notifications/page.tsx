@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function NotificationsPage() {
   const session = await auth();
   const userId = session?.user?.id;
