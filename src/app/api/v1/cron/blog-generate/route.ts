@@ -18,12 +18,13 @@ export async function GET(request: NextRequest) {
 
   // Allow disabling via env
   if (process.env.BLOG_PIPELINE_ENABLED !== 'true') {
-    return NextResponse.json({ ok: true, skipped: true, reason: 'Pipeline disabled' });
+    console.warn('[blog-generate cron] BLOG_PIPELINE_ENABLED is not set to "true" — pipeline skipped. Set BLOG_PIPELINE_ENABLED=true in Vercel env vars to enable blog auto-generation.');
+    return NextResponse.json({ ok: true, skipped: true, reason: 'Pipeline disabled — set BLOG_PIPELINE_ENABLED=true in environment variables' });
   }
 
   try {
     const maxPosts = parseInt(process.env.BLOG_MAX_POSTS_PER_DAY ?? '1', 10);
-    const autoPublish = process.env.BLOG_AUTO_PUBLISH !== 'false';
+    const autoPublish = process.env.BLOG_AUTO_PUBLISH === 'true';
     const minPriority = parseInt(process.env.BLOG_MIN_PRIORITY_SCORE ?? '50', 10);
 
     const result = await runBlogPipeline({

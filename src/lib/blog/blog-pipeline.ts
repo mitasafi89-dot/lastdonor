@@ -135,11 +135,44 @@ export async function runBlogPipeline(
     }
   }
 
-  // Step 1: Select top-priority topics
+  // Step 0b: Reject pending topics that have exhausted all attempts (fast-fail cleanup).
+  // These are topics that errored quickly (never stuck in 'generating' for 30min)
+  // but accumulated MAX_GENERATION_ATTEMPTS through repeated pipeline runs.
+  const exhaustedPending = await db
+    .select({ id: blogTopicQueue.id, title: blogTopicQueue.title, attemptCount: blogTopicQueue.attemptCount })
+    .from(blogTopicQueue)
+    .where(
+      and(
+        eq(blogTopicQueue.status, 'pending'),
+        sql`${blogTopicQueue.attemptCount} >= ${MAX_GENERATION_ATTEMPTS}`,
+      ),
+    );
+
+  for (const topic of exhaustedPending) {
+    await db
+      .update(blogTopicQueue)
+      .set({
+        status: 'rejected',
+        rejectedReason: `Failed after ${topic.attemptCount} generation attempts (fast-fail)`,
+        updatedAt: new Date(),
+      })
+      .where(eq(blogTopicQueue.id, topic.id));
+  }
+
+  if (exhaustedPending.length > 0) {
+    pipelineLog("pipeline", `Rejected ${exhaustedPending.length} exhausted pending topic(s): ${exhaustedPending.map((t) => t.title).join(', ')}`);
+  }
+
+  // Step 1: Select top-priority topics (skip topics that have exhausted retries)
   const topics = await db
     .select()
     .from(blogTopicQueue)
-    .where(eq(blogTopicQueue.status, 'pending'))
+    .where(
+      and(
+        eq(blogTopicQueue.status, 'pending'),
+        lt(blogTopicQueue.attemptCount, MAX_GENERATION_ATTEMPTS),
+      ),
+    )
     .orderBy(desc(blogTopicQueue.priorityScore))
     .limit(maxPosts);
 
@@ -463,6 +496,59 @@ export async function runBlogPipeline(
     }
 
     result.details.push(postResult);
+  }
+
+  // Step 9: Promote qualifying drafts that were deferred by cadence limits.
+  // On previous runs, posts may have been saved as drafts because canPublishNow()
+  // blocked them (weekly cap, category gap). On THIS run, the cadence window may
+  // have opened. Promote the highest-quality draft that now passes all gates.
+  try {
+    const drafts = await db
+      .select()
+      .from(blogPosts)
+      .where(
+        and(
+          eq(blogPosts.published, false),
+          eq(blogPosts.source, 'ai_generated'),
+          sql`${blogPosts.seoScore} >= 70`,
+        ),
+      )
+      .orderBy(desc(blogPosts.seoScore))
+      .limit(5);
+
+    let promoted = 0;
+    for (const draft of drafts) {
+      const gate = await canPublishNow(draft.causeCategory ?? 'community');
+      if (gate.canPublish) {
+        await db
+          .update(blogPosts)
+          .set({ published: true, publishedAt: new Date(), updatedAt: new Date() })
+          .where(eq(blogPosts.id, draft.id));
+
+        // Also update the topic queue status if linked
+        if (draft.topicId) {
+          await db
+            .update(blogTopicQueue)
+            .set({ status: 'published', updatedAt: new Date() })
+            .where(eq(blogTopicQueue.id, draft.topicId));
+        }
+
+        promoted++;
+        result.postsPublished++;
+        pipelineLog("pipeline", `Promoted draft "${draft.title}" (SEO: ${draft.seoScore})`);
+
+        // Re-check cadence after each promotion (gaps/caps may now be filled)
+        continue;
+      }
+    }
+
+    if (promoted > 0) {
+      pipelineLog("pipeline", `Promoted ${promoted} draft(s) to published`);
+    }
+  } catch (error) {
+    // Non-critical: don't fail the pipeline if draft promotion fails
+    const errMsg = error instanceof Error ? error.message : String(error);
+    pipelineLog("pipeline", `Draft promotion failed (non-blocking): ${errMsg}`);
   }
 
   return result;
