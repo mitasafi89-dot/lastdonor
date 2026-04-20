@@ -15,10 +15,7 @@ export function HeroSection() {
       >
         <Image
           src="/images/hero-bg.webp"
-          alt="LastDonor.org verified crowdfunding platform — real person receiving donation support with tracked progress toward their fundraising goal"
-          fill
-          priority
-          sizes="55vw"
+          alt="LastDonor.org verified crowdfunding platform: real person receiving donation support with tracked progress toward their fundraising goal"
           className="object-cover object-center"
         />
         {/* Gradient fade - blends image seamlessly into background */}
@@ -31,7 +28,7 @@ export function HeroSection() {
       >
         <Image
           src="/images/hero-bg.webp"
-          alt="LastDonor.org verified crowdfunding platform — real person receiving donation support with tracked progress toward their fundraising goal"
+          alt="LastDonor.org verified crowdfunding platform: real person receiving donation support with tracked progress toward their fundraising goal"
           fill
           priority
           sizes="100vw"

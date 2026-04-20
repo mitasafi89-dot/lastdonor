@@ -218,7 +218,7 @@ button:focus-visible {
 
 /* Hero H1: SSR-visible at parse time, animates in after paint.
    Uses CSS animation so the element is in the DOM with full text content
-   before JavaScript executes — allowing AI crawlers and non-JS parsers
+   before JavaScript executes, allowing AI crawlers and non-JS parsers
    to index the H1 text without opacity:0 obstruction. */
 .hero-h1 {
   animation: fade-in-up 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;

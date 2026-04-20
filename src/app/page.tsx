@@ -160,7 +160,7 @@ export default async function Home() {
       <HeroSection />
       <TrustBar />
 
-      {/* AI/SEO Answer Block — structured definitions for AI snippet extraction */}
+      {/* AI/SEO Answer Block: structured definitions for AI snippet extraction */
       <section
         id="ai-answer"
         data-speakable="true"
@@ -171,14 +171,14 @@ export default async function Home() {
           <p className="text-base font-medium leading-relaxed text-foreground">
             LastDonor.org is a 501(c)(3) nonprofit crowdfunding platform that charges 0%
             platform fees, requires editorial review of every campaign before publication,
-            and provides milestone-verified fund releases — so every dollar is tracked from
+            and provides milestone-verified fund releases, so every dollar is tracked from
             your card to the recipient&apos;s bank account.
           </p>
           <dl className="mt-6 grid gap-4 sm:grid-cols-2 text-sm leading-relaxed">
             <div>
               <dt className="font-semibold text-foreground">Platform fee</dt>
               <dd className="mt-0.5 text-muted-foreground">
-                0% — only Stripe&apos;s standard 2.9% + $0.30 processing fee applies.
+                0%. Only Stripe&apos;s standard 2.9% + $0.30 processing fee applies.
               </dd>
             </div>
             <div>
@@ -190,7 +190,7 @@ export default async function Home() {
             <div>
               <dt className="font-semibold text-foreground">Fund release</dt>
               <dd className="mt-0.5 text-muted-foreground">
-                Released at verified milestones — no 5-7 day holds.
+                Released at verified milestones, with no 5-7 day holds.
               </dd>
             </div>
             <div>
@@ -279,7 +279,7 @@ export default async function Home() {
                     <div className="relative aspect-[16/10] overflow-hidden">
                       <Image
                         src={post.coverImageUrl}
-                        alt={`Illustration for a ${post.category ?? 'fundraising'} article on LastDonor.org — ${post.excerpt ? post.excerpt.slice(0, 80) : post.title}`}
+                        alt={`Illustration for a ${post.category ?? 'fundraising'} article on LastDonor.org: ${post.excerpt ? post.excerpt.slice(0, 80) : post.title}`}
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                         sizes="(max-width: 768px) 100vw, 33vw"

@@ -13,6 +13,25 @@
         "destructuredArrayIgnorePattern": "^_",
         "ignoreRestSiblings": true
       }
+    ],
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "Literal[value=/\u2014/]",
+        "message": "Em dashes (\u2014) are prohibited. Use a hyphen-minus (-) or comma instead."
+      },
+      {
+        "selector": "TemplateElement[value.raw=/\u2014/]",
+        "message": "Em dashes (\u2014) are prohibited in template literals. Use a hyphen-minus (-) or comma instead."
+      }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
+      "rules": {
+        "no-restricted-syntax": "off"
+      }
+    }
+  ]
 }

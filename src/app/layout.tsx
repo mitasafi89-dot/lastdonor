@@ -24,7 +24,7 @@ const siteSchemaGraph = {
         height: 180,
       },
       description:
-        'LastDonor.org is a 501(c)(3) verified crowdfunding platform that charges 0% platform fees, requires human editorial review of every campaign before publication, and provides verified photo-and-receipt impact updates for every donation — serving medical, emergency, veteran, and family fundraising in the United States.',
+        'LastDonor.org is a 501(c)(3) verified crowdfunding platform that charges 0% platform fees, requires human editorial review of every campaign before publication, and provides verified photo-and-receipt impact updates for every donation, serving medical, emergency, veteran, and family fundraising in the United States.',
       foundingDate: '2024-01-01',
       nonprofitStatus: 'Nonprofit501c3',
       areaServed: { '@type': 'Country', name: 'United States' },
@@ -51,7 +51,7 @@ const siteSchemaGraph = {
         // Add when registration is confirmed: https://www.charitynavigator.org/ein/[EIN]
         // Add when IRS listing is live: https://efts.irs.gov/TINV2/search?blnPhase1=true&ein=[EIN]
       ],
-      // Founder/leader Person entity — populate name and url once public-facing
+      // Founder/leader Person entity: populate name and url once public-facing
       // about/team page exists. Required for YMYL EEAT trust signal.
       founder: { '@id': `${BASE_URL}/#founder` },
     },

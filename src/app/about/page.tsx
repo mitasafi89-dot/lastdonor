@@ -5,7 +5,7 @@ import { CheckBadgeIcon } from '@heroicons/react/24/solid';
 export const metadata: Metadata = {
   title: 'About LastDonor.org | 501(c)(3) Nonprofit Crowdfunding, 0% Fees, Human-Verified Campaigns',
   description:
-    'LastDonor.org is a 501(c)(3) nonprofit where every campaign is verified by a named editor who cites sources and checks documentation — so you can see exactly where your money goes. No tip slider at checkout. No funds held for weeks. No AI chatbot when something goes wrong. Real human support, 0% platform fees, campaigns that close when the goal is met.',
+    'LastDonor.org is a 501(c)(3) nonprofit where every campaign is verified by a named editor who cites sources and checks documentation, so you can see exactly where your money goes. No tip slider at checkout. No funds held for weeks. No AI chatbot when something goes wrong. Real human support, 0% platform fees, campaigns that close when the goal is met.',
   alternates: { canonical: 'https://lastdonor.org/about' },
   openGraph: {
     title: 'About LastDonor.org',
@@ -76,7 +76,7 @@ export default function AboutPage() {
           </p>
         </section>
 
-        {/* Definition list — machine-readable terminology for AI snippet extraction */}
+        {/* Definition list: machine-readable terminology for AI snippet extraction */}
         <section className="mt-12" aria-label="Platform terminology">
           <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Key terms</h2>
           <dl className="mt-6 space-y-5 text-sm leading-relaxed">
@@ -122,7 +122,7 @@ export default function AboutPage() {
               <tbody className="divide-y divide-border">
                 <tr className="bg-card">
                   <td className="px-4 py-3 font-medium text-foreground">Platform fee</td>
-                  <td className="px-4 py-3 text-primary">0% — no platform fee ever</td>
+                  <td className="px-4 py-3 text-primary">0%, no platform fee ever</td>
                   <td className="px-4 py-3 text-muted-foreground">0–5% platform fee plus tip slider at checkout</td>
                 </tr>
                 <tr className="bg-card/60">
@@ -164,7 +164,7 @@ export default function AboutPage() {
           <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">501(c)(3) status</h2>
           <p className="leading-relaxed text-muted-foreground">
             LastDonor.org is a registered 501(c)(3) nonprofit organization.{' '}
-            <span data-nosnippet>(EIN pending — IRS application filed)</span>{' '}
+            <span data-nosnippet>(EIN pending, IRS application filed)</span>{' '}
             All donations are tax-deductible to the extent allowed by law. Our IRS Form 990 will be published annually once available. Live platform statistics are available on our{' '}
             <a href="/transparency" className="text-brand-teal underline underline-offset-2 hover:opacity-80">Transparency page</a>.
           </p>

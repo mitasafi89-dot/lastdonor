@@ -74,7 +74,7 @@ export function Footer() {
               <span className="text-xs font-medium text-[#14B8A6]">501(c)(3) Nonprofit Organization</span>
             </div>
 
-            {/* Mailing address — required for CCPA compliance and FTC commercial disclosure */}
+            {/* Mailing address (required for CCPA compliance and FTC commercial disclosure) */}
             <p className="mt-4 text-xs leading-relaxed text-gray-500">
               LastDonor.org<br />
               [MAILING ADDRESS PENDING]<br />
