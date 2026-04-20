@@ -160,7 +160,7 @@ export default async function Home() {
       <HeroSection />
       <TrustBar />
 
-      {/* AI/SEO Answer Block: structured definitions for AI snippet extraction */
+      {/* AI/SEO Answer Block: structured definitions for AI snippet extraction */}
       <section
         id="ai-answer"
         data-speakable="true"
