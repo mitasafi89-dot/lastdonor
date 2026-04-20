@@ -54,22 +54,23 @@ export function HeroSection() {
             variants={fadeInUp}
             className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-[3.5rem] lg:leading-[1.1]"
           >
-            Give to Real People.
+            Fundraising with{' '}
+            <span className="text-primary">0% Fees.</span>
             <br />
-            See Exactly{' '}
+            Every Donor Sees{' '}
             <span className="text-primary">
-              Where
+              Exactly
               <br />
-              It Goes.
+              Where It Goes.
             </span>
           </motion.h1>
 
           <motion.p
             variants={fadeInUp}
-            className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground"
+            className="hero-summary mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground"
           >
-            Every dollar reaches a verified person in need - tracked from your card
-            to their bank account. No fees. No middlemen.
+            Verified crowdfunding where every dollar reaches a real person in need.
+            Tracked from your card to their bank account. No hidden fees. No middlemen.
           </motion.p>
 
           {/* CTAs - primary (amber) + secondary (teal outlined) */}
@@ -101,7 +102,7 @@ export function HeroSection() {
             <span aria-hidden="true" className="text-border">·</span>
             <span>Every campaign human-verified.</span>
             <span aria-hidden="true" className="text-border">·</span>
-            <span>100% of your donation delivered.</span>
+            <span>0% platform fees. Only Stripe processing.</span>
           </motion.p>
         </motion.div>
       </div>

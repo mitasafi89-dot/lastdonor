@@ -65,7 +65,7 @@ export function CategoryShowcase() {
           {TOP_CATEGORIES.map(({ slug, label, icon: Icon }) => (
             <motion.div key={slug} variants={fadeInUp}>
               <Link
-                href={`/campaigns?category=${slug}`}
+                href={`/campaigns/category/${slug}`}
                 className="group flex min-w-[8rem] flex-col items-center justify-center gap-5 rounded-[1.25rem] border-[1px] border-border/60 bg-white py-9 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.08)] sm:min-w-0"
               >
                 <span className="flex h-[56px] w-[56px] items-center justify-center rounded-[1rem] bg-muted">

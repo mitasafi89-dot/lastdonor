@@ -37,7 +37,7 @@ const DIFFERENTIATORS = [
   {
     Icon: CurrencyDollarIcon,
     title: 'Zero hidden fees, zero tip sliders',
-    body: 'We will never sneak a "voluntary tip" onto your donation. 90% goes directly to the person in need. 10% covers payment processing, hosting, and verification. That\u2019s it.',
+    body: 'LastDonor charges 0% platform fees. The only deduction from your donation is Stripe\u2019s standard payment processing fee (2.9% + $0.30 per transaction). At least 90% of every donation reaches the person in need. No hosting surcharges, no editorial levies, no surprise tips at checkout.',
   },
   {
     Icon: EyeIcon,
@@ -47,7 +47,7 @@ const DIFFERENTIATORS = [
   {
     Icon: UserGroupIcon,
     title: 'Real human support',
-    body: 'If something goes wrong, you talk to a person. Not a chatbot. Not a form that sends you in circles. An actual human being who can actually help.',
+    body: 'If something goes wrong, you talk to a person. Not a chatbot. Email support@lastdonor.org and a real team member responds within 1 business day.',
   },
   {
     Icon: FlagIcon,
@@ -59,13 +59,14 @@ const DIFFERENTIATORS = [
 export default function AboutPage() {
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'LastDonor.org',
-    url: 'https://lastdonor.org',
+    '@type': 'AboutPage',
+    '@id': 'https://lastdonor.org/about#webpage',
+    url: 'https://lastdonor.org/about',
+    name: 'About LastDonor.org',
     description:
       'Crowdfunding built on trust. Every campaign is verified, every dollar is tracked, and there are zero hidden fees.',
-    foundingDate: '2024',
-    nonprofitStatus: '501(c)(3)',
+    isPartOf: { '@id': 'https://lastdonor.org/#website' },
+    about: { '@id': 'https://lastdonor.org/#organization' },
   };
 
   return (
@@ -94,7 +95,7 @@ export default function AboutPage() {
         <section className="mt-12 space-y-6">
           <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Why we exist</h2>
           <p className="leading-relaxed text-muted-foreground">
-            Most crowdfunding platforms sneak a 15% &quot;optional&quot; tip onto your donation at checkout. They lock campaigners out of their own funds for weeks. When something goes wrong, you get an AI chatbot that talks in circles. We got tired of watching that happen.
+            Many crowdfunding platforms prompt donors to add a tip at checkout, lock campaigners out of their own funds for weeks, and route support requests through AI chatbots. We got tired of watching that happen.
           </p>
           <p className="leading-relaxed text-muted-foreground">
             LastDonor.org was built to do things differently. We find people in real crisis, verify their stories with our editorial team, and run focused campaigns until every dollar of the goal is raised. No hidden fees. No dark patterns. No games. When the last dollar comes in, the person who gave it earns the title of <strong className="text-foreground">Last Donor</strong>, and the campaign is done.
@@ -133,7 +134,8 @@ export default function AboutPage() {
 
           <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">501(c)(3) status</h2>
           <p className="leading-relaxed text-muted-foreground">
-            LastDonor.org is a registered 501(c)(3) nonprofit organization. All donations are tax-deductible to the extent allowed by law. We publish our financials because we believe the platforms asking for your money should be just as transparent as the campaigns they host.
+            LastDonor.org is a registered 501(c)(3) nonprofit organization (EIN: [PENDING IRS ASSIGNMENT]). All donations are tax-deductible to the extent allowed by law. Our IRS Form 990 will be published annually once available. Live platform statistics are available on our{' '}
+            <a href="/transparency" className="text-brand-teal underline underline-offset-2 hover:opacity-80">Transparency page</a>.
           </p>
         </section>
       </div>

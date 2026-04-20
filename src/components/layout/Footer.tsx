@@ -60,7 +60,12 @@ export function Footer() {
               <span className="text-[#14B8A6]">Donor</span>
               <span className="text-[#FBBF24]">.</span>
             </Link>
-            <p className="mt-3 text-sm leading-relaxed text-gray-400">
+            {/* data-nosnippet prevents this brand tagline from being extracted as
+                an alternative page description by AI summary pipelines. The vague
+                "You're the reason it's done" phrase does not parse as a clean
+                Subject-Verb-Object triple and would dilute the more precise
+                meta description if ingested as a snippet. */}
+            <p data-nosnippet className="mt-3 text-sm leading-relaxed text-gray-400">
               Verified fundraising for real people in crisis. 100% transparent.
               You&apos;re the reason it&apos;s done.
             </p>
@@ -68,6 +73,13 @@ export function Footer() {
               <ShieldCheckIcon className="h-4 w-4 text-[#14B8A6]" />
               <span className="text-xs font-medium text-[#14B8A6]">501(c)(3) Nonprofit Organization</span>
             </div>
+
+            {/* Mailing address — required for CCPA compliance and FTC commercial disclosure */}
+            <p className="mt-4 text-xs leading-relaxed text-gray-500">
+              LastDonor.org<br />
+              [MAILING ADDRESS PENDING]<br />
+              contact@lastdonor.org
+            </p>
 
             {/* Trust badges */}
             <div className="mt-4 flex items-center gap-3 text-xs text-gray-500">

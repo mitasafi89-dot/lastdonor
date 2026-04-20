@@ -8,6 +8,7 @@ import { staggerContainer, fadeInUp } from '@/lib/animations';
 /**
  * StatItem: Individual metric with tabular-nums for alignment.
  * Numbers are THE focal point -- largest element on screen.
+ * Uses dt/dd for screen readers and semantic structure.
  */
 function StatItem({
   value,
@@ -21,20 +22,20 @@ function StatItem({
   prefix?: string;
 }) {
   return (
-    <motion.div
-      variants={fadeInUp}
-      className="text-center"
-      aria-label={`${label}: ${prefix ?? ''}${value.toLocaleString('en-US')}`}
-    >
-      <div className="font-mono text-4xl font-bold tabular-nums text-white number-highlight sm:text-5xl lg:text-6xl">
-        {prefix && <span>{prefix}</span>}
+    <motion.div variants={fadeInUp} className="text-center">
+      <dd className="font-mono text-4xl font-bold tabular-nums text-white number-highlight sm:text-5xl lg:text-6xl">
+        {prefix && <span aria-hidden="true">{prefix}</span>}
         <NumberTicker
           value={value}
           className="font-mono text-4xl font-bold tabular-nums text-white sm:text-5xl lg:text-6xl"
           delay={0.3}
         />
-      </div>
-      <p className="mt-2 text-sm font-semibold text-white/90">{label}</p>
+        <span className="sr-only">
+          {prefix ?? ''}
+          {value.toLocaleString('en-US')}
+        </span>
+      </dd>
+      <dt className="mt-2 text-sm font-semibold text-white/90">{label}</dt>
       <p className="mt-0.5 text-xs text-white/70">{sublabel}</p>
     </motion.div>
   );
@@ -85,7 +86,7 @@ export function ImpactCounter({
           </p>
         </motion.div>
 
-        <motion.div
+        <motion.dl
           variants={staggerContainer}
           className="mt-14 grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-12"
         >
@@ -110,7 +111,7 @@ export function ImpactCounter({
             label="Lives Changed"
             sublabel="Real people helped"
           />
-        </motion.div>
+        </motion.dl>
 
         <motion.p variants={fadeInUp} className="mt-12 text-sm text-white/70">
           Full breakdown of every campaign published.{' '}

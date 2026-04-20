@@ -54,15 +54,30 @@ export default async function LastDonorWallPage() {
 
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    name: 'Last Donor Wall',
-    description:
-      'The people who made the final donation to push a campaign over the finish line.',
-    itemListElement: completedCampaigns.map((c, i) => ({
-      '@type': 'ListItem',
-      position: i + 1,
-      name: `${c.lastDonorName ?? 'Anonymous'} - ${c.campaignTitle}`,
-    })),
+    '@graph': [
+      {
+        '@type': 'CollectionPage',
+        '@id': 'https://lastdonor.org/last-donor-wall#webpage',
+        url: 'https://lastdonor.org/last-donor-wall',
+        name: 'Last Donor Wall',
+        description:
+          'The people who made the final donation to push a campaign over the finish line.',
+        isPartOf: { '@id': 'https://lastdonor.org/#website' },
+        about: { '@id': 'https://lastdonor.org/#organization' },
+      },
+      {
+        '@type': 'ItemList',
+        '@id': 'https://lastdonor.org/last-donor-wall#list',
+        name: 'Last Donor Wall',
+        description:
+          'The people who made the final donation to push a campaign over the finish line.',
+        itemListElement: completedCampaigns.map((c, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: `${c.lastDonorName ?? 'Anonymous'} - ${c.campaignTitle}`,
+        })),
+      },
+    ],
   };
 
   return (

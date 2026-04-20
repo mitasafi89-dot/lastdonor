@@ -1,6 +1,86 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { DM_Serif_Display, DM_Sans, DM_Mono } from 'next/font/google';
+
+const BASE_URL = 'https://lastdonor.org';
+
+// Single @graph merges Organization + WebSite + Person into one JSON-LD block.
+// Cross-document @id references require a shared graph for compliant Knowledge Graph
+// construction. Separate @context blocks are treated as unlinked anonymous entities
+// by Google's Structured Data parser and Gemini RAG ingestion.
+const siteSchemaGraph = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': ['Organization', 'NGO'],
+      '@id': `${BASE_URL}/#organization`,
+      name: 'LastDonor.org',
+      alternateName: 'LastDonor',
+      url: BASE_URL,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${BASE_URL}/apple-icon`,
+        width: 180,
+        height: 180,
+      },
+      description:
+        'LastDonor.org is a 501(c)(3) verified crowdfunding platform that charges 0% platform fees, requires human editorial review of every campaign before publication, and provides verified photo-and-receipt impact updates for every donation — serving medical, emergency, veteran, and family fundraising in the United States.',
+      foundingDate: '2024-01-01',
+      nonprofitStatus: 'Nonprofit501c3',
+      areaServed: { '@type': 'Country', name: 'United States' },
+      knowsAbout: [
+        'crowdfunding',
+        'online fundraising',
+        'charity donations',
+        'medical fundraising',
+        'emergency fundraising',
+        'veteran fundraising',
+        'disaster relief fundraising',
+        'nonprofit donation platform',
+        'zero fee crowdfunding',
+        'human-verified campaigns',
+      ],
+      // Populate sameAs with external authority URLs as profiles are established:
+      // GuideStar, Charity Navigator, IRS EO Search, LinkedIn company page, etc.
+      // An empty sameAs array prevents Google's Entity Reconciliation Engine from
+      // linking this Organization node to a verified real-world Knowledge Graph entity.
+      sameAs: [
+        // 'https://www.guidestar.org/profile/[EIN]',
+        // 'https://www.charitynavigator.org/ein/[EIN]',
+        // 'https://www.linkedin.com/company/lastdonor',
+        // 'https://efts.irs.gov/TINV2/search?blnPhase1=true&ein=[EIN]',
+      ],
+      // Founder/leader Person entity — populate name and url once public-facing
+      // about/team page exists. Required for YMYL EEAT trust signal.
+      founder: { '@id': `${BASE_URL}/#founder` },
+    },
+    {
+      // Person node for organizational founder. Links Organization to a human
+      // author entity, satisfying Google's QRG E-E-A-T requirement for YMYL pages.
+      // Populate name, url, and sameAs (LinkedIn, etc.) with actual founder details.
+      '@type': 'Person',
+      '@id': `${BASE_URL}/#founder`,
+      name: 'LastDonor Editorial Team',
+      url: `${BASE_URL}/about`,
+      worksFor: { '@id': `${BASE_URL}/#organization` },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${BASE_URL}/#website`,
+      name: 'LastDonor.org',
+      url: BASE_URL,
+      publisher: { '@id': `${BASE_URL}/#organization` },
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: `${BASE_URL}/search?q={search_term_string}`,
+        },
+        'query-input': 'required name=search_term_string',
+      },
+    },
+  ],
+};
 import { Toaster } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Providers } from '@/components/Providers';
@@ -32,12 +112,14 @@ const dmMono = DM_Mono({
 export const metadata: Metadata = {
   title: {
     template: '%s | LastDonor.org',
-    default:
-      'LastDonor.org - Donate to Real People in Need | 100% Transparent Charity',
+    default: 'Online Fundraising Platform with 0% Fees | LastDonor.org',
   },
   description:
-    'Verified fundraising campaigns for military families, veterans, first responders, disaster victims, and people in crisis. 100% transparent. You\u2019re the reason it\u2019s done.',
+    'Verified crowdfunding for military families, veterans, first responders, disaster victims, and people in crisis. 0% platform fees. Every campaign is human-verified. Every dollar tracked.',
   metadataBase: new URL('https://lastdonor.org'),
+  alternates: {
+    canonical: 'https://lastdonor.org',
+  },
   openGraph: {
     siteName: 'LastDonor.org',
     type: 'website',
@@ -47,12 +129,13 @@ export const metadata: Metadata = {
         url: '/api/v1/og/page?title=LastDonor.org&subtitle=Crowdfunding+built+on+trust.+0%25+platform+fees.+Every+campaign+verified.',
         width: 1200,
         height: 630,
-        alt: 'LastDonor.org - Donate to Real People in Need',
+        alt: 'LastDonor.org - Online Fundraising Platform with 0% Fees',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
+    site: '@lastdonororg',
   },
   robots: {
     index: true,
@@ -82,6 +165,12 @@ export default function RootLayout({
         <link rel="preconnect" href="https://ntnrcedafgmeyajmzvga.supabase.co" />
         <link rel="dns-prefetch" href="https://ntnrcedafgmeyajmzvga.supabase.co" />
         <link rel="dns-prefetch" href="https://plausible.io" />
+        {/* Structured data: @graph merges Organization + Person + WebSite into one
+            block so JSON-LD @id cross-references resolve within a shared graph context. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteSchemaGraph) }}
+        />
         {/* Prevent dark-mode flash by applying theme before paint */}
         <script
           dangerouslySetInnerHTML={{

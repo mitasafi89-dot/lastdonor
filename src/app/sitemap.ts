@@ -9,7 +9,12 @@ const BASE_URL = 'https://lastdonor.org';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
-    { url: BASE_URL, lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
+    // lastModified must be a deterministic date representing the last intentional
+    // content change, not new Date(). A perpetually-changing lastmod causes Google
+    // to treat the homepage as constantly mutating, wasting crawl budget and
+    // creating a temporal contradiction when content is actually stable under ISR.
+    // Update this value whenever the homepage copy, H1, or schema is intentionally changed.
+    { url: BASE_URL, lastModified: new Date('2025-01-15'), changeFrequency: 'daily', priority: 1.0 },
     { url: `${BASE_URL}/about`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE_URL}/how-it-works`, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE_URL}/transparency`, changeFrequency: 'weekly', priority: 0.6 },
@@ -58,13 +63,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Blog posts
   const posts = await db
-    .select({ slug: blogPosts.slug, publishedAt: blogPosts.publishedAt })
+    .select({ slug: blogPosts.slug, publishedAt: blogPosts.publishedAt, updatedAt: blogPosts.updatedAt })
     .from(blogPosts)
     .where(eq(blogPosts.published, true));
 
   const blogPages: MetadataRoute.Sitemap = posts.map((p) => ({
     url: `${BASE_URL}/blog/${p.slug}`,
-    lastModified: p.publishedAt ?? undefined,
+    // Use updatedAt so edited posts receive re-crawl priority signals.
+    // publishedAt alone reports the original publish date forever, causing
+    // Google to treat edited content as never updated.
+    lastModified: p.updatedAt ?? p.publishedAt ?? undefined,
     changeFrequency: 'monthly' as const,
     priority: 0.5,
   }));

@@ -5,13 +5,12 @@ import { motion } from 'motion/react';
 import { staggerContainer, fadeInUp } from '@/lib/animations';
 
 /**
- * Testimonials: Social proof through donor/organizer stories.
+ * Testimonials: Social proof through illustrative donor/organizer experiences.
  *
- * Psychology: Testimonials resolve the "Is this real?" objection.
- * Each testimonial is structured to:
- * 1. Mention a specific, verifiable detail (amount, timeline, tool)
- * 2. Identify the person's role (donor vs. organizer)
- * 3. Reference a trust mechanism (receipts, verification, no fees)
+ * These examples illustrate the type of donor experiences the platform is
+ * designed to create. As real verified donor quotes are collected via email
+ * follow-up, replace these with attribution-verified testimonials linked
+ * to real campaign slugs.
  */
 const testimonials = [
   {
@@ -51,10 +50,10 @@ export function Testimonials() {
           variants={fadeInUp}
         >
           <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Trusted by Donors Across America
+            Why Donors Choose LastDonor
           </h2>
           <p className="mt-3 max-w-xl text-base text-muted-foreground">
-            Real feedback from real people who gave on LastDonor.
+            Illustrative experiences designed into every campaign on LastDonor.
           </p>
         </motion.div>
 

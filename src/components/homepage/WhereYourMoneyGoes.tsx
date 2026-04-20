@@ -82,7 +82,7 @@ export function WhereYourMoneyGoes() {
       label: 'Payment Processing',
       percent: 10,
       dotClass: 'bg-brand-amber',
-      description: 'Stripe processing and server costs. Published and auditable.',
+      description: 'Stripe\u2019s standard processing fee (2.9% + $0.30 per transaction). LastDonor receives none of this.',
     },
     {
       label: 'Hidden Fees or Tips.',
@@ -105,11 +105,11 @@ export function WhereYourMoneyGoes() {
           className="mx-auto max-w-3xl text-center mb-16 sm:mb-24"
         >
           <h2 className="font-display text-[2.5rem] font-bold leading-[1.15] tracking-[-0.02em] text-foreground sm:text-[3.25rem]">
-            90 Cents of Every Dollar Goes Directly<br className="hidden md:block" /> to the Person in Need
+            At Least 90 Cents of Every Dollar Goes Directly<br className="hidden md:block" /> to the Person in Need
           </h2>
           <p className="mx-auto mt-6 max-w-2xl font-sans text-[17px] leading-relaxed text-foreground">
-            Most platforms add a 15% &quot;optional&quot; tip at checkout. We charge 0% platform fees.<br className="hidden md:block" />
-            The only cost is payment processing.
+            LastDonor charges 0% platform fees. The only deduction is Stripe&rsquo;s standard payment processing fee (2.9% + $0.30 per transaction).<br className="hidden md:block" />
+            No tip prompts, no platform cut, no hidden charges.
           </p>
         </motion.div>
 

@@ -14,31 +14,139 @@ import { WhereYourMoneyGoes } from '@/components/homepage/WhereYourMoneyGoes';
 import { TrustBanner } from '@/components/homepage/TrustBanner';
 import { Testimonials } from '@/components/homepage/Testimonials';
 import { Newsletter } from '@/components/homepage/Newsletter';
+import { HomepageFAQ } from '@/components/homepage/HomepageFAQ';
 import { CampaignCard } from '@/components/campaign/CampaignCard';
 
 import { AnimateOnScroll } from '@/components/AnimateOnScroll';
 
+const BASE_URL = 'https://lastdonor.org';
+
 export const metadata: Metadata = {
-  title: 'LastDonor.org - Donate to Real People in Need | 0% Platform Fees',
+  title: 'Online Fundraising with 0% Fees | LastDonor.org',
   description:
-    'Crowdfunding that actually works for you. No hidden tips, no surprise fees, no AI chatbots. Every campaign is verified. Every dollar is tracked. See exactly where your money goes.',
+    'LastDonor is a verified crowdfunding platform with 0% platform fees. Donate to medical bills, emergencies, veterans, and families in need. Every campaign is human-reviewed. Every dollar tracked.',
+  alternates: {
+    canonical: BASE_URL,
+  },
   openGraph: {
-    title: 'LastDonor.org - Donate to Real People in Need',
+    title: 'Online Fundraising with 0% Fees | LastDonor.org',
     description:
-      'No hidden tips. No surprise fees. Every campaign is verified, every dollar is tracked. Crowdfunding built on trust.',
-    url: 'https://lastdonor.org',
+      '0% platform fees. Every campaign human-verified. Every dollar tracked from your card to the person in need. Crowdfunding built on transparency.',
+    url: BASE_URL,
     images: [
       {
-        url: '/api/v1/og/page?title=Donate+to+Real+People+in+Need&subtitle=0%25+fees.+Every+campaign+verified.+Every+dollar+tracked.',
+        url: '/api/v1/og/page?title=Online+Fundraising+with+0%25+Fees&subtitle=Every+campaign+verified.+Every+dollar+tracked.',
         width: 1200,
         height: 630,
-        alt: 'LastDonor.org - Donate to Real People in Need',
+        alt: 'LastDonor.org - Online Fundraising Platform with 0% Fees',
       },
     ],
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Online Fundraising with 0% Fees | LastDonor.org',
+    description:
+      '0% platform fees. Every campaign human-verified. Donate to verified campaigns for medical bills, emergencies, veterans, and families.',
+  },
 };
 
-export const dynamic = 'force-dynamic';
+// Revalidate homepage data every 5 minutes via unstable_cache in getCachedHomepageData.
+// Do NOT add force-dynamic here; that would bypass Vercel Edge Cache.
+export const revalidate = 300;
+
+// Single @graph merges WebPage + FAQPage so the speakable reference and
+// isPartOf/@id cross-links to the layout.tsx Organization + WebSite graph nodes
+// resolve correctly inside Google's JSON-LD parser.
+const homeSchemaGraph = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebPage',
+      '@id': `${BASE_URL}/#webpage`,
+      url: BASE_URL,
+      name: 'Online Fundraising with 0% Fees | LastDonor.org',
+      description:
+        'LastDonor.org is a 501(c)(3) verified crowdfunding platform that charges 0% platform fees, requires human editorial review of every campaign before publication, and provides verified photo-and-receipt impact updates — serving medical, emergency, veteran, and family fundraising across the United States.',
+      isPartOf: { '@id': `${BASE_URL}/#website` },
+      about: { '@id': `${BASE_URL}/#organization` },
+      // SpeakableSpecification tells Google Assistant, Siri (Applebot), and AI
+      // Overview generation which content segments to synthesize as spoken or
+      // snapshot answers. Without this, the system degrades to meta description
+      // extraction — a lower-confidence signal.
+      speakable: {
+        '@type': 'SpeakableSpecification',
+        cssSelector: ['h1', '.hero-summary'],
+      },
+      breadcrumb: {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
+        ],
+      },
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'Does LastDonor charge platform fees?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'No. LastDonor charges 0% platform fees. The only deduction from donations is the standard payment processing fee (approximately 2.9% + 30 cents), which goes directly to our payment processor, Stripe. Every cent of your platform donation reaches the person in need.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How does LastDonor verify campaigns?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Every campaign on LastDonor is reviewed by a real human before it goes live. We require documentation such as medical records, bills, official letters, or photos to verify the situation is genuine. Campaigns that do not meet our verification standards are rejected and listed publicly.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Where does my donation money go?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'LastDonor charges 0% platform fees. At least 90% of every donation reaches the verified individual or family directly. The only deduction is Stripe\u2019s standard payment processing fee (2.9% + $0.30 per transaction), which goes entirely to Stripe. There are no hidden tips, no platform cuts, and no surprise charges. Donors receive verified receipts and impact updates with photos showing exactly how funds were used.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'What kinds of campaigns can I fund on LastDonor?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'LastDonor supports verified fundraising campaigns for medical bills, emergency situations, memorial funds, military and veteran families, first responders, education, disaster relief, community needs, and family crises. Every campaign category is browsable on our campaigns page.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Is LastDonor a legitimate nonprofit?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. LastDonor.org is a registered 501(c)(3) nonprofit organization. All campaigns are publicly listed, including rejected campaigns, so donors can see our verification standards in action. Live platform statistics are available on our Transparency page.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How is LastDonor different from GoFundMe?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: "LastDonor charges 0% platform fees and has no tip mechanism at checkout. Every LastDonor campaign is human-verified before going live. LastDonor is a registered nonprofit; GoFundMe is a for-profit company. Donors on LastDonor receive verified receipts and impact updates showing exactly how their donation was used.",
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can I donate without creating an account?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. You can donate as a guest on LastDonor without creating an account. No signup is required to browse campaigns or make a donation. You will receive an email receipt confirming your donation.',
+          },
+        },
+      ],
+    },
+  ],
+};
 
 async function getHomepageData() {
   const [featuredCampaigns, activeCampaigns, stats, latestPosts, completedCount, supportedCount] =
@@ -157,7 +265,32 @@ export default async function Home() {
 
   return (
     <>
+      {/* Single @graph block: WebPage + FAQPage. Cross-references to Organization
+          and WebSite @id nodes defined in layout.tsx are resolvable because all
+          @id values are absolute URIs on the same domain. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeSchemaGraph) }}
+      />
       <HeroSection />
+      {/* Executive Summary: server-rendered, landmark-isolated 50-word entity
+          description. AI RAG ingestion pipelines chunk HTML by ARIA landmarks;
+          this section provides a clean, JS-independent extraction target.
+          The speakable cssSelector ".hero-summary" also targets the paragraph
+          inside HeroSection for Google Assistant / AI Overview synthesis. */}
+      <section aria-label="Executive Summary" className="bg-muted px-4 pb-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            <strong>LastDonor.org</strong> is a 501(c)(3) nonprofit crowdfunding platform that
+            charges <strong>0% platform fees</strong>, requires <strong>human editorial review</strong>{' '}
+            of every campaign before publication, and provides{' '}
+            <strong>verified photo-and-receipt impact updates</strong> for every donation
+            — serving medical, emergency, veteran, and family fundraising campaigns across
+            the United States. The only fee deducted is the standard Stripe payment
+            processing charge of approximately 2.9% + $0.30.
+          </p>
+        </div>
+      </section>
       <TrustBar />
 
       {/* Active Campaigns */}
@@ -194,7 +327,7 @@ export default async function Home() {
                 href="/campaigns"
                 className="btn-press inline-flex rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
               >
-                See all fundraisers
+                Browse all verified fundraising campaigns
               </Link>
             </AnimateOnScroll>
           </div>
@@ -219,10 +352,10 @@ export default async function Home() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimateOnScroll>
               <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                Impact Stories from Real Campaigns
+                Fundraising Success Stories
               </h2>
               <p className="mt-3 max-w-xl text-base text-muted-foreground">
-                Updates, results, and the real stories behind the people you help.
+                Real people, real campaigns, real results. Updates and verified outcomes from donors like you.
               </p>
             </AnimateOnScroll>
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -270,7 +403,7 @@ export default async function Home() {
                 href="/blog"
                 className="btn-press inline-flex rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors duration-200 hover:bg-muted"
               >
-                Read more stories
+                Browse verified fundraising success stories
               </Link>
             </AnimateOnScroll>
           </div>
@@ -278,6 +411,7 @@ export default async function Home() {
       )}
 
       <Newsletter />
+      <HomepageFAQ />
     </>
   );
 }

@@ -122,35 +122,36 @@ export default function PrivacyPage() {
 
         <section>
           <h2 className="font-display text-xl font-bold text-foreground">
-            5. Your Rights (CCPA)
+            5. Your Privacy Rights
           </h2>
           <p className="mt-3">
-            California residents have the right to:
+            Depending on your location, you may have the following rights:
           </p>
           <ul className="mt-2 list-disc space-y-1 pl-6">
-            <li>Know what personal information we collect</li>
-            <li>Request deletion of their personal information</li>
-            <li>Opt out of any data sales (we do not sell data)</li>
-            <li>Non-discrimination for exercising these rights</li>
+            <li>
+              <strong>California (CCPA):</strong> Right to know what personal information we collect, right to request deletion, right to opt out of data sales (we do not sell data), and right to non-discrimination for exercising these rights.
+            </li>
+            <li>
+              <strong>European Economic Area / UK (GDPR / UK GDPR):</strong> Right of access, right to rectification, right to erasure (&ldquo;right to be forgotten&rdquo;), right to restriction of processing, right to data portability, right to object to processing, and the right to lodge a complaint with your national supervisory authority (e.g., the ICO in the UK or a EU Data Protection Authority).
+            </li>
           </ul>
+          <p className="mt-3">
+            To exercise any of these rights, email{' '}
+            <a href="mailto:privacy@lastdonor.org" className="text-primary underline underline-offset-4">
+              privacy@lastdonor.org
+            </a>. We will respond within 30 days.
+          </p>
         </section>
 
         <section>
           <h2 className="font-display text-xl font-bold text-foreground">
-            6. Data Deletion
+            6. Data Retention
           </h2>
           <p className="mt-3">
-            You may request deletion of your account and personal data by
-            visiting your Profile page and selecting &quot;Delete my
-            account,&quot; or by emailing{' '}
-            <a
-              href="mailto:privacy@lastdonor.org"
-              className="text-primary underline underline-offset-4"
-            >
+            We retain account data for as long as your account is active. Donation and transaction records are retained for a minimum of 7 years for financial reporting and tax compliance. If you delete your account, personal identifiers are removed within 30 days; anonymized aggregate transaction data is retained for compliance purposes. You may request a copy of your data at any time by emailing{' '}
+            <a href="mailto:privacy@lastdonor.org" className="text-primary underline underline-offset-4">
               privacy@lastdonor.org
-            </a>
-            . Donation records will be anonymized but retained for financial
-            reporting compliance.
+            </a>.
           </p>
         </section>
 
@@ -168,7 +169,7 @@ export default function PrivacyPage() {
 
         <section>
           <h2 className="font-display text-xl font-bold text-foreground">
-            8. Contact
+            8. Contact &amp; Mailing Address
           </h2>
           <p className="mt-3">
             For privacy-related inquiries, contact us at{' '}
@@ -178,8 +179,12 @@ export default function PrivacyPage() {
             >
               privacy@lastdonor.org
             </a>
-            .
+            . You may also write to us at:
           </p>
+          <address className="mt-3 not-italic text-sm leading-relaxed text-muted-foreground">
+            LastDonor.org<br />
+            [MAILING ADDRESS PENDING]
+          </address>
         </section>
       </div>
     </div>

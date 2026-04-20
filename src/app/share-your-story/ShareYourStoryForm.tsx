@@ -53,7 +53,7 @@ const STEP_HERO = [
   { title: 'Add media', subtitle: 'Using a bright and clear photo helps people connect to your fundraiser instantly.' },
   { title: 'Help us categorize your campaign', subtitle: 'This ensures donors who care about your cause can find you.' },
   { title: 'Every story deserves to be heard', subtitle: 'A compelling story helps donors connect with your cause and give generously.' },
-  { title: "You're almost there", subtitle: 'Review your campaign and go live. Your campaign starts accepting donations right away.' },
+  { title: "You're almost there", subtitle: 'Review your campaign and submit for editorial review. Campaigns are typically reviewed within 24 hours.' },
 ] as const;
 
 const RELATIONS = [
@@ -1676,7 +1676,8 @@ export function ShareYourStoryForm() {
               <div className="rounded-lg border border-border bg-muted/50 p-6">
                 <p className="text-base font-semibold text-foreground">What happens next?</p>
                 <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted-foreground">
-                  <li>Your campaign goes live immediately and can start accepting donations</li>
+                  <li>Our editorial team reviews your campaign, typically within 24 hours</li>
+                  <li>Once approved, your campaign goes live and can start accepting donations</li>
                   <li>Share your campaign link with friends, family, and social media</li>
                   <li>You&apos;ll receive an email with tips to maximize your reach</li>
                 </ul>

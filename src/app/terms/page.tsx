@@ -73,7 +73,8 @@ export default function TermsPage() {
             </li>
             <li>
               Donations are tax-deductible to the extent allowed by law under
-              IRC Section 501(c)(3).
+              IRC Section 501(c)(3). LastDonor.org EIN: [PENDING IRS ASSIGNMENT].
+              Consult a tax advisor to confirm deductibility for your specific situation.
             </li>
             <li>
               Recurring donations can be canceled at any time by contacting

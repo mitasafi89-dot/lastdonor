@@ -4,10 +4,10 @@ import { ShareYourStoryForm } from './ShareYourStoryForm';
 export const metadata: Metadata = {
   title: 'Start a Campaign',
   description:
-    'Know someone who needs help? Start a campaign in minutes. Your campaign goes live immediately. No setup fees, no waiting.',
+    'Know someone who needs help? Start a campaign in minutes. Submit your story and our editorial team reviews it within 24 hours. No setup fees.',
   openGraph: {
     title: 'Start a Campaign | LastDonor.org',
-    description: 'Start a campaign in minutes. Your campaign goes live immediately and you can start sharing it right away.',
+    description: 'Start a campaign in minutes. Our editorial team reviews every campaign before it goes live to protect donors and organizers alike.',
     images: [
       {
         url: '/api/v1/og/page?title=Start+a+Campaign&subtitle=Share+your+story.+We+verify+it.+Your+community+funds+it.',
