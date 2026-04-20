@@ -87,6 +87,51 @@ const siteSchemaGraph = {
         'query-input': 'required name=search_term_string',
       },
     },
+    // SiteNavigationElement nodes — tells Google's Sitelinks algorithm exactly
+    // which pages are the primary navigation destinations for this domain.
+    // Each node corresponds to a top-level nav item visible to every visitor.
+    {
+      '@type': 'SiteNavigationElement',
+      '@id': `${BASE_URL}/#nav-campaigns`,
+      name: 'Find a Campaign',
+      description: 'Browse human-verified crowdfunding campaigns raising money now',
+      url: `${BASE_URL}/campaigns`,
+    },
+    {
+      '@type': 'SiteNavigationElement',
+      '@id': `${BASE_URL}/#nav-start`,
+      name: 'Start a Campaign',
+      description: 'Submit your story for editorial review and launch a verified fundraiser',
+      url: `${BASE_URL}/share-your-story`,
+    },
+    {
+      '@type': 'SiteNavigationElement',
+      '@id': `${BASE_URL}/#nav-how-it-works`,
+      name: 'How It Works',
+      description: 'Step-by-step guide to how LastDonor.org verifies campaigns and tracks donations',
+      url: `${BASE_URL}/how-it-works`,
+    },
+    {
+      '@type': 'SiteNavigationElement',
+      '@id': `${BASE_URL}/#nav-about`,
+      name: 'About LastDonor.org',
+      description: '501(c)(3) nonprofit crowdfunding with 0% platform fees and human-verified campaigns',
+      url: `${BASE_URL}/about`,
+    },
+    {
+      '@type': 'SiteNavigationElement',
+      '@id': `${BASE_URL}/#nav-transparency`,
+      name: 'Transparency',
+      description: 'Live platform stats, donation records, and IRS filings',
+      url: `${BASE_URL}/transparency`,
+    },
+    {
+      '@type': 'SiteNavigationElement',
+      '@id': `${BASE_URL}/#nav-donate`,
+      name: 'Donate',
+      description: 'Make a one-time or recurring donation to a verified campaign',
+      url: `${BASE_URL}/donate`,
+    },
   ],
 };
 import { Toaster } from 'sonner';
