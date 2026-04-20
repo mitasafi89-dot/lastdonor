@@ -12,11 +12,10 @@ export function HeroSection() {
       {/* Desktop hero image - right portion, fades into background */}
       <div
         className="absolute inset-y-0 right-0 hidden w-[55%] lg:block"
-        aria-hidden="true"
       >
         <Image
           src="/images/hero-bg.webp"
-          alt=""
+          alt="LastDonor.org verified crowdfunding platform — real person receiving donation support with tracked progress toward their fundraising goal"
           fill
           priority
           sizes="55vw"
@@ -29,11 +28,10 @@ export function HeroSection() {
       {/* Mobile hero image - stacked above text */}
       <div
         className="relative aspect-[16/9] sm:aspect-[2/1] lg:hidden"
-        aria-hidden="true"
       >
         <Image
           src="/images/hero-bg.webp"
-          alt=""
+          alt="LastDonor.org verified crowdfunding platform — real person receiving donation support with tracked progress toward their fundraising goal"
           fill
           priority
           sizes="100vw"
@@ -50,10 +48,7 @@ export function HeroSection() {
           variants={staggerContainer}
           className="py-12 sm:py-16 lg:w-1/2 lg:py-28 xl:py-32"
         >
-          <motion.h1
-            variants={fadeInUp}
-            className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-[3.5rem] lg:leading-[1.1]"
-          >
+          <h1 className="hero-h1 font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-[3.5rem] lg:leading-[1.1]">
             Fundraising with{' '}
             <span className="text-primary">0% Fees.</span>
             <br />
@@ -63,7 +58,7 @@ export function HeroSection() {
               <br />
               Where It Goes.
             </span>
-          </motion.h1>
+          </h1>
 
           <motion.p
             variants={fadeInUp}

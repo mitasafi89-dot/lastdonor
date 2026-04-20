@@ -45,10 +45,11 @@ const siteSchemaGraph = {
       // An empty sameAs array prevents Google's Entity Reconciliation Engine from
       // linking this Organization node to a verified real-world Knowledge Graph entity.
       sameAs: [
-        // 'https://www.guidestar.org/profile/[EIN]',
-        // 'https://www.charitynavigator.org/ein/[EIN]',
-        // 'https://www.linkedin.com/company/lastdonor',
-        // 'https://efts.irs.gov/TINV2/search?blnPhase1=true&ein=[EIN]',
+        'https://www.linkedin.com/company/lastdonor',
+        'https://x.com/lastdonororg',
+        // Add when registration is confirmed: https://www.guidestar.org/profile/[EIN]
+        // Add when registration is confirmed: https://www.charitynavigator.org/ein/[EIN]
+        // Add when IRS listing is live: https://efts.irs.gov/TINV2/search?blnPhase1=true&ein=[EIN]
       ],
       // Founder/leader Person entity — populate name and url once public-facing
       // about/team page exists. Required for YMYL EEAT trust signal.
@@ -60,9 +61,16 @@ const siteSchemaGraph = {
       // Populate name, url, and sameAs (LinkedIn, etc.) with actual founder details.
       '@type': 'Person',
       '@id': `${BASE_URL}/#founder`,
+      // TODO: Replace 'LastDonor Editorial Team' with the actual founder's full name
+      // once the public-facing team/about page is live. Required for EEAT.
       name: 'LastDonor Editorial Team',
+      jobTitle: 'Editor-in-Chief',
       url: `${BASE_URL}/about`,
       worksFor: { '@id': `${BASE_URL}/#organization` },
+      sameAs: [
+        'https://www.linkedin.com/company/lastdonor',
+        // Add founder's personal LinkedIn / Twitter once confirmed
+      ],
     },
     {
       '@type': 'WebSite',
@@ -184,7 +192,7 @@ export default function RootLayout({
         />
       </head>
       <body className="flex min-h-screen flex-col bg-background font-body text-foreground antialiased">
-        <noscript>
+        <noscript data-nosnippet aria-hidden="true">
           <div className="bg-yellow-50 px-4 py-3 text-center text-sm text-yellow-900 dark:bg-yellow-900/30 dark:text-yellow-200">
             JavaScript is required to donate and interact with campaigns. Please enable JavaScript to continue.
           </div>
