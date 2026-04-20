@@ -16,6 +16,9 @@ export function HeroSection() {
         <Image
           src="/images/hero-bg.webp"
           alt="LastDonor.org verified crowdfunding platform: real person receiving donation support with tracked progress toward their fundraising goal"
+          fill
+          priority
+          sizes="55vw"
           className="object-cover object-center"
         />
         {/* Gradient fade - blends image seamlessly into background */}
@@ -47,14 +50,9 @@ export function HeroSection() {
         >
           <h1 className="hero-h1 font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-[3.5rem] lg:leading-[1.1]">
             Fundraising with{' '}
-            <span className="text-primary">0% Fees.</span>
-            <br />
+            <span className="text-primary">0% Fees.</span>{' '}
             Every Donor Sees{' '}
-            <span className="text-primary">
-              Exactly
-              <br />
-              Where It Goes.
-            </span>
+            <span className="text-primary">Exactly Where It Goes.</span>
           </h1>
 
           <motion.p
