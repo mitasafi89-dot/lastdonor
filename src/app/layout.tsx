@@ -218,6 +218,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://ntnrcedafgmeyajmzvga.supabase.co" />
         <link rel="dns-prefetch" href="https://ntnrcedafgmeyajmzvga.supabase.co" />
         <link rel="dns-prefetch" href="https://plausible.io" />
+        {/* Tawk.to live chat — preconnect reduces widget load latency */}
+        <link rel="preconnect" href="https://embed.tawk.to" />
+        <link rel="dns-prefetch" href="https://embed.tawk.to" />
+        <link rel="dns-prefetch" href="https://va.tawk.to" />
         {/* Structured data: @graph merges Organization + Person + WebSite into one
             block so JSON-LD @id cross-references resolve within a shared graph context. */}
         <script
