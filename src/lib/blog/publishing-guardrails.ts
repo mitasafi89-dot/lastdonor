@@ -52,14 +52,14 @@ export const TITLE_SIMILARITY_THRESHOLD = 0.55;
  * Prevents over-concentration in trending categories (e.g., medical during outbreak).
  * A professional blog demonstrates topical authority across verticals.
  */
-export const MAX_POSTS_PER_CATEGORY_PER_WEEK = 2;
+export const MAX_POSTS_PER_CATEGORY_PER_WEEK = 3;
 
 /**
  * Maximum total published posts in a 7-day rolling window.
  * 3-4/week is the professional range for long-form content.
  * More than that signals content-farm behavior to readers and search engines.
  */
-export const MAX_POSTS_PER_WEEK = 4;
+export const MAX_POSTS_PER_WEEK = 7;
 
 /**
  * Maximum pending/generating topics per category in the queue.
@@ -86,7 +86,7 @@ export const STALE_TTL_EVERGREEN_DAYS = 60;
  * Prevents back-to-back same-category posts that feel repetitive to readers.
  * 2 days ensures at least one other category's post appears between them.
  */
-export const MIN_CATEGORY_GAP_DAYS = 2;
+export const MIN_CATEGORY_GAP_DAYS = 1;
 
 // ─── Stop Words ─────────────────────────────────────────────────────────────
 
