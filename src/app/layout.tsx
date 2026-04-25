@@ -4,18 +4,16 @@ import { DM_Serif_Display, DM_Sans, DM_Mono } from 'next/font/google';
 
 const BASE_URL = 'https://lastdonor.org';
 
-// Single @graph merges Organization + WebSite + Person into one JSON-LD block.
-// Cross-document @id references require a shared graph for compliant Knowledge Graph
-// construction. Separate @context blocks are treated as unlinked anonymous entities
-// by Google's Structured Data parser and Gemini RAG ingestion.
+// Keep the entity graph factual and conservative. Donation/YMYL pages lose trust
+// quickly when schema asserts authority that the visible site cannot prove.
 const siteSchemaGraph = {
   '@context': 'https://schema.org',
   '@graph': [
     {
       '@type': ['Organization', 'NGO'],
       '@id': `${BASE_URL}/#organization`,
-      name: 'LastDonor.org',
-      alternateName: 'LastDonor',
+      name: 'LastDonor',
+      alternateName: ['LastDonor.org', 'Last Donor'],
       url: BASE_URL,
       logo: {
         '@type': 'ImageObject',
@@ -24,58 +22,41 @@ const siteSchemaGraph = {
         height: 180,
       },
       description:
-        'LastDonor.org is a 501(c)(3) verified crowdfunding platform that charges 0% platform fees, requires human editorial review of every campaign before publication, and provides verified photo-and-receipt impact updates for every donation, serving medical, emergency, veteran, and family fundraising in the United States.',
+        'LastDonor is a verified crowdfunding platform that charges 0% platform fees, requires human editorial review of every campaign before publication, and provides photo-and-receipt impact updates for donations, serving medical, emergency, veteran, and family fundraising in the United States.',
       foundingDate: '2024-01-01',
-      nonprofitStatus: 'Nonprofit501c3',
       areaServed: { '@type': 'Country', name: 'United States' },
       knowsAbout: [
-        'crowdfunding',
+        'verified crowdfunding',
+        'nonprofit crowdfunding',
+        'crowdfunding platform',
         'online fundraising',
         'charity donations',
         'medical fundraising',
         'emergency fundraising',
         'veteran fundraising',
         'disaster relief fundraising',
-        'nonprofit donation platform',
         'zero fee crowdfunding',
-        'human-verified campaigns',
+        'human-reviewed campaigns',
+        'donation tracking',
+        'crowdfunding with no fees',
+        'verified donation platform',
+        'transparent fundraising',
       ],
-      // Populate sameAs with external authority URLs as profiles are established:
-      // GuideStar, Charity Navigator, IRS EO Search, LinkedIn company page, etc.
-      // An empty sameAs array prevents Google's Entity Reconciliation Engine from
-      // linking this Organization node to a verified real-world Knowledge Graph entity.
       sameAs: [
         'https://www.linkedin.com/company/lastdonor',
         'https://x.com/lastdonororg',
-        // Add when registration is confirmed: https://www.guidestar.org/profile/[EIN]
-        // Add when registration is confirmed: https://www.charitynavigator.org/ein/[EIN]
-        // Add when IRS listing is live: https://efts.irs.gov/TINV2/search?blnPhase1=true&ein=[EIN]
       ],
-      // Founder/leader Person entity: populate name and url once public-facing
-      // about/team page exists. Required for YMYL EEAT trust signal.
-      founder: { '@id': `${BASE_URL}/#founder` },
-    },
-    {
-      // Person node for organizational founder. Links Organization to a human
-      // author entity, satisfying Google's QRG E-E-A-T requirement for YMYL pages.
-      // Populate name, url, and sameAs (LinkedIn, etc.) with actual founder details.
-      '@type': 'Person',
-      '@id': `${BASE_URL}/#founder`,
-      // TODO: Replace 'LastDonor Editorial Team' with the actual founder's full name
-      // once the public-facing team/about page is live. Required for EEAT.
-      name: 'LastDonor Editorial Team',
-      jobTitle: 'Editor-in-Chief',
-      url: `${BASE_URL}/about`,
-      worksFor: { '@id': `${BASE_URL}/#organization` },
-      sameAs: [
-        'https://www.linkedin.com/company/lastdonor',
-        // Add founder's personal LinkedIn / Twitter once confirmed
-      ],
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'Customer Support',
+        availableLanguage: 'en',
+        url: `${BASE_URL}`,
+      },
     },
     {
       '@type': 'WebSite',
       '@id': `${BASE_URL}/#website`,
-      name: 'LastDonor.org',
+      name: 'LastDonor - Verified Crowdfunding Platform',
       url: BASE_URL,
       publisher: { '@id': `${BASE_URL}/#organization` },
       potentialAction: {
@@ -86,51 +67,55 @@ const siteSchemaGraph = {
         },
         'query-input': 'required name=search_term_string',
       },
+      mainEntity: { '@id': `${BASE_URL}/#organization` },
     },
-    // SiteNavigationElement nodes — tells Google's Sitelinks algorithm exactly
-    // which pages are the primary navigation destinations for this domain.
-    // Each node corresponds to a top-level nav item visible to every visitor.
     {
       '@type': 'SiteNavigationElement',
       '@id': `${BASE_URL}/#nav-campaigns`,
-      name: 'Find a Campaign',
-      description: 'Browse human-verified crowdfunding campaigns raising money now',
+      name: 'Find a Reviewed Campaign',
+      description: 'Browse human-reviewed crowdfunding campaigns raising money now',
       url: `${BASE_URL}/campaigns`,
+      position: 1,
     },
     {
       '@type': 'SiteNavigationElement',
       '@id': `${BASE_URL}/#nav-start`,
       name: 'Start a Campaign',
-      description: 'Submit your story for editorial review and launch a verified fundraiser',
+      description: 'Submit your story for editorial review and launch a reviewed fundraiser',
       url: `${BASE_URL}/share-your-story`,
+      position: 2,
     },
     {
       '@type': 'SiteNavigationElement',
       '@id': `${BASE_URL}/#nav-how-it-works`,
       name: 'How It Works',
-      description: 'Step-by-step guide to how LastDonor.org verifies campaigns and tracks donations',
+      description: 'Step-by-step guide to how LastDonor verifies campaigns and tracks donations',
       url: `${BASE_URL}/how-it-works`,
+      position: 3,
     },
     {
       '@type': 'SiteNavigationElement',
       '@id': `${BASE_URL}/#nav-about`,
-      name: 'About LastDonor.org',
-      description: '501(c)(3) nonprofit crowdfunding with 0% platform fees and human-verified campaigns',
+      name: 'About LastDonor',
+      description: 'Crowdfunding with 0% platform fees and human-reviewed campaigns',
       url: `${BASE_URL}/about`,
+      position: 4,
     },
     {
       '@type': 'SiteNavigationElement',
       '@id': `${BASE_URL}/#nav-transparency`,
-      name: 'Transparency',
+      name: 'Transparency Reports',
       description: 'Live platform stats, donation records, and IRS filings',
       url: `${BASE_URL}/transparency`,
+      position: 5,
     },
     {
       '@type': 'SiteNavigationElement',
       '@id': `${BASE_URL}/#nav-donate`,
-      name: 'Donate',
-      description: 'Make a one-time or recurring donation to a verified campaign',
+      name: 'Make a Donation',
+      description: 'Make a one-time or recurring donation to a reviewed campaign',
       url: `${BASE_URL}/donate`,
+      position: 6,
     },
   ],
 };
@@ -164,25 +149,25 @@ const dmMono = DM_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | LastDonor.org',
-    default: 'Online Fundraising Platform with 0% Fees | LastDonor.org',
+    template: '%s | LastDonor',
+    default: 'LastDonor - Verified Crowdfunding with 0% Platform Fees',
   },
   description:
-    'Verified crowdfunding for military families, veterans, first responders, disaster victims, and people in crisis. 0% platform fees. Every campaign is human-verified. Every dollar tracked.',
+    'LastDonor helps donors support human-reviewed medical, emergency, veteran, disaster relief, and family fundraising campaigns with 0% platform fees and visible donation tracking.',
   metadataBase: new URL('https://lastdonor.org'),
   alternates: {
     canonical: 'https://lastdonor.org',
   },
   openGraph: {
-    siteName: 'LastDonor.org',
+    siteName: 'LastDonor',
     type: 'website',
     locale: 'en_US',
     images: [
       {
-        url: '/api/v1/og/page?title=LastDonor.org&subtitle=Crowdfunding+built+on+trust.+0%25+platform+fees.+Every+campaign+verified.',
+        url: '/api/v1/og/page?title=LastDonor+Crowdfunding&subtitle=0%25+platform+fees.+Campaigns+reviewed.+Impact+updates.',
         width: 1200,
         height: 630,
-        alt: 'LastDonor.org - Online Fundraising Platform with 0% Fees',
+        alt: 'LastDonor - Verified Crowdfunding with 0% Platform Fees',
       },
     ],
   },
@@ -222,7 +207,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://embed.tawk.to" />
         <link rel="dns-prefetch" href="https://embed.tawk.to" />
         <link rel="dns-prefetch" href="https://va.tawk.to" />
-        {/* Structured data: @graph merges Organization + Person + WebSite into one
+        {/* Structured data: @graph merges Organization + WebSite into one
             block so JSON-LD @id cross-references resolve within a shared graph context. */}
         <script
           type="application/ld+json"
@@ -241,7 +226,7 @@ export default function RootLayout({
         />
       </head>
       <body className="flex min-h-screen flex-col bg-background font-body text-foreground antialiased">
-        <noscript data-nosnippet aria-hidden="true">
+        <noscript data-nosnippet>
           <div className="bg-yellow-50 px-4 py-3 text-center text-sm text-yellow-900 dark:bg-yellow-900/30 dark:text-yellow-200">
             JavaScript is required to donate and interact with campaigns. Please enable JavaScript to continue.
           </div>

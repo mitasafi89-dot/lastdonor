@@ -15,7 +15,7 @@ export function HeroSection() {
       >
         <Image
           src="/images/hero-bg.webp"
-          alt="LastDonor.org verified crowdfunding platform: real person receiving donation support with tracked progress toward their fundraising goal"
+          alt="LastDonor.org reviewed crowdfunding platform showing donation support and campaign progress"
           fill
           priority
           sizes="55vw"
@@ -31,7 +31,7 @@ export function HeroSection() {
       >
         <Image
           src="/images/hero-bg.webp"
-          alt="LastDonor.org verified crowdfunding platform: real person receiving donation support with tracked progress toward their fundraising goal"
+          alt="LastDonor.org reviewed crowdfunding platform showing donation support and campaign progress"
           fill
           priority
           sizes="100vw"
@@ -49,18 +49,17 @@ export function HeroSection() {
           className="py-12 sm:py-16 lg:w-1/2 lg:py-28 xl:py-32"
         >
           <h1 className="hero-h1 font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-[3.5rem] lg:leading-[1.1]">
-            Fundraising with{' '}
-            <span className="text-primary">0% Fees.</span>{' '}
-            Every Donor Sees{' '}
-            <span className="text-primary">Exactly Where It Goes.</span>
+            <span className="block">LastDonor</span>
+            Verified crowdfunding with{' '}
+            <span className="text-primary">0% platform fees</span>{' '}
+            and visible impact.
           </h1>
 
           <motion.p
             variants={fadeInUp}
             className="hero-summary mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground"
           >
-            Verified crowdfunding where every dollar reaches a real person in need.
-            Tracked from your card to their bank account. No hidden fees. No middlemen.
+            Support real people through medical, emergency, and disaster relief fundraising campaigns that are reviewed before publication. Follow campaign progress, fund releases, and impact updates from donation to outcome.
           </motion.p>
 
           {/* CTAs - primary (amber) + secondary (teal outlined) */}
@@ -72,13 +71,13 @@ export function HeroSection() {
               href="/campaigns"
               className="btn-press inline-flex items-center justify-center rounded-full bg-brand-amber px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all duration-200 hover:shadow-[--shadow-amber] hover:-translate-y-0.5"
             >
-              Find a Campaign
+              Browse Reviewed Campaigns
             </Link>
             <Link
               href="/share-your-story"
               className="btn-press inline-flex items-center justify-center rounded-full border-2 border-primary px-8 py-3.5 text-sm font-semibold text-primary transition-all duration-200 hover:bg-primary/5 hover:-translate-y-0.5"
             >
-              Start a Campaign
+              Share Your Story
             </Link>
           </motion.div>
 
@@ -88,11 +87,11 @@ export function HeroSection() {
             className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground"
           >
             <CheckBadgeIcon className="h-4 w-4 text-brand-teal" aria-hidden="true" />
-            <span>No signup to donate.</span>
+            <span>No signup required to donate</span>
             <span aria-hidden="true" className="text-border">·</span>
-            <span>Every campaign human-verified.</span>
+            <span>Every campaign human-reviewed</span>
             <span aria-hidden="true" className="text-border">·</span>
-            <span>0% platform fees. Only Stripe processing.</span>
+            <span>0% platform fees</span>
           </motion.p>
         </motion.div>
       </div>

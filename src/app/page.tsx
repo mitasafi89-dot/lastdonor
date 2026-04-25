@@ -17,24 +17,32 @@ import { Newsletter } from '@/components/homepage/Newsletter';
 import { CampaignCard } from '@/components/campaign/CampaignCard';
 
 import { AnimateOnScroll } from '@/components/AnimateOnScroll';
+import { HomepageFAQ } from '@/components/homepage/HomepageFAQ';
 
 export const metadata: Metadata = {
-  title: 'LastDonor.org - Donate to Real People in Need | 0% Platform Fees',
+  title: 'LastDonor - Verified Crowdfunding with 0% Platform Fees',
   description:
-    'Crowdfunding that actually works for you. No hidden tips, no surprise fees, no AI chatbots. Every campaign is verified. Every dollar is tracked. See exactly where your money goes.',
+    'Support real people through human-reviewed medical, emergency, disaster relief, veteran, and family fundraising campaigns. LastDonor charges 0% platform fees and shows donors where funds go.',
   openGraph: {
-    title: 'LastDonor.org - Donate to Real People in Need',
+    title: 'LastDonor - Verified Crowdfunding with 0% Platform Fees',
     description:
-      'No hidden tips. No surprise fees. Every campaign is verified, every dollar is tracked. Crowdfunding built on trust.',
+      'Human-reviewed crowdfunding campaigns with 0% platform fees and visible tracking from donation to impact.',
     url: 'https://lastdonor.org',
+    type: 'website',
     images: [
       {
-        url: '/api/v1/og/page?title=Donate+to+Real+People+in+Need&subtitle=0%25+fees.+Every+campaign+verified.+Every+dollar+tracked.',
+        url: '/api/v1/og/page?title=LastDonor+Crowdfunding&subtitle=0%25+platform+fees.+Campaigns+reviewed.+Impact+updates.',
         width: 1200,
         height: 630,
-        alt: 'LastDonor.org - Donate to Real People in Need',
+        alt: 'LastDonor - Verified Crowdfunding with 0% Platform Fees',
       },
     ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@lastdonororg',
+    title: 'LastDonor - Verified Crowdfunding with 0% Platform Fees',
+    description: 'Human-reviewed campaigns. 0% platform fees. Visible donation tracking. Real human support.',
   },
 };
 
@@ -155,8 +163,30 @@ const getCachedHomepageData = unstable_cache(
 export default async function Home() {
   const data = await getCachedHomepageData();
 
+  const homepageSchema = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'BreadcrumbList',
+        '@id': 'https://lastdonor.org/#breadcrumb',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Home',
+            item: 'https://lastdonor.org',
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageSchema) }}
+      />
       <HeroSection />
       <TrustBar />
 
@@ -165,38 +195,38 @@ export default async function Home() {
         id="ai-answer"
         data-speakable="true"
         className="bg-background py-10 sm:py-12"
-        aria-label="Platform overview"
+        aria-label="What is LastDonor?"
       >
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <h2 className="mb-4 font-display text-2xl font-bold text-foreground sm:text-3xl">
+            What LastDonor Does
+          </h2>
           <p className="text-base font-medium leading-relaxed text-foreground">
-            LastDonor.org is a 501(c)(3) nonprofit crowdfunding platform that charges 0%
-            platform fees, requires editorial review of every campaign before publication,
-            and provides milestone-verified fund releases, so every dollar is tracked from
-            your card to the recipient&apos;s bank account.
+            LastDonor helps people support <strong>medical fundraising</strong>, <strong>emergency fundraising</strong>, and <strong>disaster relief fundraising</strong> campaigns that are reviewed before publication. We charge <strong>0% platform fees</strong> and provide <strong>visible donation tracking</strong>, so donors can follow the path from contribution to impact.
           </p>
-          <dl className="mt-6 grid gap-4 sm:grid-cols-2 text-sm leading-relaxed">
+          <dl className="mt-8 grid gap-4 sm:grid-cols-2 text-sm leading-relaxed">
             <div>
-              <dt className="font-semibold text-foreground">Platform fee</dt>
-              <dd className="mt-0.5 text-muted-foreground">
-                0%. Only Stripe&apos;s standard 2.9% + $0.30 processing fee applies.
+              <dt className="font-semibold text-foreground">0% platform fee</dt>
+              <dd className="mt-1 text-muted-foreground">
+                LastDonor does not take a platform cut. Standard Stripe processing fees apply and are shown before checkout.
               </dd>
             </div>
             <div>
-              <dt className="font-semibold text-foreground">Campaign verification</dt>
-              <dd className="mt-0.5 text-muted-foreground">
-                Named editor checks documents and cites sources before any campaign goes live.
+              <dt className="font-semibold text-foreground">Human-reviewed campaigns</dt>
+              <dd className="mt-1 text-muted-foreground">
+                Campaigns are reviewed by a real person before they go live, with supporting details checked against the story.
               </dd>
             </div>
             <div>
-              <dt className="font-semibold text-foreground">Fund release</dt>
-              <dd className="mt-0.5 text-muted-foreground">
-                Released at verified milestones, with no 5-7 day holds.
+              <dt className="font-semibold text-foreground">Donation tracking and impact</dt>
+              <dd className="mt-1 text-muted-foreground">
+                Donors can follow campaign progress and receive updates that show how funds are used after a campaign closes.
               </dd>
             </div>
             <div>
-              <dt className="font-semibold text-foreground">Human support</dt>
-              <dd className="mt-0.5 text-muted-foreground">
-                Real person responds within 1 business day. No AI chatbot routing.
+              <dt className="font-semibold text-foreground">Real human support</dt>
+              <dd className="mt-1 text-muted-foreground">
+                A real person helps donors and campaign organizers with questions about medical, emergency, and disaster relief fundraising.
               </dd>
             </div>
           </dl>
@@ -209,11 +239,11 @@ export default async function Home() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimateOnScroll>
               <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                Verified Campaigns Raising Money Right Now
+                Browse Reviewed Campaigns Raising Money Right Now
               </h2>
               <p className="mt-3 max-w-xl text-base text-muted-foreground">
-                Every campaign below has been reviewed by a real person.
-                Give with confidence knowing your donation is tracked from start to finish.
+                Every campaign below has been reviewed by our editorial team.
+                Give with confidence knowing you can follow progress and impact updates.
               </p>
             </AnimateOnScroll>
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -237,7 +267,7 @@ export default async function Home() {
                 href="/campaigns"
                 className="btn-press inline-flex rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
               >
-                Browse verified campaigns raising money now
+                Browse reviewed campaigns raising money now
               </Link>
             </AnimateOnScroll>
           </div>
@@ -262,10 +292,11 @@ export default async function Home() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimateOnScroll>
               <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                Impact Stories from Real Campaigns
+                Impact Stories: How LastDonor Donors Made a Difference
               </h2>
               <p className="mt-3 max-w-xl text-base text-muted-foreground">
-                Updates, results, and the real stories behind the people you help.
+                Updates, verified results, and the real stories behind the people you help.
+                See exactly where your donation went and the impact it created.
               </p>
             </AnimateOnScroll>
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -320,6 +351,7 @@ export default async function Home() {
         </section>
       )}
 
+      <HomepageFAQ />
       <Newsletter />
     </>
   );

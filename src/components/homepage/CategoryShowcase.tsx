@@ -50,7 +50,7 @@ export function CategoryShowcase() {
             Find a Cause You Care About
           </h2>
           <p className="mt-4 max-w-2xl font-serif text-[15px] font-light text-muted-foreground/80 md:text-[16px]">
-            Browse verified campaigns by category and give where it matters most.
+            Browse reviewed campaigns by category and give where it matters most.
           </p>
         </motion.div>
 
