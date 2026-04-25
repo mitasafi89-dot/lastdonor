@@ -55,7 +55,7 @@ const VALID_CATEGORIES = [
 ] as const;
 
 export function buildClassifyRedditPostsPrompt(posts: RedditPostInput[]) {
-  const systemPrompt = `You are an SEO content strategist for LastDonor.org, a 501(c)(3) nonprofit crowdfunding platform for verified charitable causes.
+  const systemPrompt = `You are an SEO content strategist for LastDonor.org, a reviewed crowdfunding platform for charitable and personal causes.
 
 Your job: analyze Reddit posts and extract blog topic opportunities. Each post represents real human need, gratitude, or discussion that can inspire valuable content.
 

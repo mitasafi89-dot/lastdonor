@@ -8,16 +8,16 @@ const steps = [
   {
     number: '01',
     icon: ShieldCheckIcon,
-    title: 'Choose a Verified Campaign',
+    title: 'Choose a Reviewed Campaign',
     description:
-      'Every campaign is reviewed and document-verified by a real person before going live. Browse by category.',
+      'Every campaign is reviewed by a real person before going live. Browse by category.',
   },
   {
     number: '02',
     icon: LockClosedIcon,
     title: 'Donate Securely',
     description:
-      'Pay with any card. 0% platform fees. Every cent of your donation goes directly to the person who needs it.',
+      'Pay with any card. LastDonor charges 0% platform fees, and standard Stripe processing fees are shown before checkout.',
   },
   {
     number: '03',
@@ -43,7 +43,7 @@ export function HowItWorks() {
             3 Steps to Give with Confidence
           </h2>
           <p className="mt-3 font-serif text-[15px] font-light text-muted-foreground sm:mt-4 sm:text-[16px]">
-            Find a verified campaign, donate securely, and see your impact.
+            Find a reviewed campaign, donate securely, and see your impact.
           </p>
         </motion.div>
 

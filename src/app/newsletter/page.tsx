@@ -1,18 +1,21 @@
 import type { Metadata } from 'next';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { NewsletterForm } from './form';
+import { seoKeywords } from '@/lib/seo/keywords';
 
 export const metadata: Metadata = {
   title: 'Newsletter',
   description:
-    'Get weekly updates on verified campaigns, impact stories, and ways to help real people in crisis. No spam. Unsubscribe anytime.',
+    'Get weekly updates on reviewed campaigns, impact stories, and ways to help medical, emergency, memorial, family, and community fundraisers.',
+  keywords: seoKeywords('campaigns', 'trust', 'donor', 'medical', 'emergency'),
+  alternates: { canonical: 'https://lastdonor.org/newsletter' },
   openGraph: {
     title: 'Newsletter | LastDonor.org',
     description:
-      'Weekly updates on verified campaigns, impact stories, and ways to help. No spam.',
+      'Weekly updates on reviewed campaigns, impact stories, and ways to help.',
     images: [
       {
-        url: '/api/v1/og/page?title=Newsletter&subtitle=Weekly+updates+on+verified+campaigns+and+impact+stories.',
+        url: '/api/v1/og/page?title=Newsletter&subtitle=Weekly+updates+on+reviewed+campaigns+and+impact+stories.',
         width: 1200,
         height: 630,
         alt: 'LastDonor.org Newsletter',
@@ -60,7 +63,7 @@ export default function NewsletterPage() {
           See Where Your Money Goes
         </h1>
         <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-muted-foreground sm:text-lg">
-          One email every Thursday with verified campaigns, real impact
+          One email every Thursday with reviewed campaigns, real impact
           updates, and stories from the people you helped.
         </p>
       </div>
@@ -137,7 +140,7 @@ const SECTIONS = [
     title: 'Featured campaign',
     weight: '~50%',
     example:
-      'A photo, a 3-sentence story, a live progress bar, and a link to donate. One campaign, fully verified.',
+      'A photo, a 3-sentence story, a live progress bar, and a link to donate. One reviewed campaign.',
   },
   {
     title: 'Impact update',

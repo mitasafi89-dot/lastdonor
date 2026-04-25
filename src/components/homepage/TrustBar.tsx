@@ -12,25 +12,25 @@ import {
  * Trust Bar: Three data-driven proof points beneath the hero.
  * Psychology: Each metric pre-empts a specific donor objection:
  * - "Will they take a cut?" -> 0% Fees
- * - "Is this a scam?" -> Verified by humans
+ * - "Was this reviewed?" -> Reviewed by humans
  * - "Where does my money go?" -> Full tracking
  */
 const proofPoints = [
   {
     icon: CurrencyDollarIcon,
     label: '0% Platform Fees.',
-    sublabel: 'Every cent reaches the cause.',
+    sublabel: 'Standard payment processing is shown before checkout.',
     tint: 'bg-brand-amber/10 text-brand-amber ring-brand-amber/20',
   },
   {
     icon: ShieldCheckIcon,
-    label: '100% Human Verified.',
+    label: 'Human Reviewed.',
     sublabel: 'Reviewed before going live.',
     tint: 'bg-brand-teal/10 text-brand-teal ring-brand-teal/20',
   },
   {
     icon: EyeIcon,
-    label: 'Verified Impact Updates.',
+    label: 'Impact Updates.',
     sublabel: 'Photos, receipts, transparency.',
     tint: 'bg-brand-green/10 text-brand-green ring-brand-green/20',
   },

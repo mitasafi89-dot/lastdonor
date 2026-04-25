@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'LastDonor.org',
     short_name: 'LastDonor',
     description:
-      'Verified fundraising campaigns for real people. 100% transparent. No hidden fees.',
+      'Reviewed fundraising campaigns for real people with 0% platform fees and visible campaign progress.',
     start_url: '/',
     display: 'standalone',
     background_color: '#FFFFFF',

@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { ShareButtons } from '@/components/campaign/ShareButtons';
 import { formatDate } from '@/lib/utils/dates';
 import { buildArticleJsonLd } from '@/lib/blog/geo-optimizer';
+import { seoKeywords } from '@/lib/seo/keywords';
 import Image from 'next/image';
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -88,7 +89,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
-    keywords: keywords.length > 0 ? keywords : undefined,
+    keywords: keywords.length > 0 ? keywords : seoKeywords('campaigns', 'trust'),
     alternates: {
       canonical: `https://lastdonor.org/blog/${slug}`,
     },

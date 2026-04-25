@@ -18,25 +18,25 @@ import { staggerContainer, fadeInUp } from '@/lib/animations';
  * and a clear, dominant call-to-action.
  *
  * Each card answers a specific objection:
- * 1. "How do I know campaigns are real?" -> Verified by a human
- * 2. "What happens to my money?" -> Impact-verified updates
- * 3. "Will they add fees?" -> 0% platform fees, proven
+ * 1. "How do I know campaigns are reviewed?" -> Reviewed by a person
+ * 2. "What happens to my money?" -> Impact updates
+ * 3. "Will they charge a platform fee?" -> 0% platform fees
  */
 const trustProofs = [
   {
     icon: ShieldCheckIcon,
-    title: 'Verified by a real person',
-    proof: 'Every campaign is document-verified and reviewed by our team before a single dollar can be raised. Not a bot. Not an algorithm.',
+    title: 'Reviewed by a person',
+    proof: 'Campaigns are reviewed before publication for clarity, category fit, goal amount, beneficiary details, and supporting context.',
   },
   {
     icon: EyeIcon,
-    title: 'Impact-verified fund usage',
-    proof: 'Campaigners submit an impact update with photos and receipts showing how funds were used. Full transparency, no guesswork.',
+    title: 'Impact updates after funding',
+    proof: 'Campaign pages and stories can include photos, receipts, notes, and outcome updates after a fundraiser receives support.',
   },
   {
     icon: CurrencyDollarIcon,
     title: '0% platform fees. Period.',
-    proof: 'No hidden tips at checkout. No "optional" surcharges. The only cost is payment processing (Stripe). We publish the breakdown.',
+    proof: 'LastDonor charges 0% platform fees. Standard payment processing is shown before checkout.',
   },
 ];
 
@@ -67,7 +67,7 @@ export function TrustBanner() {
           </h2>
           <p className="mt-3 text-base text-white/80">
             We designed every part of this platform to answer one question:
-            &ldquo;Can I trust this with my money?&rdquo;
+            &ldquo;Can I understand this fundraiser before I give?&rdquo;
           </p>
         </motion.div>
 
@@ -97,13 +97,13 @@ export function TrustBanner() {
             href="/campaigns"
             className="btn-press inline-flex rounded-full bg-brand-amber px-8 py-3.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[--shadow-amber]"
           >
-            Give with Confidence
+            Browse Reviewed Campaigns
           </Link>
           <Link
             href="/how-it-works"
             className="text-sm font-medium text-white/70 underline underline-offset-4 transition-colors hover:text-white"
           >
-            Read the Giving Guarantee
+            See how it works
           </Link>
         </motion.div>
       </motion.div>

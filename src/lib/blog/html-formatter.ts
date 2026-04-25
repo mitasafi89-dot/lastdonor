@@ -133,20 +133,20 @@ export function injectCta(html: string, causeCategory: string): string {
 
   const topCta = `\n<aside class="blog-cta" role="complementary" aria-label="Start your campaign">
 <p class="blog-cta-heading"><strong>Need Help With a ${capitalize(categoryLabel)} Cause?</strong></p>
-<p>LastDonor.org charges 0% platform fees. Every dollar you raise goes directly to those who need it most.</p>
-<p><a href="/campaigns" class="blog-cta-button">Start a Campaign</a></p>
+<p>LastDonor.org charges 0% platform fees. Standard Stripe processing fees apply and are shown before checkout.</p>
+<p><a href="/share-your-story" class="blog-cta-button">Start a Campaign</a></p>
 </aside>\n`;
 
-  const midCta = `\n<aside class="blog-cta" role="complementary" aria-label="Join thousands of donors">
-<p class="blog-cta-heading"><strong>Thousands of Donors Are Already Helping</strong></p>
-<p>Join a community of givers on LastDonor.org where 100% of donations reach the people who need them. No platform fees, ever.</p>
+  const midCta = `\n<aside class="blog-cta" role="complementary" aria-label="Find reviewed campaigns">
+<p class="blog-cta-heading"><strong>Find Reviewed Campaigns That Need Support</strong></p>
+<p>Browse LastDonor.org campaigns with visible progress, reviewed details, and 0% platform fees from LastDonor.</p>
 <p><a href="/how-it-works" class="blog-cta-button">See How It Works</a></p>
 </aside>\n`;
 
   const bottomCta = `\n<aside class="blog-cta" role="complementary" aria-label="Start your campaign">
 <p class="blog-cta-heading"><strong>Ready to Make a Difference?</strong></p>
-<p>Whether you're raising funds for a ${categoryLabel} cause or supporting someone in need, LastDonor.org makes it simple. With our 0% platform fee, every dollar you raise goes directly to those who need it most.</p>
-<p><a href="/campaigns" class="blog-cta-button">Start a Campaign</a> or <a href="/how-it-works">learn how it works</a>.</p>
+<p>Whether you're raising funds for a ${categoryLabel} cause or supporting someone in need, LastDonor.org makes it simple. LastDonor charges 0% platform fees, and payment processing is disclosed before checkout.</p>
+<p><a href="/share-your-story" class="blog-cta-button">Start a Campaign</a> or <a href="/how-it-works">learn how it works</a>.</p>
 </aside>`;
 
   let result = html;

@@ -21,6 +21,7 @@ import { sanitizeHtml } from '@/lib/utils/sanitize';
 import { CampaignSidebarClient, CampaignCommunityClient } from './client';
 import { SubscribeButton } from '@/components/campaign/SubscribeButton';
 import type { ImpactTier, CampaignCategory } from '@/types';
+import { categorySeoKeywords } from '@/lib/seo/keywords';
 
 export const revalidate = 60;
 
@@ -191,13 +192,30 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const percent = campaign.goalAmount > 0
     ? Math.round((campaign.raisedAmount / campaign.goalAmount) * 100)
     : 0;
+  const categoryLabel = CATEGORY_LABELS[campaign.category] ?? 'Fundraiser';
+  const isIndexable = ['active', 'last_donor_zone', 'completed'].includes(campaign.status);
+  const description = `${campaign.title}. Reviewed ${categoryLabel.toLowerCase()} fundraiser for ${campaign.subjectName}. ${percent}% funded - ${centsToDollars(campaign.raisedAmount)} of ${centsToDollars(campaign.goalAmount)} raised.`;
 
   return {
     title: `${campaign.title} | LastDonor.org`,
-    description: `${campaign.title}. ${percent}% funded - ${centsToDollars(campaign.raisedAmount)} of ${centsToDollars(campaign.goalAmount)} raised. Donate now.`,
+    description,
+    keywords: [
+      campaign.title,
+      campaign.subjectName,
+      categoryLabel,
+      ...(campaign.subjectHometown ? [campaign.subjectHometown] : []),
+      ...categorySeoKeywords(campaign.category),
+    ],
+    alternates: {
+      canonical: `https://lastdonor.org/campaigns/${slug}`,
+    },
+    robots: {
+      index: isIndexable,
+      follow: true,
+    },
     openGraph: {
       title: campaign.title,
-      description: `${percent}% funded. ${centsToDollars(campaign.raisedAmount)} raised of ${centsToDollars(campaign.goalAmount)} goal.`,
+      description,
       type: 'article',
       images: [
         {
@@ -211,7 +229,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     twitter: {
       card: 'summary_large_image',
       title: campaign.title,
-      description: `${percent}% funded. Donate now.`,
+      description: `${percent}% funded. ${centsToDollars(campaign.raisedAmount)} raised.`,
     },
   };
 }
@@ -243,6 +261,14 @@ export default async function CampaignDetailPage({ params }: PageProps) {
   const sanitizedStory = sanitizeHtml(campaign.storyHtml);
   const canonicalUrl = `https://lastdonor.org/campaigns/${slug}`;
   const isDonatable = campaign.status === 'active' || campaign.status === 'last_donor_zone';
+  const categoryLabel = CATEGORY_LABELS[campaign.category] ?? 'Fundraiser';
+  const campaignKeywords = categorySeoKeywords(campaign.category);
+  const campaignImages = [
+    campaign.heroImageUrl,
+    ...((campaign.galleryImages ?? []) as string[]),
+  ].filter((image): image is string => typeof image === 'string' && image.length > 0);
+  const campaignDescription =
+    `Reviewed ${categoryLabel.toLowerCase()} fundraiser for ${campaign.subjectName}. ${percent}% funded with ${centsToDollars(campaign.raisedAmount)} raised toward ${centsToDollars(campaign.goalAmount)}.`;
 
   const formattedUpdates = updates.map((u) => ({
     id: u.id,
@@ -267,30 +293,79 @@ export default async function CampaignDetailPage({ params }: PageProps) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
+    '@id': `${canonicalUrl}#article`,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': canonicalUrl,
+    },
+    url: canonicalUrl,
     headline: campaign.title,
-    image: campaign.heroImageUrl,
+    image: campaignImages.length > 0
+      ? campaignImages
+      : [`https://lastdonor.org/api/v1/og/campaign/${slug}`],
+    articleSection: categoryLabel,
+    keywords: campaignKeywords,
+    about: [
+      {
+        '@type': 'Thing',
+        name: `${categoryLabel} fundraising`,
+      },
+      {
+        '@type': 'Thing',
+        name: 'reviewed crowdfunding',
+      },
+      {
+        '@type': 'Thing',
+        name: '0% platform fees',
+      },
+    ],
     author: {
       '@type': 'Organization',
+      '@id': 'https://lastdonor.org/#organization',
       name: 'LastDonor.org',
     },
     publisher: {
       '@type': 'Organization',
+      '@id': 'https://lastdonor.org/#organization',
       name: 'LastDonor.org',
       url: 'https://lastdonor.org',
     },
-    datePublished: campaign.publishedAt?.toISOString(),
+    datePublished: campaign.publishedAt?.toISOString() ?? campaign.createdAt.toISOString(),
     dateModified: campaign.updatedAt.toISOString(),
-    description: `Fundraising campaign for ${campaign.subjectName}. ${percent}% funded.`,
+    description: campaignDescription,
+    isAccessibleForFree: true,
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['article h1', '.prose'],
+    },
   };
 
   const donateJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'DonateAction',
+    '@id': `${canonicalUrl}#donate`,
+    name: `Donate to ${campaign.title}`,
+    url: canonicalUrl,
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: canonicalUrl,
+      actionPlatform: [
+        'https://schema.org/DesktopWebPlatform',
+        'https://schema.org/MobileWebPlatform',
+      ],
+    },
     recipient: {
       '@type': 'Organization',
+      '@id': 'https://lastdonor.org/#organization',
       name: 'LastDonor.org',
     },
-    description: `Donate to help ${campaign.subjectName}`,
+    object: {
+      '@type': 'Thing',
+      name: campaign.title,
+      description: campaignDescription,
+    },
+    description:
+      `Donate to help ${campaign.subjectName}. LastDonor charges 0% platform fees; standard Stripe processing fees apply and are shown before checkout.`,
   };
 
   return (

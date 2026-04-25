@@ -78,7 +78,7 @@ export async function getInternalLinkSuggestions(params: {
     },
     {
       href: '/transparency',
-      anchorText: 'see exactly where every dollar goes',
+      anchorText: 'review LastDonor fee disclosure and transparency',
       context: 'Builds trust through transparency',
     },
     {
@@ -88,7 +88,7 @@ export async function getInternalLinkSuggestions(params: {
     },
     {
       href: '/campaigns',
-      anchorText: 'browse verified campaigns',
+      anchorText: 'browse reviewed campaigns',
       context: 'Main campaigns directory',
     },
     {

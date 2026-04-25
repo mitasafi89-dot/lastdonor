@@ -1,17 +1,20 @@
 import type { Metadata } from 'next';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
+import { seoKeywords } from '@/lib/seo/keywords';
 
 export const metadata: Metadata = {
-  title: 'Editorial Standards',
+  title: 'Editorial Standards | Campaign Review Process',
   description:
-    'How we verify every campaign on LastDonor. No fake stories, no unverified claims. Here is exactly how our editorial process works.',
+    'How LastDonor reviews fundraisers before publication, checks campaign details, evaluates supporting documents, and keeps donor-facing updates clear.',
+  keywords: seoKeywords('trust', 'campaigns', 'start', 'core'),
+  alternates: { canonical: 'https://lastdonor.org/editorial-standards' },
   openGraph: {
     title: 'Editorial Standards | LastDonor.org',
     description:
-      'Every campaign is verified by a real person. Here is how our editorial process works.',
+      'How campaign review works before a fundraiser goes live on LastDonor.',
     images: [
       {
-        url: '/api/v1/og/page?title=Editorial+Standards&subtitle=Every+campaign+is+verified+by+a+real+person.',
+        url: '/api/v1/og/page?title=Editorial+Standards&subtitle=Every+campaign+is+reviewed+before+publication.',
         width: 1200,
         height: 630,
         alt: 'Editorial Standards at LastDonor.org',
@@ -21,28 +24,62 @@ export const metadata: Metadata = {
 };
 
 export default function EditorialStandardsPage() {
-  return (
-    <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-      <Breadcrumbs />
-      <h1 className="mt-6 font-display text-4xl font-bold text-foreground">
-        Editorial Standards
-      </h1>
-      <p className="mt-3 text-lg text-muted-foreground">
-        Fake campaigns are a real problem on crowdfunding platforms. People
-        fabricate illnesses, exploit disasters, and steal identities to collect
-        money they don&apos;t deserve. We refuse to let that happen here.
-        Here&apos;s how we keep it out.
-      </p>
+  const faqs = [
+    {
+      question: 'What does LastDonor review before a fundraiser goes live?',
+      answer:
+        'A reviewer checks whether the campaign has a clear beneficiary, specific need, reasonable goal, appropriate category, and supporting details that help donors understand the fundraiser.',
+    },
+    {
+      question: 'What documents help with campaign verification?',
+      answer:
+        'Helpful materials can include bills, official letters, public records, photos, school documents, disaster reports, veterinary estimates, memorial information, or other evidence related to the campaign.',
+    },
+    {
+      question: 'Can campaign details change after publication?',
+      answer:
+        'Yes. Campaign updates can clarify progress, add new information, correct errors, or show impact after a fundraiser receives donations.',
+    },
+  ];
 
-      <div className="mt-10 space-y-8 text-foreground">
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+        <Breadcrumbs />
+        <h1 className="mt-6 font-display text-4xl font-bold text-foreground">
+          Editorial Standards
+        </h1>
+        <p className="mt-3 text-lg text-muted-foreground">
+          LastDonor reviews fundraisers before publication so donors can read a
+          clear story, understand the goal, and see what supporting details are
+          available before they give.
+        </p>
+
+        <div className="mt-10 space-y-8 text-foreground">
         <section>
           <h2 className="font-display text-2xl font-bold">
             Source Requirements
           </h2>
           <p className="mt-3 leading-relaxed text-muted-foreground">
             Every campaign needs at least one credible, independently
-            verifiable source before we will publish it. We don&apos;t take
-            anyone&apos;s word for it. We check. Acceptable sources include:
+            reviewable source before we will publish it. Acceptable sources can include:
           </p>
           <ul className="mt-3 list-disc space-y-2 pl-6 text-muted-foreground">
             <li>Official military and defense publications (DVIDS, Stars &amp; Stripes, Defense.gov)</li>
@@ -50,7 +87,7 @@ export default function EditorialStandardsPage() {
             <li>Government disaster declarations (FEMA, NWS)</li>
             <li>Established news organizations with editorial oversight</li>
             <li>Hospital or medical facility confirmations</li>
-            <li>Court records, GoFundMe pages (as supplementary evidence only)</li>
+            <li>Court records or existing fundraiser pages as supplementary context</li>
           </ul>
         </section>
 
@@ -75,7 +112,7 @@ export default function EditorialStandardsPage() {
               dollar amount is justified and not inflated.
             </li>
             <li>
-              <strong>A real person reviews it</strong> - A member of our
+              <strong>A person reviews it</strong> - A member of our
               editorial team reads the campaign for accuracy, tone, and
               completeness. Not an algorithm. A person.
             </li>
@@ -128,29 +165,42 @@ export default function EditorialStandardsPage() {
             </li>
             <li>
               If a campaign turns out to be based on false information, we
-              suspend it, refund every donor, and publish a full explanation.
-              No excuses.
+              suspend it, notify donors, and publish a clear explanation.
             </li>
           </ol>
         </section>
 
-        <section>
-          <h2 className="font-display text-2xl font-bold">
-            See Something Off? Tell Us.
-          </h2>
-          <p className="mt-3 leading-relaxed text-muted-foreground">
-            If you think any information on our platform is wrong, email us at{' '}
-            <a
-              href="mailto:editorial@lastdonor.org"
-              className="text-primary underline underline-offset-4"
-            >
-              editorial@lastdonor.org
-            </a>
-            . We take every report seriously and a real person will look into it
-            within 24 hours.
-          </p>
-        </section>
+          <section aria-labelledby="editorial-faq">
+            <h2 id="editorial-faq" className="font-display text-2xl font-bold">
+              Campaign Review FAQ
+            </h2>
+            <dl className="mt-3 divide-y divide-border">
+              {faqs.map((faq) => (
+                <div key={faq.question} className="py-4">
+                  <dt className="font-semibold text-foreground">{faq.question}</dt>
+                  <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">{faq.answer}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+
+          <section>
+            <h2 className="font-display text-2xl font-bold">
+              See Something Off? Tell Us.
+            </h2>
+            <p className="mt-3 leading-relaxed text-muted-foreground">
+              If you think any information on our platform is wrong, email us at{' '}
+              <a
+                href="mailto:editorial@lastdonor.org"
+                className="text-primary underline underline-offset-4"
+              >
+                editorial@lastdonor.org
+              </a>
+              . We take reports seriously and review them promptly.
+            </p>
+          </section>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

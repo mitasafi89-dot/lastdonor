@@ -1,41 +1,34 @@
 'use client';
 
-import { StarIcon } from '@heroicons/react/24/solid';
+import {
+  ClipboardDocumentCheckIcon,
+  EyeIcon,
+  ShieldCheckIcon,
+} from '@heroicons/react/24/outline';
 import { motion } from 'motion/react';
 import { staggerContainer, fadeInUp } from '@/lib/animations';
 
-/**
- * Testimonials: Social proof through illustrative donor/organizer experiences.
- *
- * These examples illustrate the type of donor experiences the platform is
- * designed to create. As real verified donor quotes are collected via email
- * follow-up, replace these with attribution-verified testimonials linked
- * to real campaign slugs.
- */
-const testimonials = [
+const trustSignals = [
   {
-    quote:
-      'I donated $50 and got an update with receipts showing exactly how it was used. I have never experienced that from any other platform.',
-    name: 'Linda R.',
-    role: 'Donor',
-    location: 'Ohio',
-    detail: 'Donated to 4 campaigns',
+    icon: ClipboardDocumentCheckIcon,
+    title: 'Campaign details are reviewed',
+    body:
+      'Campaigns are checked before publication so donors can evaluate the story, goal, category, and supporting context.',
+    detail: 'Pre-publication review',
   },
   {
-    quote:
-      'We raised the full amount for my sister\'s medical bills in 12 days. The verification process gave our donors real confidence.',
-    name: 'James K.',
-    role: 'Campaign Organizer',
-    location: 'Texas',
-    detail: 'Raised $18,400',
+    icon: EyeIcon,
+    title: 'Progress stays visible',
+    body:
+      'Campaign totals, donor counts, updates, and completion status are visible so donors can follow what happens after they give.',
+    detail: 'Visible tracking',
   },
   {
-    quote:
-      'No hidden fees at checkout. That was the deciding factor for me. I now give monthly through LastDonor.',
-    name: 'Carol W.',
-    role: 'Monthly Donor',
-    location: 'Florida',
-    detail: 'Giving since 2025',
+    icon: ShieldCheckIcon,
+    title: '0% platform fees',
+    body:
+      'LastDonor does not take a platform cut. Standard Stripe processing fees apply and are disclosed before checkout.',
+    detail: 'Stripe-secured payments',
   },
 ];
 
@@ -50,10 +43,10 @@ export function Testimonials() {
           variants={fadeInUp}
         >
           <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Why Donors Choose LastDonor
+            What Donors Can Verify Before Giving
           </h2>
           <p className="mt-3 max-w-xl text-base text-muted-foreground">
-            Illustrative experiences designed into every campaign on LastDonor.
+            No invented testimonials. Just the trust signals donors can inspect on campaign pages.
           </p>
         </motion.div>
 
@@ -64,44 +57,33 @@ export function Testimonials() {
           variants={staggerContainer}
           className="mt-12 grid gap-6 sm:grid-cols-3"
         >
-          {testimonials.map((t) => (
-            <motion.blockquote
-              key={t.name}
-              variants={fadeInUp}
-              className="group flex flex-col rounded-2xl border border-border bg-card p-6 card-hover-lift"
-            >
-              {/* Star rating */}
-              <div className="flex gap-0.5" role="img" aria-label="5 out of 5 stars">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <StarIcon key={i} className="h-3.5 w-3.5 text-brand-amber" aria-hidden="true" />
-                ))}
-              </div>
-
-              {/* Quote -- the emotional content */}
-              <p className="mt-4 flex-1 text-sm leading-relaxed text-muted-foreground">
-                &ldquo;{t.quote}&rdquo;
-              </p>
-
-              {/* Attribution -- structured for credibility */}
-              <footer className="mt-5 border-t border-border pt-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/8 text-xs font-bold text-primary">
-                    {t.name.charAt(0)}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-foreground">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {t.role}, {t.location}
-                    </p>
-                  </div>
-                  {/* Credibility detail */}
-                  <span className="shrink-0 rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                    {t.detail}
-                  </span>
+          {trustSignals.map((signal) => {
+            const Icon = signal.icon;
+            return (
+              <motion.article
+                key={signal.title}
+                variants={fadeInUp}
+                className="group flex flex-col rounded-2xl border border-border bg-card p-6 card-hover-lift"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <Icon className="h-5 w-5" aria-hidden="true" />
                 </div>
-              </footer>
-            </motion.blockquote>
-          ))}
+
+                <h3 className="mt-5 text-base font-semibold text-foreground">
+                  {signal.title}
+                </h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                  {signal.body}
+                </p>
+
+                <footer className="mt-5 border-t border-border pt-4">
+                  <span className="inline-flex rounded-md bg-muted px-2 py-1 text-[11px] font-medium text-muted-foreground">
+                    {signal.detail}
+                  </span>
+                </footer>
+              </motion.article>
+            );
+          })}
         </motion.div>
       </div>
     </section>

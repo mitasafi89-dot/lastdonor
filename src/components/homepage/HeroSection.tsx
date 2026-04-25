@@ -50,7 +50,7 @@ export function HeroSection() {
         >
           <h1 className="hero-h1 font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-[3.5rem] lg:leading-[1.1]">
             <span className="block">LastDonor</span>
-            Verified crowdfunding with{' '}
+            Reviewed crowdfunding with{' '}
             <span className="text-primary">0% platform fees</span>{' '}
             and visible impact.
           </h1>

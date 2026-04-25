@@ -5,6 +5,7 @@ import { eq, inArray } from 'drizzle-orm';
 import { ALL_CATEGORY_SLUGS } from '@/lib/category-content';
 
 const BASE_URL = 'https://lastdonor.org';
+const SEO_CONTENT_LAST_MODIFIED = new Date('2026-04-26');
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages
@@ -14,23 +15,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // to treat the homepage as constantly mutating, wasting crawl budget and
     // creating a temporal contradiction when content is actually stable under ISR.
     // Update this value whenever the homepage copy, H1, or schema is intentionally changed.
-    { url: BASE_URL, lastModified: new Date('2026-04-21'), changeFrequency: 'daily', priority: 1.0 },
-    { url: `${BASE_URL}/about`, lastModified: new Date('2026-04-21'), changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${BASE_URL}/how-it-works`, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${BASE_URL}/transparency`, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/campaigns`, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${BASE_URL}/blog`, changeFrequency: 'daily', priority: 0.7 },
-    { url: `${BASE_URL}/last-donor-wall`, changeFrequency: 'weekly', priority: 0.6 },
-    { url: `${BASE_URL}/donate`, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${BASE_URL}/share-your-story`, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${BASE_URL}/editorial-standards`, changeFrequency: 'monthly', priority: 0.4 },
-    { url: `${BASE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.2 },
-    { url: `${BASE_URL}/terms`, changeFrequency: 'yearly', priority: 0.2 },
+    { url: BASE_URL, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'daily', priority: 1.0 },
+    { url: `${BASE_URL}/about`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${BASE_URL}/how-it-works`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${BASE_URL}/transparency`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/campaigns`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${BASE_URL}/compare`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${BASE_URL}/completed-campaigns`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'weekly', priority: 0.6 },
+    { url: `${BASE_URL}/blog`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'daily', priority: 0.7 },
+    { url: `${BASE_URL}/last-donor-wall`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'weekly', priority: 0.6 },
+    { url: `${BASE_URL}/donate`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${BASE_URL}/share-your-story`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${BASE_URL}/editorial-standards`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${BASE_URL}/privacy`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'yearly', priority: 0.2 },
+    { url: `${BASE_URL}/terms`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'yearly', priority: 0.2 },
   ];
 
   // Category landing pages
   const categoryPages: MetadataRoute.Sitemap = ALL_CATEGORY_SLUGS.map((slug) => ({
     url: `${BASE_URL}/campaigns/category/${slug}`,
+    lastModified: SEO_CONTENT_LAST_MODIFIED,
     changeFrequency: 'daily' as const,
     priority: 0.7,
   }));

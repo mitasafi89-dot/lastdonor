@@ -18,9 +18,9 @@ describe('Footer', () => {
     expect(screen.getByText('Donor')).toBeInTheDocument();
   });
 
-  it('renders the 501(c)(3) notice', () => {
+  it('renders the reviewed fundraising notice', () => {
     render(<Footer />);
-    expect(screen.getByText(/501\(c\)\(3\) Nonprofit/i)).toBeInTheDocument();
+    expect(screen.getByText(/Reviewed Fundraising Platform/i)).toBeInTheDocument();
   });
 
   it('renders Campaigns link', () => {
@@ -62,7 +62,7 @@ describe('Footer', () => {
   it('renders How It Works link', () => {
     render(<Footer />);
     const link = screen.getByRole('link', { name: 'How It Works' });
-    expect(link).toHaveAttribute('href', '/about');
+    expect(link).toHaveAttribute('href', '/how-it-works');
   });
 
   it('renders Share Your Story link', () => {

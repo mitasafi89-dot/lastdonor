@@ -6,11 +6,14 @@ import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { centsToDollars } from '@/lib/utils/currency';
 import { formatDate } from '@/lib/utils/dates';
 import Link from 'next/link';
+import { seoKeywords } from '@/lib/seo/keywords';
 
 export const metadata: Metadata = {
   title: 'Last Donor Wall',
   description:
     'Every completed campaign has a final donor. The person who pushed it over the finish line. This wall is for them.',
+  keywords: seoKeywords('donor', 'campaigns', 'trust'),
+  alternates: { canonical: 'https://lastdonor.org/last-donor-wall' },
   openGraph: {
     title: 'Last Donor Wall | LastDonor.org',
     description:

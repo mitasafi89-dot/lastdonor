@@ -37,7 +37,7 @@ type DonationFormValues = z.infer<typeof donationFormSchema>;
  * Design principles:
  * 1. ONE focal point per step (amount → payment → confirmation)
  * 2. Impact messaging on preset amounts ("$50 = 3 meals")
- * 3. Social proof integrated ("Secured by Stripe · 501(c)(3) nonprofit")
+ * 3. Social proof integrated ("Secured by Stripe", "0% platform fees")
  * 4. Reduced fields visible initially (email only, rest collapsed)
  * 5. Large touch targets (48px min) for mobile
  * 6. Instant visual feedback on selection
@@ -695,7 +695,7 @@ export function DonationForm({
             Secured by Stripe
           </span>
           <span className="h-3 w-px bg-border" aria-hidden="true" />
-          <span>501(c)(3) nonprofit</span>
+          <span>Reviewed campaign</span>
           <span className="h-3 w-px bg-border" aria-hidden="true" />
           <span>0% platform fees</span>
         </div>

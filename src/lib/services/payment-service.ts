@@ -346,7 +346,7 @@ async function sendDonationReceipt({
             <td style="padding: 8px 0; text-align: right;">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
           </tr>
         </table>
-        <p style="color: #666; font-size: 14px;">LastDonor.org is a 501(c)(3) nonprofit organization. This donation may be tax-deductible. Please retain this email as your receipt.</p>
+        <p style="color: #666; font-size: 14px;">Please retain this email as confirmation of your donation. This message is not a tax receipt and does not determine tax deductibility. Consult a tax advisor for your specific situation.</p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
         <p style="color: #999; font-size: 12px;">LastDonor.org - Every campaign has a last donor. Will it be you?</p>
       </div>

@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   title: 'Removed Campaigns | LastDonor.org',
   description:
     'Transparency report: campaigns that were reviewed and removed from the platform, with reasons. We take donor trust seriously.',
+  alternates: { canonical: 'https://lastdonor.org/cancelled-campaigns' },
+  robots: { index: false, follow: true },
   openGraph: {
     title: 'Removed Campaigns | LastDonor.org',
     description:

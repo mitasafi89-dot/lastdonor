@@ -360,7 +360,7 @@ export function abandonedDonationRecoveryEmail(p: AbandonedDonationContext) {
 // ─── 3. Adaptive Refund Emails ──────────────────────────────────────────────
 //
 // Psychology:
-// - First-time donor: extra reassurance, trust-building, redirect to verified campaigns
+// - First-time donor: extra reassurance, trust-building, redirect to reviewed campaigns
 // - Repeat donor: softer, relationship-focused, acknowledge history, invite back
 // - Campaign-cancelled: transparency about what happened, proactive redirect
 // - Individual refund: no alarm, just confirmation
@@ -441,7 +441,7 @@ export function adaptiveRefundEmail(p: {
     redirectSection = `
       <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
       <h2 style="color: #0F766E; font-size: 18px;">Other campaigns that could use your help</h2>
-      <p>If you'd like to redirect your generosity, here are verified campaigns in a similar area:</p>
+        <p>If you'd like to redirect your generosity, here are reviewed campaigns in a similar area:</p>
       ${campaignCards}
       ${ctaButton(`${BASE_URL}/campaigns`, 'Browse All Campaigns')}
     `;

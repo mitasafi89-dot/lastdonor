@@ -18,7 +18,7 @@ SEO OPTIMIZATION RULES:
    - Use descriptive anchor text (not "click here")
    - Max 1 internal link per paragraph
    - Target: 3-5 internal links total
-   - Link format: <a href="/campaigns">browse verified campaigns</a>
+   - Link format: <a href="/campaigns">browse reviewed campaigns</a>
 6. Add 2-3 external links to authoritative sources (.gov, .edu, .org) for credibility.
 7. Ensure heading hierarchy flows correctly: H2 > H3, no skips.
 8. Make sure the article starts with a direct answer (featured snippet optimization).

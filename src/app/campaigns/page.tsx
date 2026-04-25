@@ -8,23 +8,26 @@ import { CampaignGrid } from '@/components/campaign/CampaignGrid';
 import { CategoryHeroSection } from '@/components/campaign/CategoryHeroSection';
 import { CampaignFilters } from './filters';
 import { getCategoryContent } from '@/lib/category-content';
+import { seoKeywords } from '@/lib/seo/keywords';
 import type { CampaignCategory } from '@/types';
 
 export const metadata: Metadata = {
-  title: 'Campaigns',
+  title: 'Browse Reviewed Medical & Emergency Crowdfunding Campaigns | LastDonor',
   description:
-    'Browse verified fundraising campaigns for people who need help right now. Medical bills, emergencies, memorials, education, and more. Every campaign is verified by a real person.',
-  alternates: { canonical: '/campaigns' },
+    'Browse reviewed crowdfunding campaigns for medical fundraising, emergency relief, disaster fundraising, medical bills, veteran families, first responders, education, and family emergency fundraising. Every campaign is reviewed before publication. 0% platform fees.',
+  keywords: seoKeywords('campaigns', 'medical', 'emergency', 'disaster', 'memorial', 'family', 'nonprofit', 'trust'),
+  alternates: { canonical: 'https://lastdonor.org/campaigns' },
   openGraph: {
-    title: 'Campaigns | LastDonor.org',
+    title: 'Browse Reviewed Medical & Emergency Crowdfunding Campaigns | LastDonor',
     description:
-      'Verified fundraising campaigns for real people. No scams, no unverified stories. Every campaign verified by our editorial team.',
+      'Find reviewed medical fundraising, emergency relief, and disaster relief campaigns with visible progress and 0% platform fees.',
+    url: 'https://lastdonor.org/campaigns',
     images: [
       {
-        url: '/api/v1/og/page?title=Verified+Campaigns&subtitle=Browse+real+fundraisers+verified+by+our+editorial+team.',
+        url: '/api/v1/og/page?title=Reviewed+Campaigns&subtitle=Browse+fundraisers+reviewed+before+publication.',
         width: 1200,
         height: 630,
-        alt: 'Verified Campaigns on LastDonor.org',
+        alt: 'Reviewed Crowdfunding Campaigns on LastDonor',
       },
     ],
   },
@@ -54,6 +57,29 @@ interface PageProps {
 }
 
 const PAGE_SIZE = 12;
+
+const faqs = [
+  {
+    question: 'What fundraisers can I browse on LastDonor?',
+    answer:
+      'You can browse reviewed medical fundraisers, emergency fundraisers, memorial funds, disaster relief fundraisers, family emergency campaigns, veteran fundraisers, education fundraisers, animal fundraisers, and community fundraisers.',
+  },
+  {
+    question: 'Are campaigns reviewed before they appear here?',
+    answer:
+      'Yes. Campaigns listed on this page are reviewed before publication so donors can understand the need, the fundraising goal, and the available supporting context.',
+  },
+  {
+    question: 'Can I search by cause or location?',
+    answer:
+      'Yes. Use the filters to search by fundraiser category, location, campaign status, or keywords such as medical bills, funeral expenses, house fire, tuition, pet surgery, or veteran support.',
+  },
+  {
+    question: 'What does close to target mean?',
+    answer:
+      'Close-to-target fundraisers are campaigns that are near their goal. They can be useful for donors who want to help complete a campaign and become the Last Donor.',
+  },
+];
 
 export default async function CampaignsPage({ searchParams }: PageProps) {
   const params = await searchParams;
@@ -180,9 +206,25 @@ export default async function CampaignsPage({ searchParams }: PageProps) {
   const hasMore = results.length > PAGE_SIZE;
   const displayedCampaigns = hasMore ? results.slice(0, PAGE_SIZE) : results;
   const nextCursor = hasMore ? String(PAGE_SIZE) : null;
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       {categoryContent && <CategoryHeroSection content={categoryContent} />}
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
@@ -193,10 +235,10 @@ export default async function CampaignsPage({ searchParams }: PageProps) {
         ) : (
           <>
             {/* Header: emotional headline + social-proof count + trust anchor.
-                Psychology: Anchoring (concrete number), Authority (verified), Zero-Knowledge Proof. */}
+                Psychology: Anchoring (concrete number), Authority (reviewed), Zero-Knowledge Proof. */}
             <header className="mb-6">
               <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                Verified Fundraisers Raising Money Right Now
+                Reviewed Fundraisers Raising Money Right Now
               </h1>
               <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
                 <ShieldCheckIcon className="h-4 w-4 text-brand-teal" aria-hidden="true" />
@@ -204,7 +246,7 @@ export default async function CampaignsPage({ searchParams }: PageProps) {
                   <span className="font-semibold text-foreground tabular-nums">{activeCount.toLocaleString('en-US')}</span>{' '}active {activeCount === 1 ? 'campaign' : 'campaigns'}
                 </span>
                 <span aria-hidden="true" className="text-border">·</span>
-                <span>Each one reviewed by a real person before going live</span>
+                <span>Each one reviewed before going live</span>
               </p>
             </header>
 
@@ -260,6 +302,20 @@ export default async function CampaignsPage({ searchParams }: PageProps) {
           locationFilter={locationFilter}
           closeToTarget={closeToTarget}
         />
+
+        <section className="mt-12 border-t border-border pt-10" aria-labelledby="campaigns-faq">
+          <h2 id="campaigns-faq" className="font-display text-2xl font-bold text-foreground">
+            Fundraiser Search FAQ
+          </h2>
+          <dl className="mt-5 grid gap-5 md:grid-cols-2">
+            {faqs.map((faq) => (
+              <div key={faq.question}>
+                <dt className="font-semibold text-foreground">{faq.question}</dt>
+                <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">{faq.answer}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
       </div>
     </>
   );

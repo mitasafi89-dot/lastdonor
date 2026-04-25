@@ -17,7 +17,7 @@ interface ImpactUpdateProps {
 
 const STATUS_CONFIG: Record<string, { label: string; icon: typeof CheckCircleIcon; className: string }> = {
   approved: {
-    label: 'Verified by LastDonor',
+    label: 'Reviewed by LastDonor',
     icon: CheckCircleIcon,
     className: 'text-emerald-700 dark:text-emerald-300',
   },

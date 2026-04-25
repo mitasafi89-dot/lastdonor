@@ -3,24 +3,27 @@ import { db } from '@/db';
 import { blogPosts } from '@/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { BlogCard } from '@/components/blog/BlogCard';
+import { seoKeywords } from '@/lib/seo/keywords';
 
 export const revalidate = 300; // ISR: refresh every 5 minutes
 
 export const metadata: Metadata = {
-  title: 'Stories & Impact',
+  title: 'Campaign Stories & Impact Updates | LastDonor',
   description:
-    'Real stories from real campaigns. See who got helped, how the money was used, and what happened next. No fluff, no filler.',
-  alternates: { canonical: '/blog' },
+    'Real stories from reviewed LastDonor campaigns. See who received help, how funds were used, and what happened next. Impact reports from medical, emergency, and family fundraising campaigns.',
+  keywords: seoKeywords('trust', 'campaigns', 'medical', 'emergency', 'memorial', 'family'),
+  alternates: { canonical: 'https://lastdonor.org/blog' },
   openGraph: {
-    title: 'Stories & Impact | LastDonor.org',
+    title: 'Campaign Stories & Impact Updates | LastDonor',
     description:
-      'Real stories from real campaigns. See who got helped and what happened next.',
+      'Real stories from reviewed campaigns. See who got helped and what happened next through impact reports and campaign updates.',
+    url: 'https://lastdonor.org/blog',
     images: [
       {
-        url: '/api/v1/og/page?title=Stories+%26+Impact&subtitle=What+happened+after+the+money+was+raised.',
+        url: '/api/v1/og/page?title=Campaign+Stories&subtitle=What+happened+after+the+money+was+raised.',
         width: 1200,
         height: 630,
-        alt: 'Stories & Impact on LastDonor.org',
+        alt: 'Campaign Stories & Impact Updates on LastDonor',
       },
     ],
   },

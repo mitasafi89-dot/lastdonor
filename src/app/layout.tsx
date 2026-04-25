@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { DM_Serif_Display, DM_Sans, DM_Mono } from 'next/font/google';
+import { seoKeywords } from '@/lib/seo/keywords';
 
 const BASE_URL = 'https://lastdonor.org';
 
@@ -10,7 +11,7 @@ const siteSchemaGraph = {
   '@context': 'https://schema.org',
   '@graph': [
     {
-      '@type': ['Organization', 'NGO'],
+      '@type': 'Organization',
       '@id': `${BASE_URL}/#organization`,
       name: 'LastDonor',
       alternateName: ['LastDonor.org', 'Last Donor'],
@@ -22,25 +23,11 @@ const siteSchemaGraph = {
         height: 180,
       },
       description:
-        'LastDonor is a verified crowdfunding platform that charges 0% platform fees, requires human editorial review of every campaign before publication, and provides photo-and-receipt impact updates for donations, serving medical, emergency, veteran, and family fundraising in the United States.',
+        'LastDonor is a reviewed crowdfunding platform that charges 0% platform fees, reviews campaigns before publication, and provides visible campaign progress and impact updates, serving medical, emergency, veteran, and family fundraising in the United States.',
       foundingDate: '2024-01-01',
       areaServed: { '@type': 'Country', name: 'United States' },
       knowsAbout: [
-        'verified crowdfunding',
-        'nonprofit crowdfunding',
-        'crowdfunding platform',
-        'online fundraising',
-        'charity donations',
-        'medical fundraising',
-        'emergency fundraising',
-        'veteran fundraising',
-        'disaster relief fundraising',
-        'zero fee crowdfunding',
-        'human-reviewed campaigns',
-        'donation tracking',
-        'crowdfunding with no fees',
-        'verified donation platform',
-        'transparent fundraising',
+        ...seoKeywords('core', 'campaigns', 'trust', 'medical', 'emergency', 'disaster', 'memorial'),
       ],
       sameAs: [
         'https://www.linkedin.com/company/lastdonor',
@@ -56,7 +43,7 @@ const siteSchemaGraph = {
     {
       '@type': 'WebSite',
       '@id': `${BASE_URL}/#website`,
-      name: 'LastDonor - Verified Crowdfunding Platform',
+      name: 'LastDonor - Reviewed Crowdfunding Platform',
       url: BASE_URL,
       publisher: { '@id': `${BASE_URL}/#organization` },
       potentialAction: {
@@ -73,7 +60,7 @@ const siteSchemaGraph = {
       '@type': 'SiteNavigationElement',
       '@id': `${BASE_URL}/#nav-campaigns`,
       name: 'Find a Reviewed Campaign',
-      description: 'Browse human-reviewed crowdfunding campaigns raising money now',
+      description: 'Browse reviewed crowdfunding campaigns raising money now',
       url: `${BASE_URL}/campaigns`,
       position: 1,
     },
@@ -97,7 +84,7 @@ const siteSchemaGraph = {
       '@type': 'SiteNavigationElement',
       '@id': `${BASE_URL}/#nav-about`,
       name: 'About LastDonor',
-      description: 'Crowdfunding with 0% platform fees and human-reviewed campaigns',
+      description: 'Crowdfunding with 0% platform fees and reviewed campaigns',
       url: `${BASE_URL}/about`,
       position: 4,
     },
@@ -105,7 +92,7 @@ const siteSchemaGraph = {
       '@type': 'SiteNavigationElement',
       '@id': `${BASE_URL}/#nav-transparency`,
       name: 'Transparency Reports',
-      description: 'Live platform stats, donation records, and IRS filings',
+      description: 'Live platform stats, donation records, tax status updates, and annual reports',
       url: `${BASE_URL}/transparency`,
       position: 5,
     },
@@ -150,10 +137,11 @@ const dmMono = DM_Mono({
 export const metadata: Metadata = {
   title: {
     template: '%s | LastDonor',
-    default: 'LastDonor - Verified Crowdfunding with 0% Platform Fees',
+    default: 'LastDonor - Reviewed Crowdfunding with 0% Platform Fees',
   },
   description:
-    'LastDonor helps donors support human-reviewed medical, emergency, veteran, disaster relief, and family fundraising campaigns with 0% platform fees and visible donation tracking.',
+    'LastDonor helps donors support reviewed medical, emergency, veteran, disaster relief, and family fundraising campaigns with 0% platform fees and visible donation tracking.',
+  keywords: seoKeywords('core', 'campaigns', 'trust', 'medical', 'emergency', 'disaster'),
   metadataBase: new URL('https://lastdonor.org'),
   alternates: {
     canonical: 'https://lastdonor.org',
@@ -167,7 +155,7 @@ export const metadata: Metadata = {
         url: '/api/v1/og/page?title=LastDonor+Crowdfunding&subtitle=0%25+platform+fees.+Campaigns+reviewed.+Impact+updates.',
         width: 1200,
         height: 630,
-        alt: 'LastDonor - Verified Crowdfunding with 0% Platform Fees',
+        alt: 'LastDonor - Reviewed Crowdfunding with 0% Platform Fees',
       },
     ],
   },

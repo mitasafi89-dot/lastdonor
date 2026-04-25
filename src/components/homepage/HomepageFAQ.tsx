@@ -48,7 +48,7 @@ export function HomepageFAQ() {
   };
 
   return (
-    <section className="bg-background py-20 sm:py-24" aria-labelledby="faq-heading">
+    <section id="faq" className="bg-background py-20 sm:py-24" aria-labelledby="faq-heading">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}

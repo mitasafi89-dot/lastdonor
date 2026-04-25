@@ -5,6 +5,7 @@ import { campaigns } from '@/db/schema';
 import { eq, and, desc, asc, ilike, or } from 'drizzle-orm';
 import { CampaignGrid } from '@/components/campaign/CampaignGrid';
 import { CompletedCampaignFilters } from './filters';
+import { seoKeywords } from '@/lib/seo/keywords';
 import type { CampaignCategory } from '@/types';
 
 export const revalidate = 300; // ISR: refresh every 5 minutes
@@ -12,7 +13,9 @@ export const revalidate = 300; // ISR: refresh every 5 minutes
 export const metadata: Metadata = {
   title: 'Completed Campaigns | LastDonor.org',
   description:
-    'Browse campaigns that have successfully reached their fundraising goals. See the impact your donations made.',
+    'Browse completed medical, emergency, memorial, family, disaster relief, and community fundraisers that reached their goals on LastDonor.',
+  keywords: seoKeywords('campaigns', 'trust', 'medical', 'emergency', 'memorial', 'family'),
+  alternates: { canonical: 'https://lastdonor.org/completed-campaigns' },
   openGraph: {
     title: 'Completed Campaigns | LastDonor.org',
     description:
@@ -48,6 +51,24 @@ interface PageProps {
 }
 
 const PAGE_SIZE = 12;
+
+const faqs = [
+  {
+    question: 'What is a completed campaign?',
+    answer:
+      'A completed campaign is a fundraiser that reached its goal or was archived after completion. Completed campaign pages help donors review outcomes and impact updates.',
+  },
+  {
+    question: 'Can I browse completed medical or emergency fundraisers?',
+    answer:
+      'Yes. Use the filters to browse completed medical fundraisers, emergency fundraisers, memorial funds, disaster relief campaigns, family fundraisers, and other categories.',
+  },
+  {
+    question: 'What is the Last Donor?',
+    answer:
+      'The Last Donor is the person whose donation completes a campaign goal. Completed campaigns may also appear on the Last Donor Wall.',
+  },
+];
 
 export default async function CompletedCampaignsPage({ searchParams }: PageProps) {
   const params = await searchParams;
@@ -132,9 +153,26 @@ export default async function CompletedCampaignsPage({ searchParams }: PageProps
   const hasMore = results.length > PAGE_SIZE;
   const displayedCampaigns = hasMore ? results.slice(0, PAGE_SIZE) : results;
   const nextCursor = hasMore ? String(PAGE_SIZE) : null;
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex flex-wrap items-baseline justify-between gap-4">
         <h1 className="font-display text-2xl font-bold text-foreground">Completed Campaigns</h1>
         <Link
@@ -179,6 +217,20 @@ export default async function CompletedCampaignsPage({ searchParams }: PageProps
           </Link>
         }
       />
-    </div>
+      <section className="mt-12 border-t border-border pt-10" aria-labelledby="completed-faq">
+        <h2 id="completed-faq" className="font-display text-2xl font-bold text-foreground">
+          Completed Campaign FAQ
+        </h2>
+        <dl className="mt-5 grid gap-5 md:grid-cols-3">
+          {faqs.map((faq) => (
+            <div key={faq.question}>
+              <dt className="font-semibold text-foreground">{faq.question}</dt>
+              <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">{faq.answer}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+      </div>
+    </>
   );
 }

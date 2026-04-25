@@ -18,15 +18,17 @@ import { CampaignCard } from '@/components/campaign/CampaignCard';
 
 import { AnimateOnScroll } from '@/components/AnimateOnScroll';
 import { HomepageFAQ } from '@/components/homepage/HomepageFAQ';
+import { seoKeywords } from '@/lib/seo/keywords';
 
 export const metadata: Metadata = {
-  title: 'LastDonor - Verified Crowdfunding with 0% Platform Fees',
+  title: 'LastDonor - Reviewed Crowdfunding with 0% Platform Fees',
   description:
-    'Support real people through human-reviewed medical, emergency, disaster relief, veteran, and family fundraising campaigns. LastDonor charges 0% platform fees and shows donors where funds go.',
+    'Support real people through reviewed medical, emergency, disaster relief, veteran, and family fundraising campaigns. LastDonor charges 0% platform fees and shows donors where funds go.',
+  keywords: seoKeywords('core', 'campaigns', 'trust', 'medical', 'emergency', 'disaster', 'memorial', 'family'),
   openGraph: {
-    title: 'LastDonor - Verified Crowdfunding with 0% Platform Fees',
+    title: 'LastDonor - Reviewed Crowdfunding with 0% Platform Fees',
     description:
-      'Human-reviewed crowdfunding campaigns with 0% platform fees and visible tracking from donation to impact.',
+      'Reviewed crowdfunding campaigns with 0% platform fees and visible tracking from donation to impact.',
     url: 'https://lastdonor.org',
     type: 'website',
     images: [
@@ -34,15 +36,15 @@ export const metadata: Metadata = {
         url: '/api/v1/og/page?title=LastDonor+Crowdfunding&subtitle=0%25+platform+fees.+Campaigns+reviewed.+Impact+updates.',
         width: 1200,
         height: 630,
-        alt: 'LastDonor - Verified Crowdfunding with 0% Platform Fees',
+        alt: 'LastDonor - Reviewed Crowdfunding with 0% Platform Fees',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     site: '@lastdonororg',
-    title: 'LastDonor - Verified Crowdfunding with 0% Platform Fees',
-    description: 'Human-reviewed campaigns. 0% platform fees. Visible donation tracking. Real human support.',
+    title: 'LastDonor - Reviewed Crowdfunding with 0% Platform Fees',
+    description: 'Reviewed campaigns. 0% platform fees. Visible donation tracking. Real human support.',
   },
 };
 
@@ -167,6 +169,24 @@ export default async function Home() {
     '@context': 'https://schema.org',
     '@graph': [
       {
+        '@type': 'WebPage',
+        '@id': 'https://lastdonor.org/#webpage',
+        url: 'https://lastdonor.org',
+        name: 'LastDonor - Reviewed Crowdfunding with 0% Platform Fees',
+        description:
+          'Reviewed crowdfunding campaigns for medical, emergency, disaster relief, veteran, memorial, and family fundraising with 0% platform fees and visible campaign progress.',
+        isPartOf: { '@id': 'https://lastdonor.org/#website' },
+        about: { '@id': 'https://lastdonor.org/#organization' },
+        primaryImageOfPage: {
+          '@type': 'ImageObject',
+          url: 'https://lastdonor.org/api/v1/og/page?title=LastDonor+Crowdfunding&subtitle=0%25+platform+fees.+Campaigns+reviewed.+Impact+updates.',
+        },
+        speakable: {
+          '@type': 'SpeakableSpecification',
+          cssSelector: ['#ai-answer', '#faq'],
+        },
+      },
+      {
         '@type': 'BreadcrumbList',
         '@id': 'https://lastdonor.org/#breadcrumb',
         itemListElement: [
@@ -212,7 +232,7 @@ export default async function Home() {
               </dd>
             </div>
             <div>
-              <dt className="font-semibold text-foreground">Human-reviewed campaigns</dt>
+              <dt className="font-semibold text-foreground">Reviewed campaigns</dt>
               <dd className="mt-1 text-muted-foreground">
                 Campaigns are reviewed by a real person before they go live, with supporting details checked against the story.
               </dd>
@@ -295,7 +315,7 @@ export default async function Home() {
                 Impact Stories: How LastDonor Donors Made a Difference
               </h2>
               <p className="mt-3 max-w-xl text-base text-muted-foreground">
-                Updates, verified results, and the real stories behind the people you help.
+                Updates, reviewed results, and the real stories behind the people you help.
                 See exactly where your donation went and the impact it created.
               </p>
             </AnimateOnScroll>

@@ -81,7 +81,7 @@ export function ImpactCounter({
             Real Numbers. Real People Helped.
           </h2>
           <p className="mt-3 text-base text-white/80">
-            These are verified totals from real donors giving to real campaigns.
+            These are totals from real donors giving to reviewed campaigns.
             Not projections. Not estimates.
           </p>
         </motion.div>
@@ -93,13 +93,13 @@ export function ImpactCounter({
           <StatItem
             value={raisedDollars}
             label="Total Raised"
-            sublabel="Verified real donations"
+            sublabel="Real donations"
             prefix="$"
           />
           <StatItem
             value={totalDonors}
             label="People Who Gave"
-            sublabel="Unique verified donors"
+            sublabel="Unique donors"
           />
           <StatItem
             value={campaignsCompleted}

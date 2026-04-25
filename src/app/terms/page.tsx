@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'Terms of Service',
   description:
     'Terms of service for LastDonor.org. Plain language, no tricks. Here is what you agree to when you use the platform.',
-  alternates: { canonical: '/terms' },
+  alternates: { canonical: 'https://lastdonor.org/terms' },
   openGraph: {
     title: 'Terms of Service | LastDonor.org',
     description:
@@ -72,9 +72,9 @@ export default function TermsPage() {
               $100,000.00 USD per transaction.
             </li>
             <li>
-              Donations are tax-deductible to the extent allowed by law under
-              IRC Section 501(c)(3). LastDonor.org EIN: [PENDING IRS ASSIGNMENT].
-              Consult a tax advisor to confirm deductibility for your specific situation.
+              LastDonor.org is finalizing its federal tax-exempt status and EIN
+              details. Until that status is confirmed, do not assume donations are
+              deductible for tax purposes. Consult a tax advisor for your specific situation.
             </li>
             <li>
               Recurring donations can be canceled at any time by contacting
@@ -92,8 +92,7 @@ export default function TermsPage() {
             4. Refund Policy
           </h2>
           <p className="mt-3">
-            Donations are generally final once processed. But we are not going
-            to hold your money hostage. Refunds are issued when:
+            Donations are generally final once processed. Refunds are issued when:
           </p>
           <ul className="mt-2 list-disc space-y-1 pl-6">
             <li>Fraudulent or unauthorized transactions</li>

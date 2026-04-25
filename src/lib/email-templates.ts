@@ -282,9 +282,9 @@ export function campaignCancelledRefundEmail(p: {
     ? `
       <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
       <h2 style="color: #0F766E; font-size: 18px;">You Can Still Make a Difference</h2>
-      <p>Here are verified campaigns that need your support:</p>
+      <p>Here are reviewed campaigns that need your support:</p>
       ${p.similarCampaigns.map(formatCard).join('')}
-      ${ctaButton(`${BASE_URL}/campaigns`, 'View All Verified Campaigns')}
+      ${ctaButton(`${BASE_URL}/campaigns`, 'View All Reviewed Campaigns')}
     `
     : '';
 

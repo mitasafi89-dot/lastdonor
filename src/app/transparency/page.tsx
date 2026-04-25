@@ -4,15 +4,18 @@ import { campaigns, donations } from '@/db/schema';
 import { sql } from 'drizzle-orm';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { centsToDollars } from '@/lib/utils/currency';
+import { seoKeywords } from '@/lib/seo/keywords';
 
 export const metadata: Metadata = {
-  title: 'Transparency',
+  title: 'Transparency | Donation Tracking and Impact Updates',
   description:
-    'See exactly where every dollar goes. No hidden tips, no surprise fees, no fine print. We publish our numbers because we think you deserve to see them.',
+    'See LastDonor platform statistics, donation tracking, completed campaigns, impact updates, payment processing, and fund allocation policies.',
+  keywords: seoKeywords('trust', 'donor', 'core', 'campaigns'),
+  alternates: { canonical: 'https://lastdonor.org/transparency' },
   openGraph: {
     title: 'Transparency | LastDonor.org',
     description:
-      'We publish our numbers because we think you deserve to see them. Zero hidden fees, full fund tracking.',
+      'Platform statistics, donation tracking, impact updates, and fund allocation policies.',
     images: [
       {
         url: '/api/v1/og/page?title=Transparency&subtitle=We+publish+our+numbers+because+we+think+you+deserve+to+see+them.',
@@ -61,10 +64,9 @@ export default async function TransparencyPage() {
         Transparency
       </h1>
       <p className="mt-3 text-lg text-muted-foreground">
-        Some platforms hide a 15% tip on your donation and call it
-        &quot;voluntary.&quot; We think that&apos;s wrong. Here are our numbers,
-        out in the open, because you should know where your money goes before
-        you give it.
+        Donors should be able to understand platform activity, campaign progress,
+        and fund allocation before they give. This page publishes LastDonor
+        statistics and policies in one place.
       </p>
 
       {/* Platform Stats */}
@@ -87,39 +89,39 @@ export default async function TransparencyPage() {
         ))}
       </div>
 
-      {/* Fund Allocation */}
+      {/* Fee Disclosure */}
       <section className="mt-12">
         <h2 className="font-display text-2xl font-bold text-foreground">
-          Where Every Dollar Goes
+          Fee Disclosure
         </h2>
         <p className="mt-2 text-muted-foreground">
-          No tip sliders. No &quot;processing fees&quot; that quietly double.
-          This is the full breakdown.
+          LastDonor charges 0% platform fees. Standard Stripe processing fees
+          apply, and donors see the payment breakdown before checkout.
         </p>
         <div className="mt-6 space-y-4">
           <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
             <div>
-              <p className="font-semibold text-foreground">Straight to the Person in Need</p>
+              <p className="font-semibold text-foreground">Campaign Support</p>
               <p className="text-sm text-muted-foreground">
-                Directly to the individual or family. No middlemen, no detours.
+                Your donation supports the individual, family, organization, or project named in the fundraiser.
               </p>
             </div>
-            <span className="font-mono text-2xl font-bold text-primary">90%</span>
+            <span className="font-mono text-2xl font-bold text-primary">Donation</span>
           </div>
           <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
             <div>
-              <p className="font-semibold text-foreground">Payment Processing &amp; Operations</p>
+              <p className="font-semibold text-foreground">Payment Processing</p>
               <p className="text-sm text-muted-foreground">
-                Stripe fees, hosting, and the editorial team that verifies every campaign.
+                Stripe charges its standard card processing fee. LastDonor does not receive this fee.
               </p>
             </div>
-            <span className="font-mono text-2xl font-bold text-brand-amber">10%</span>
+            <span className="font-mono text-2xl font-bold text-brand-amber">Stripe</span>
           </div>
           <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
             <div>
-              <p className="font-semibold text-foreground">Hidden Tips or Surprise Fees</p>
+              <p className="font-semibold text-foreground">Platform Fee</p>
               <p className="text-sm text-muted-foreground">
-                Zero. We will never add a tip to your donation without your knowledge.
+                LastDonor charges 0% platform fees on fundraisers.
               </p>
             </div>
             <span className="font-mono text-2xl font-bold text-muted-foreground">0%</span>
@@ -138,18 +140,19 @@ export default async function TransparencyPage() {
             &quot;Anonymous&quot; if they choose), amount, date, and campaign.
           </li>
           <li>
-            Every campaign includes cited, verifiable sources. If we can&apos;t
-            verify it, we don&apos;t publish it.
+            Every published campaign is reviewed before it goes live. If we
+            cannot review the core details, we do not publish it.
           </li>
           <li>
             We publish a full breakdown after every completed campaign showing
             how the funds were used.
           </li>
           <li>
-            Our IRS Form 990 will be published annually once available.
+            Tax status updates and annual reports will be published when
+            they are available.
           </li>
           <li>
-            We never sell, share, or monetize donor data. Period.
+            We never sell, share, or monetize donor data.
           </li>
           <li>
             If you ever have a question about where your money went, you can

@@ -2,12 +2,14 @@ import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { DonationForm } from '@/components/campaign/DonationForm';
 import { GENERAL_FUND_CAMPAIGN_ID } from '@/lib/constants';
 import type { Metadata } from 'next';
+import { seoKeywords } from '@/lib/seo/keywords';
 
 export const metadata: Metadata = {
   title: 'Donate to the General Fund',
   description:
-    'Support LastDonor.org directly. General fund donations cover campaign verification, payment processing, and platform hosting. No hidden tips.',
-  alternates: { canonical: '/donate' },
+    'Support LastDonor.org directly. General fund donations help cover campaign review, payment processing, platform hosting, donor support, and impact updates.',
+  keywords: seoKeywords('donor', 'trust', 'core'),
+  alternates: { canonical: 'https://lastdonor.org/donate' },
   openGraph: {
     title: 'Donate to the General Fund | LastDonor.org',
     description:
@@ -24,22 +26,73 @@ export const metadata: Metadata = {
 };
 
 export default function DonatePage() {
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
-      <Breadcrumbs />
-      <h1 className="mt-6 font-display text-3xl font-bold text-foreground">
-        Support the General Fund
-      </h1>
-      <p className="mt-3 text-muted-foreground">
-        General fund donations keep the lights on so we can respond fast when
-        someone needs help. They cover campaign verification, payment
-        processing, and platform hosting. No hidden tips. What you give is
-        what you give.
-      </p>
+  const faqs = [
+    {
+      question: 'What does the LastDonor general fund support?',
+      answer:
+        'General fund donations help pay for campaign review, payment processing, hosting, donor support, and the work required to publish campaign updates.',
+    },
+    {
+      question: 'Can I donate directly to a specific fundraiser instead?',
+      answer:
+        'Yes. Browse active fundraisers to support a specific medical, emergency, memorial, family, veteran, disaster relief, education, animal, or community campaign.',
+    },
+    {
+      question: 'Does LastDonor charge a platform fee on donations?',
+      answer:
+        'LastDonor charges 0% platform fees. Standard payment processing fees are shown before checkout.',
+    },
+  ];
 
-      <div className="mt-8 rounded-xl border border-border bg-card p-6">
-        <DonationForm campaignId={GENERAL_FUND_CAMPAIGN_ID} campaignTitle="General Fund" />
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
+        <Breadcrumbs />
+        <h1 className="mt-6 font-display text-3xl font-bold text-foreground">
+          Support the General Fund
+        </h1>
+        <p className="mt-3 text-muted-foreground">
+          General fund donations help LastDonor review fundraisers, keep
+          campaign pages online, process payments, support donors, and publish
+          impact updates. If you want to support a specific person or family,
+          you can browse active campaigns instead.
+        </p>
+
+        <div className="mt-8 rounded-xl border border-border bg-card p-6">
+          <DonationForm campaignId={GENERAL_FUND_CAMPAIGN_ID} campaignTitle="General Fund" />
+        </div>
+
+        <section className="mt-10" aria-labelledby="general-fund-faq">
+          <h2 id="general-fund-faq" className="font-display text-2xl font-bold text-foreground">
+            General Fund FAQ
+          </h2>
+          <dl className="mt-5 divide-y divide-border">
+            {faqs.map((faq) => (
+              <div key={faq.question} className="py-4">
+                <dt className="font-semibold text-foreground">{faq.question}</dt>
+                <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">{faq.answer}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
       </div>
-    </div>
+    </>
   );
 }

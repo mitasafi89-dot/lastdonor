@@ -48,12 +48,12 @@ const CATEGORIES: ReadonlyArray<{ value: string; label: string }> = [
 ];
 
 const STEP_HERO = [
-  { title: "Tell us who you\u2019re raising funds for", subtitle: 'This information helps us get to know you and your fundraising needs.' },
+  { title: "Tell us who you're raising funds for", subtitle: 'This information helps us understand the beneficiary and fundraising need.' },
   { title: "Tell us how much you'd like to raise", subtitle: 'You can always change your goal as your campaign progresses.' },
   { title: 'Add media', subtitle: 'Using a bright and clear photo helps people connect to your fundraiser instantly.' },
   { title: 'Help us categorize your campaign', subtitle: 'This ensures donors who care about your cause can find you.' },
   { title: 'Every story deserves to be heard', subtitle: 'A compelling story helps donors connect with your cause and give generously.' },
-  { title: "You're almost there", subtitle: 'Review your campaign and submit for editorial review. Campaigns are typically reviewed within 24 hours.' },
+  { title: "You're almost there", subtitle: 'Review your campaign and submit it for editorial review before publication.' },
 ] as const;
 
 const RELATIONS = [
@@ -718,9 +718,9 @@ export function ShareYourStoryForm() {
             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-teal">
               Step {step + 1} of {STEPS.length}
             </p>
-            <h1 className="font-display text-3xl font-bold leading-tight tracking-tight text-foreground lg:text-4xl">
+            <p className="font-display text-3xl font-bold leading-tight tracking-tight text-foreground lg:text-4xl">
               {STEP_HERO[step].title}
-            </h1>
+            </p>
             <p className="mt-4 text-base leading-relaxed text-muted-foreground">
               {STEP_HERO[step].subtitle}
             </p>
@@ -733,13 +733,13 @@ export function ShareYourStoryForm() {
               <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <span>Live in minutes. No review queue.</span>
+              <span>Draft in minutes. Reviewed before publication.</span>
             </li>
             <li className="flex items-start gap-2 text-sm text-foreground">
               <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <span>0% platform fees. You keep 100%.</span>
+              <span>0% platform fees. Payment processing is shown before checkout.</span>
             </li>
             <li className="flex items-start gap-2 text-sm text-foreground">
               <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -756,9 +756,9 @@ export function ShareYourStoryForm() {
         <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-teal">
           Step {step + 1} of {STEPS.length}
         </p>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
+        <p className="font-display text-2xl font-bold tracking-tight text-foreground">
           {STEP_HERO[step].title}
-        </h1>
+        </p>
         <p className="mt-2 text-sm text-muted-foreground">
           {STEP_HERO[step].subtitle}
         </p>
@@ -767,6 +767,15 @@ export function ShareYourStoryForm() {
       {/* Right Panel - Form */}
       <div className="flex flex-1 flex-col bg-stone-50 dark:bg-gray-900/40">
         <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-10 lg:px-12 lg:py-16">
+          <header className="mb-8">
+            <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              Start a fundraiser on LastDonor
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Create a reviewed campaign for medical bills, emergencies, memorial costs,
+              disaster relief, family needs, education, pets, veterans, or community support.
+            </p>
+          </header>
           {/* Draft restored notice */}
           {draftRestored && step === 0 && (
             <div className="mb-8 flex items-center justify-between rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 dark:border-teal-900 dark:bg-teal-950/30">

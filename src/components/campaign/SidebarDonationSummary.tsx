@@ -64,11 +64,11 @@ export function SidebarDonationSummary({
         </li>
         <li className="flex flex-col items-center gap-1 text-center">
           <HeartIcon className="h-4 w-4" aria-hidden="true" />
-          <span>100% delivered</span>
+          <span>0% platform fees</span>
         </li>
         <li className="flex flex-col items-center gap-1 text-center">
           <ShieldCheckIcon className="h-4 w-4" aria-hidden="true" />
-          <span>Human verified</span>
+          <span>Reviewed</span>
         </li>
       </ul>
     </div>

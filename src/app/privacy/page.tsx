@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'Privacy Policy',
   description:
     'How LastDonor.org handles your data. Short version: we never sell it, we never share it for profit, and we use privacy-focused analytics that do not track you.',
-  alternates: { canonical: '/privacy' },
+  alternates: { canonical: 'https://lastdonor.org/privacy' },
   openGraph: {
     title: 'Privacy Policy | LastDonor.org',
     description:
@@ -75,7 +75,7 @@ export default function PrivacyPage() {
           </h2>
           <ul className="mt-3 list-disc space-y-1 pl-6">
             <li>Process and acknowledge donations</li>
-            <li>Send tax receipts and donation confirmations</li>
+            <li>Send donation confirmations and campaign updates</li>
             <li>Display public donor names on campaign pages (unless anonymous)</li>
             <li>Send newsletter updates (with your consent)</li>
             <li>Improve platform functionality and user experience</li>
@@ -179,11 +179,13 @@ export default function PrivacyPage() {
             >
               privacy@lastdonor.org
             </a>
-            . You may also write to us at:
+            . For physical mail requests, contact us by email so we can provide
+            the current mailing details.
           </p>
           <address className="mt-3 not-italic text-sm leading-relaxed text-muted-foreground">
             LastDonor.org<br />
-            [MAILING ADDRESS PENDING]
+            United States<br />
+            privacy@lastdonor.org
           </address>
         </section>
       </div>

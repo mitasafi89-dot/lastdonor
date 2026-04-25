@@ -8,6 +8,7 @@ const LINK_GROUPS = [
     title: 'Platform',
     links: [
       { label: 'Campaigns', href: '/campaigns' },
+      { label: 'Compare Platforms', href: '/compare' },
       { label: 'Completed Campaigns', href: '/completed-campaigns' },
       { label: 'How It Works', href: '/how-it-works' },
       { label: 'Newsletter', href: '/newsletter' },
@@ -66,18 +67,18 @@ export function Footer() {
                 Subject-Verb-Object triple and would dilute the more precise
                 meta description if ingested as a snippet. */}
             <p data-nosnippet className="mt-3 text-sm leading-relaxed text-gray-400">
-              Verified fundraising for real people in crisis. 100% transparent.
+              Reviewed fundraising for real people in crisis, with visible campaign progress.
               You&apos;re the reason it&apos;s done.
             </p>
             <div className="mt-4 flex items-center gap-2 rounded-lg bg-[#14B8A6]/15 px-3 py-2">
               <ShieldCheckIcon className="h-4 w-4 text-[#14B8A6]" />
-              <span className="text-xs font-medium text-[#14B8A6]">501(c)(3) Nonprofit Organization</span>
+              <span className="text-xs font-medium text-[#14B8A6]">Reviewed Fundraising Platform</span>
             </div>
 
-            {/* Mailing address (required for CCPA compliance and FTC commercial disclosure) */}
+            {/* Contact details for privacy and commercial disclosure pages. */}
             <p className="mt-4 text-xs leading-relaxed text-gray-500">
               LastDonor.org<br />
-              [MAILING ADDRESS PENDING]<br />
+              United States<br />
               contact@lastdonor.org
             </p>
 

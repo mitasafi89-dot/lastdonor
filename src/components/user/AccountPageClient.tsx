@@ -363,7 +363,7 @@ function PreferencesSection() {
           <SettingRow
             id="emailDonationReceipts"
             label="Donation receipts"
-            description="Receive an email confirmation after each donation with your tax-deductible receipt"
+            description="Receive an email confirmation after each donation"
             checked={preferences.emailDonationReceipts ?? true}
             onCheckedChange={(v) => updatePref('emailDonationReceipts', v)}
           />
@@ -377,7 +377,7 @@ function PreferencesSection() {
           <SettingRow
             id="emailNewCampaigns"
             label="New campaign alerts"
-            description="Be the first to know when new verified campaigns go live"
+            description="Be the first to know when new reviewed campaigns go live"
             checked={preferences.emailNewCampaigns ?? false}
             onCheckedChange={(v) => updatePref('emailNewCampaigns', v)}
           />

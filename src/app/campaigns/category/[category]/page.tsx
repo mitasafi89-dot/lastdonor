@@ -7,6 +7,7 @@ import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { CampaignCard } from '@/components/campaign/CampaignCard';
 import { CategoryHeroSection } from '@/components/campaign/CategoryHeroSection';
 import { getCategoryContent, ALL_CATEGORY_SLUGS } from '@/lib/category-content';
+import { categorySeoKeywords } from '@/lib/seo/keywords';
 import type { CampaignCategory } from '@/types';
 import Link from 'next/link';
 
@@ -28,6 +29,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: content.seoTitle,
     description: content.metaDescription,
+    keywords: categorySeoKeywords(content.slug),
+    alternates: {
+      canonical: `https://lastdonor.org/campaigns/category/${content.slug}`,
+    },
     openGraph: {
       title: `${content.seoTitle} | LastDonor.org`,
       description: content.metaDescription,
@@ -91,12 +96,43 @@ export default async function CategoryPage({ params }: PageProps) {
       url: 'https://lastdonor.org',
     },
   };
+  const categoryLabel = content.label.toLowerCase();
+  const faqs = [
+    {
+      question: `Can I start a ${categoryLabel} fundraiser on LastDonor?`,
+      answer: `Yes. You can submit a ${categoryLabel} fundraiser through Share Your Story. Campaigns are reviewed before publication so donors can understand the need, goal, and supporting context.`,
+    },
+    {
+      question: `Are ${categoryLabel} fundraisers reviewed before publication?`,
+      answer: `Yes. ${content.label} fundraisers are reviewed before they appear on LastDonor campaign pages.`,
+    },
+    {
+      question: `What details help a ${categoryLabel} fundraiser earn donor trust?`,
+      answer: 'A clear title, specific location, realistic fundraising goal, beneficiary details, supporting documentation, strong photo, and regular campaign updates all help donors understand the fundraiser.',
+    },
+  ];
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
 
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
       <CategoryHeroSection content={content} />
@@ -149,6 +185,20 @@ export default async function CategoryPage({ params }: PageProps) {
           </Link>
         </div>
       )}
+
+      <section className="mt-12 border-t border-border pt-10" aria-labelledby="category-faq">
+        <h2 id="category-faq" className="font-display text-2xl font-bold text-foreground">
+          {content.label} Fundraiser FAQ
+        </h2>
+        <dl className="mt-5 grid gap-5 md:grid-cols-3">
+          {faqs.map((faq) => (
+            <div key={faq.question}>
+              <dt className="font-semibold text-foreground">{faq.question}</dt>
+              <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">{faq.answer}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
       </div>
     </>
   );
