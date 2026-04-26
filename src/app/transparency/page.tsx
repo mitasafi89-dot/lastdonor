@@ -96,8 +96,9 @@ export default async function TransparencyPage() {
           Fee Disclosure
         </h2>
         <p className="mt-2 text-muted-foreground">
-          LastDonor charges 0% platform fees. Standard Stripe processing fees
-          apply, and donors see the payment breakdown before checkout.
+          LastDonor charges 0% platform fees on fundraisers. Standard Stripe
+          processing fees apply, and donors see the payment breakdown before
+          checkout.
         </p>
         <div className="mt-6 space-y-4">
           <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
@@ -128,6 +129,26 @@ export default async function TransparencyPage() {
             <span className="font-mono text-2xl font-bold text-muted-foreground">0%</span>
           </div>
         </div>
+      </section>
+
+      <section className="mt-12">
+        <h2 className="font-display text-2xl font-bold text-foreground">
+          How LastDonor Is Funded
+        </h2>
+        <p className="mt-2 leading-relaxed text-muted-foreground">
+          The 0% platform-fee model works because LastDonor funds its own
+          operations separately from campaign donations. General fund donations,
+          grants, sponsorships, and operating support help pay for campaign
+          review, verification work, donor support, hosting, payment operations,
+          and impact updates. General fund support is separate from a donation
+          to a specific fundraiser.
+        </p>
+        <Link
+          href="/donate"
+          className="mt-4 inline-flex rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+        >
+          Support the general fund
+        </Link>
       </section>
 
       {/* Policies */}

@@ -21,7 +21,12 @@ const faqs = [
   {
     question: 'Does LastDonor charge a platform fee?',
     answer:
-      'LastDonor charges 0% platform fees on fundraisers. Standard Stripe processing fees may apply and are shown before checkout.',
+      'LastDonor charges 0% platform fees on fundraisers. Standard Stripe processing fees may apply and are shown before checkout. LastDonor funds its operations separately through general fund donations, grants, sponsorships, and operating support.',
+  },
+  {
+    question: 'What is LastDonor\'s business model?',
+    answer:
+      'LastDonor is supported separately from campaign donations. General fund donations, grants, sponsorships, and operating support help pay for campaign review, verification work, donor support, hosting, payment operations, and impact updates.',
   },
   {
     question: 'Are donations tax deductible?',

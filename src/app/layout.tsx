@@ -23,7 +23,7 @@ const siteSchemaGraph = {
         height: 180,
       },
       description:
-        'LastDonor is a reviewed crowdfunding platform that charges 0% platform fees, reviews campaigns before publication, and provides visible campaign progress and impact updates, serving medical, emergency, veteran, and family fundraising in the United States.',
+        'LastDonor is a reviewed crowdfunding platform that charges 0% platform fees on fundraisers, reviews campaigns before publication, and provides visible campaign progress and impact updates, serving medical, emergency, veteran, and family fundraising in the United States.',
       foundingDate: '2024-01-01',
       areaServed: { '@type': 'Country', name: 'United States' },
       knowsAbout: [
@@ -84,7 +84,7 @@ const siteSchemaGraph = {
       '@type': 'SiteNavigationElement',
       '@id': `${BASE_URL}/#nav-about`,
       name: 'About LastDonor',
-      description: 'Crowdfunding with 0% platform fees and reviewed campaigns',
+      description: 'Crowdfunding with 0% platform fees on fundraisers and reviewed campaigns',
       url: `${BASE_URL}/about`,
       position: 4,
     },
@@ -140,7 +140,7 @@ export const metadata: Metadata = {
     default: 'LastDonor - Reviewed Crowdfunding with 0% Platform Fees',
   },
   description:
-    'LastDonor helps donors support reviewed medical, emergency, veteran, disaster relief, and family fundraising campaigns with 0% platform fees and visible donation tracking.',
+    'LastDonor helps donors support reviewed medical, emergency, veteran, disaster relief, and family fundraising campaigns with 0% platform fees on fundraisers and visible donation tracking.',
   keywords: seoKeywords('core', 'campaigns', 'trust', 'medical', 'emergency', 'disaster'),
   metadataBase: new URL('https://lastdonor.org'),
   alternates: {

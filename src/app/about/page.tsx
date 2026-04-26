@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'About LastDonor.org',
     description:
-      'Reviewed crowdfunding for real needs with 0% platform fees and visible impact updates.',
+      'Reviewed crowdfunding for real needs with 0% platform fees on fundraisers and visible impact updates.',
     images: [
       {
         url: '/api/v1/og/page?title=About+LastDonor.org&subtitle=Reviewed+crowdfunding+with+0%25+platform+fees.',
@@ -32,7 +32,7 @@ export default function AboutPage() {
     url: 'https://lastdonor.org/about',
     name: 'About LastDonor.org',
     description:
-      'LastDonor.org is a reviewed crowdfunding platform with 0% platform fees, campaign review before publication, and visible impact updates.',
+      'LastDonor.org is a reviewed crowdfunding platform with 0% platform fees on fundraisers, campaign review before publication, and visible impact updates.',
     isPartOf: { '@id': 'https://lastdonor.org/#website' },
     about: { '@id': 'https://lastdonor.org/#organization' },
     speakable: {
@@ -94,10 +94,10 @@ export default function AboutPage() {
             <div>
               <dt className="font-semibold text-foreground">LastDonor.org</dt>
               <dd className="mt-1 text-muted-foreground">
-                A reviewed crowdfunding platform that charges 0% platform fees,
-                publishes campaigns after editorial review, and shows donors
-                progress and impact updates. Campaigns close when the stated goal
-                is reached.
+                A reviewed crowdfunding platform that charges 0% platform fees
+                on fundraisers, publishes campaigns after editorial review, and
+                shows donors progress and impact updates. Campaigns close when
+                the stated goal is reached.
               </dd>
             </div>
             <div>
@@ -134,7 +134,7 @@ export default function AboutPage() {
               <tbody className="divide-y divide-border">
                 <tr className="bg-card">
                   <td className="px-4 py-3 font-medium text-foreground">Does LastDonor take a platform fee?</td>
-                  <td className="px-4 py-3 text-primary">0%, no platform fee ever</td>
+                  <td className="px-4 py-3 text-primary">0% platform fees on fundraisers</td>
                   <td className="px-4 py-3 text-muted-foreground">Checkout fee breakdown</td>
                 </tr>
                 <tr className="bg-card/60">
@@ -163,6 +163,16 @@ export default function AboutPage() {
         </section>
 
         <section className="mt-12 space-y-6">
+          <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">How LastDonor is funded</h2>
+          <p className="leading-relaxed text-muted-foreground">
+            LastDonor charges 0% platform fees on fundraisers. We fund platform
+            operations separately through general fund donations, grants,
+            sponsorships, and operating support. That support helps pay for
+            campaign review, verification work, donor support, hosting, payment
+            operations, and impact updates. Standard Stripe processing fees are
+            separate and may be shown before checkout.
+          </p>
+
           <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">Who we help</h2>
           <p className="leading-relaxed text-muted-foreground">
             Military families. Veterans. First responders. Parents facing

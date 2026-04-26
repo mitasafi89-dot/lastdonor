@@ -20,7 +20,7 @@ import { staggerContainer, fadeInUp } from '@/lib/animations';
  * Each card answers a specific objection:
  * 1. "How do I know campaigns are reviewed?" -> Reviewed by a person
  * 2. "What happens to my money?" -> Impact updates
- * 3. "Will they charge a platform fee?" -> 0% platform fees
+ * 3. "Will they charge a platform fee?" -> 0% platform fees on fundraisers
  */
 const trustProofs = [
   {
@@ -35,8 +35,8 @@ const trustProofs = [
   },
   {
     icon: CurrencyDollarIcon,
-    title: '0% platform fees. Period.',
-    proof: 'LastDonor charges 0% platform fees. Standard payment processing is shown before checkout.',
+    title: '0% platform fees on fundraisers',
+    proof: 'LastDonor operations are funded separately through general fund donations, grants, sponsorships, and operating support.',
   },
 ];
 

@@ -12,7 +12,7 @@ const faqs = [
   {
     question: 'Does LastDonor charge a platform fee?',
     answer:
-      'No. LastDonor charges 0% platform fees. Standard Stripe payment processing fees apply and are shown before checkout.',
+      'No. LastDonor charges 0% platform fees on fundraisers. Standard Stripe payment processing fees apply and are shown before checkout. Operations are funded separately through general fund donations, grants, sponsorships, and operating support.',
   },
   {
     question: 'Does LastDonor guarantee fundraising results?',
@@ -142,7 +142,7 @@ export default function ComparePage() {
                 <tr>
                   <td className="px-4 py-4 font-medium text-foreground">Platform fees</td>
                   <td className="px-4 py-4 text-muted-foreground">Whether the platform takes a percentage or asks donors for platform tips.</td>
-                  <td className="px-4 py-4 text-foreground">0% platform fees from LastDonor.</td>
+                  <td className="px-4 py-4 text-foreground">0% platform fees on fundraisers from LastDonor.</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-4 font-medium text-foreground">Payment processing</td>
@@ -177,7 +177,7 @@ export default function ComparePage() {
           </h2>
           <ul className="mt-6 space-y-3 text-muted-foreground">
             <li>You want a reviewed medical, emergency, memorial, family, veteran, or disaster relief fundraiser.</li>
-            <li>You want 0% platform fees from LastDonor, with Stripe processing shown before checkout.</li>
+            <li>You want 0% platform fees on fundraisers from LastDonor, with Stripe processing shown before checkout.</li>
             <li>You want campaign pages that show progress and updates instead of only a donation button.</li>
             <li>You want donor-facing language that is careful about tax status, refunds, and fee disclosure.</li>
           </ul>

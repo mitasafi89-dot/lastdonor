@@ -23,12 +23,12 @@ import { seoKeywords } from '@/lib/seo/keywords';
 export const metadata: Metadata = {
   title: 'LastDonor - Reviewed Crowdfunding with 0% Platform Fees',
   description:
-    'Support real people through reviewed medical, emergency, disaster relief, veteran, and family fundraising campaigns. LastDonor charges 0% platform fees and shows donors where funds go.',
+    'Support real people through reviewed medical, emergency, disaster relief, veteran, and family fundraising campaigns. LastDonor charges 0% platform fees on fundraisers and shows donors where funds go.',
   keywords: seoKeywords('core', 'campaigns', 'trust', 'medical', 'emergency', 'disaster', 'memorial', 'family'),
   openGraph: {
     title: 'LastDonor - Reviewed Crowdfunding with 0% Platform Fees',
     description:
-      'Reviewed crowdfunding campaigns with 0% platform fees and visible tracking from donation to impact.',
+      'Reviewed crowdfunding campaigns with 0% platform fees on fundraisers and visible tracking from donation to impact.',
     url: 'https://lastdonor.org',
     type: 'website',
     images: [
@@ -174,7 +174,7 @@ export default async function Home() {
         url: 'https://lastdonor.org',
         name: 'LastDonor - Reviewed Crowdfunding with 0% Platform Fees',
         description:
-          'Reviewed crowdfunding campaigns for medical, emergency, disaster relief, veteran, memorial, and family fundraising with 0% platform fees and visible campaign progress.',
+          'Reviewed crowdfunding campaigns for medical, emergency, disaster relief, veteran, memorial, and family fundraising with 0% platform fees on fundraisers and visible campaign progress.',
         isPartOf: { '@id': 'https://lastdonor.org/#website' },
         about: { '@id': 'https://lastdonor.org/#organization' },
         primaryImageOfPage: {
@@ -222,13 +222,19 @@ export default async function Home() {
             What LastDonor Does
           </h2>
           <p className="text-base font-medium leading-relaxed text-foreground">
-            LastDonor helps people support <strong>medical fundraising</strong>, <strong>emergency fundraising</strong>, and <strong>disaster relief fundraising</strong> campaigns that are reviewed before publication. We charge <strong>0% platform fees</strong> and provide <strong>visible donation tracking</strong>, so donors can follow the path from contribution to impact.
+            LastDonor helps people support <strong>medical fundraising</strong>, <strong>emergency fundraising</strong>, and <strong>disaster relief fundraising</strong> campaigns that are reviewed before publication. We charge <strong>0% platform fees on fundraisers</strong> and provide <strong>visible donation tracking</strong>, so donors can follow the path from contribution to impact.
           </p>
           <dl className="mt-8 grid gap-4 sm:grid-cols-2 text-sm leading-relaxed">
             <div>
               <dt className="font-semibold text-foreground">0% platform fee</dt>
               <dd className="mt-1 text-muted-foreground">
                 LastDonor does not take a platform cut. Standard Stripe processing fees apply and are shown before checkout.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">How we operate</dt>
+              <dd className="mt-1 text-muted-foreground">
+                General fund donations, grants, sponsorships, and operating support help cover review, verification, donor support, hosting, payment operations, and impact updates.
               </dd>
             </div>
             <div>

@@ -71,7 +71,7 @@ export function WhereYourMoneyGoes() {
       label: 'LastDonor Platform Fee',
       value: '0%',
       dotClass: 'bg-[#D1D5DB]',
-      description: 'LastDonor does not add a platform cut or tip request to your donation.',
+      description: 'LastDonor does not add a platform cut or tip request to fundraiser donations.',
     },
   ];
 
@@ -91,8 +91,8 @@ export function WhereYourMoneyGoes() {
             0% Platform Fees,<br className="hidden md:block" /> Clear Payment Processing
           </h2>
           <p className="mx-auto mt-6 max-w-2xl font-sans text-[17px] leading-relaxed text-foreground">
-            LastDonor charges 0% platform fees. Standard Stripe payment processing fees apply and are shown before checkout.<br className="hidden md:block" />
-            No platform cut, no tip prompts, no fixed allocation claims.
+            LastDonor charges 0% platform fees on fundraisers. Standard Stripe payment processing fees apply and are shown before checkout.<br className="hidden md:block" />
+            Operations are funded separately through general fund donations, grants, sponsorships, and operating support.
           </p>
         </motion.div>
 
