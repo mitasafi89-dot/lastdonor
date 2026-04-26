@@ -5,7 +5,7 @@ import { eq, inArray } from 'drizzle-orm';
 import { ALL_CATEGORY_SLUGS } from '@/lib/category-content';
 
 const BASE_URL = 'https://lastdonor.org';
-const SEO_CONTENT_LAST_MODIFIED = new Date('2026-04-26');
+const SEO_CONTENT_LAST_MODIFIED = new Date('2026-04-27');
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages
@@ -27,6 +27,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/donate`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE_URL}/share-your-story`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE_URL}/editorial-standards`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${BASE_URL}/donor-faq`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${BASE_URL}/campaign-verification-policy`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${BASE_URL}/fund-release-policy`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${BASE_URL}/campaign-rules`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${BASE_URL}/refund-policy`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'yearly', priority: 0.3 },
     { url: `${BASE_URL}/privacy`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'yearly', priority: 0.2 },
     { url: `${BASE_URL}/terms`, lastModified: SEO_CONTENT_LAST_MODIFIED, changeFrequency: 'yearly', priority: 0.2 },
   ];

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { db } from '@/db';
 import { campaigns, donations } from '@/db/schema';
 import { sql } from 'drizzle-orm';
@@ -159,6 +160,35 @@ export default async function TransparencyPage() {
             reach a real person who will actually answer it.
           </li>
         </ul>
+      </section>
+
+      <section className="mt-12">
+        <h2 className="font-display text-2xl font-bold text-foreground">
+          Payment and Fund-Flow Policies
+        </h2>
+        <p className="mt-2 leading-relaxed text-muted-foreground">
+          Donors should understand what happens before they give. These pages
+          explain refunds, campaign review, prohibited campaigns, fund release,
+          recurring donation cancellation, and donor privacy.
+        </p>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          {[
+            { label: 'Donor FAQ', href: '/donor-faq' },
+            { label: 'Refund Policy', href: '/refund-policy' },
+            { label: 'Campaign Verification Policy', href: '/campaign-verification-policy' },
+            { label: 'Fund Release Policy', href: '/fund-release-policy' },
+            { label: 'Campaign Rules', href: '/campaign-rules' },
+            { label: 'Privacy Policy', href: '/privacy' },
+          ].map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
       </section>
     </div>
   );

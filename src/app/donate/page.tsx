@@ -3,6 +3,7 @@ import { DonationForm } from '@/components/campaign/DonationForm';
 import { GENERAL_FUND_CAMPAIGN_ID } from '@/lib/constants';
 import type { Metadata } from 'next';
 import { seoKeywords } from '@/lib/seo/keywords';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Donate to the General Fund',
@@ -42,6 +43,21 @@ export default function DonatePage() {
       answer:
         'LastDonor charges 0% platform fees. Standard payment processing fees are shown before checkout.',
     },
+    {
+      question: 'Can I cancel a monthly general fund donation?',
+      answer:
+        'Yes. Monthly donations can be cancelled before the next billing date from your account when available or by contacting support@lastdonor.org.',
+    },
+    {
+      question: 'Are general fund donations refundable?',
+      answer:
+        'Donations are generally final after processing, but LastDonor reviews refund requests for duplicate charges, unauthorized transactions, technical errors, and compliance issues.',
+    },
+    {
+      question: 'Is anything shipped after I donate?',
+      answer:
+        'No. LastDonor accepts donations only. There are no physical goods, shipping charges, delivery dates, returns, or product warranties.',
+    },
   ];
 
   const faqSchema = {
@@ -73,6 +89,18 @@ export default function DonatePage() {
           campaign pages online, process payments, support donors, and publish
           impact updates. If you want to support a specific person or family,
           you can browse active campaigns instead.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+          Donations are processed in U.S. dollars by Stripe. LastDonor does not
+          sell or ship physical goods. See the{' '}
+          <Link href="/refund-policy" className="text-primary underline underline-offset-4">
+            Refund Policy
+          </Link>{' '}
+          and{' '}
+          <Link href="/donor-faq" className="text-primary underline underline-offset-4">
+            Donor FAQ
+          </Link>{' '}
+          before giving.
         </p>
 
         <div className="mt-8 rounded-xl border border-border bg-card p-6">

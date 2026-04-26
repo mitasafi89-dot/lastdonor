@@ -161,7 +161,7 @@ function SuccessStep({ amount, campaignTitle, campaignSlug, embedded }: { amount
         <span className="font-medium text-foreground">{campaignTitle}</span> is on its way.
       </motion.p>
       <p className="mx-auto mt-1 max-w-md text-xs text-muted-foreground">
-        A tax receipt is being emailed to you now.
+        A donation confirmation is being emailed to you now.
       </p>
 
       {/* Reciprocity amplification: encourage one share. Each share, on average,
@@ -699,6 +699,21 @@ export function DonationForm({
           <span className="h-3 w-px bg-border" aria-hidden="true" />
           <span>0% platform fees</span>
         </div>
+        <p className="max-w-md text-[11px] leading-relaxed text-muted-foreground">
+          By continuing, you agree to the{' '}
+          <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
+            Terms
+          </Link>
+          ,{' '}
+          <Link href="/refund-policy" className="underline underline-offset-2 hover:text-foreground">
+            Refund Policy
+          </Link>
+          , and{' '}
+          <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
+            Privacy Policy
+          </Link>
+          . Monthly donations can be cancelled before the next billing date.
+        </p>
       </div>
     </form>
   );

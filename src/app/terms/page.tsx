@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 
 export const metadata: Metadata = {
@@ -78,11 +79,15 @@ export default function TermsPage() {
             </li>
             <li>
               Recurring donations can be canceled at any time by contacting
-              support.
+              support or by using account tools when available.
             </li>
             <li>
               Donor names and amounts are publicly displayed on campaign pages
               unless the donor selects anonymous.
+            </li>
+            <li>
+              LastDonor accepts donations only. We do not sell physical goods,
+              ship products, or provide product returns.
             </li>
           </ul>
         </section>
@@ -110,13 +115,37 @@ export default function TermsPage() {
             >
               support@lastdonor.org
             </a>{' '}
-            within 30 days of the transaction.
+            within 30 days of the transaction when possible. See the detailed{' '}
+            <Link href="/refund-policy" className="text-primary underline underline-offset-4">
+              Refund, Cancellation, and Dispute Policy
+            </Link>
+            .
           </p>
         </section>
 
         <section>
           <h2 className="font-display text-xl font-bold text-foreground">
-            5. User Accounts
+            5. Campaign Review and Fund Release
+          </h2>
+          <p className="mt-3">
+            LastDonor may review, reject, pause, suspend, remove, or request
+            more information about any campaign. Fund release may require
+            identity checks, supporting documents, Stripe Connect onboarding,
+            fraud review, and compliance review. See the{' '}
+            <Link href="/campaign-verification-policy" className="text-primary underline underline-offset-4">
+              Campaign Verification Policy
+            </Link>{' '}
+            and{' '}
+            <Link href="/fund-release-policy" className="text-primary underline underline-offset-4">
+              Fund Release Policy
+            </Link>
+            .
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-display text-xl font-bold text-foreground">
+            6. User Accounts
           </h2>
           <ul className="mt-3 list-disc space-y-2 pl-6">
             <li>
@@ -136,7 +165,7 @@ export default function TermsPage() {
 
         <section>
           <h2 className="font-display text-xl font-bold text-foreground">
-            6. Content Policies
+            7. Content Policies
           </h2>
           <p className="mt-3">
             User-generated content (donation messages, story submissions) must
@@ -150,12 +179,17 @@ export default function TermsPage() {
           </ul>
           <p className="mt-2">
             We reserve the right to remove content that violates these policies.
+            Campaigns must also follow the{' '}
+            <Link href="/campaign-rules" className="text-primary underline underline-offset-4">
+              Campaign Rules
+            </Link>
+            .
           </p>
         </section>
 
         <section>
           <h2 className="font-display text-xl font-bold text-foreground">
-            7. Intellectual Property
+            8. Intellectual Property
           </h2>
           <p className="mt-3">
             All content on LastDonor.org, including text, images, design, and
@@ -166,7 +200,7 @@ export default function TermsPage() {
 
         <section>
           <h2 className="font-display text-xl font-bold text-foreground">
-            8. Limitation of Liability
+            9. Limitation of Liability
           </h2>
           <p className="mt-3">
             LastDonor.org provides its platform &quot;as is&quot; without
@@ -178,7 +212,7 @@ export default function TermsPage() {
 
         <section>
           <h2 className="font-display text-xl font-bold text-foreground">
-            9. Contact
+            10. Contact
           </h2>
           <p className="mt-3">
             For questions about these terms, contact us at{' '}

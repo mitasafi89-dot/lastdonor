@@ -90,8 +90,8 @@ export default function PrivacyPage() {
           <p className="mt-3">
             We use Plausible Analytics, a privacy-focused analytics tool that
             does not use cookies and does not collect personal data. We may use
-            essential cookies for authentication (session tokens) and theme
-            preference (dark mode).
+            essential cookies for authentication (session tokens) and saved
+            theme preference.
           </p>
         </section>
 

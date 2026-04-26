@@ -21,12 +21,17 @@ const LINK_GROUPS = [
       { label: 'Transparency', href: '/transparency' },
       { label: 'Rejected Campaigns', href: '/cancelled-campaigns' },
       { label: 'Editorial Standards', href: '/editorial-standards' },
+      { label: 'Campaign Verification', href: '/campaign-verification-policy' },
+      { label: 'Fund Release Policy', href: '/fund-release-policy' },
+      { label: 'Campaign Rules', href: '/campaign-rules' },
       { label: 'Last Donor Wall', href: '/last-donor-wall' },
     ],
   },
   {
     title: 'Legal',
     links: [
+      { label: 'Donor FAQ', href: '/donor-faq' },
+      { label: 'Refund Policy', href: '/refund-policy' },
       { label: 'Privacy Policy', href: '/privacy' },
       { label: 'Terms of Service', href: '/terms' },
     ],

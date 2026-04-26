@@ -41,6 +41,36 @@ describe('Footer', () => {
     expect(link).toHaveAttribute('href', '/terms');
   });
 
+  it('renders Donor FAQ link', () => {
+    render(<Footer />);
+    const link = screen.getByRole('link', { name: 'Donor FAQ' });
+    expect(link).toHaveAttribute('href', '/donor-faq');
+  });
+
+  it('renders Refund Policy link', () => {
+    render(<Footer />);
+    const link = screen.getByRole('link', { name: 'Refund Policy' });
+    expect(link).toHaveAttribute('href', '/refund-policy');
+  });
+
+  it('renders Campaign Verification link', () => {
+    render(<Footer />);
+    const link = screen.getByRole('link', { name: 'Campaign Verification' });
+    expect(link).toHaveAttribute('href', '/campaign-verification-policy');
+  });
+
+  it('renders Fund Release Policy link', () => {
+    render(<Footer />);
+    const link = screen.getByRole('link', { name: 'Fund Release Policy' });
+    expect(link).toHaveAttribute('href', '/fund-release-policy');
+  });
+
+  it('renders Campaign Rules link', () => {
+    render(<Footer />);
+    const link = screen.getByRole('link', { name: 'Campaign Rules' });
+    expect(link).toHaveAttribute('href', '/campaign-rules');
+  });
+
   it('renders Transparency link', () => {
     render(<Footer />);
     const link = screen.getByRole('link', { name: 'Transparency' });
